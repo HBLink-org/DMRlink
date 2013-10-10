@@ -27,14 +27,14 @@ import socket
 try:
     from ipsc.ipsc_logger import logger
 except ImportError:
-    sys.exit('System logger configuraiton not found or invalid')
+    sys.exit('System logger configuration not found or invalid')
 
 # Import configuration and informational data structures
 #
 try:
     from ipsc.my_ipsc_config import NETWORK
 except ImportError:
-    sys.exit('Configuration file not found, or not valid formatting')
+    sys.exit('Configuration file not found or not valid formatting')
 
 # Import IPSC message types and version information
 #
