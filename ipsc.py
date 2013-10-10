@@ -541,10 +541,10 @@ class IPSC(DatagramProtocol):
         
         # Answer a peer registration request -- simple, no callback runction needed
         elif (_packettype == PEER_REG_REQ):
-# TO DO TO DO TO DO TO DO ***ADD CODE TO VALIDATE THE PEER IS IN OUR PEER-LIST HERE***
-            peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
-            self._notify_event(self._network, 'peer_registration', {'peer_id': _dec_peerid})
-            self.transport.write(peer_reg_reply_packet, (host, port))
+            if valid_peer(self._peer_list, _peerid):
+                peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
+                self.transport.write(peer_reg_reply_packet, (host, port))
+                self._notify_event(self._network, 'peer_registration', {'peer_id': _dec_peerid})
 
         elif (_packettype == PEER_REG_REPLY):
             self._notify_event(self._network, 'peer_registration_reply', {'peer_id': _dec_peerid})
