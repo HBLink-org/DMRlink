@@ -10,21 +10,22 @@
 NETWORK = {
     'IPSC1': {
         'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x00\x01', 'DST_NET': 'IPSC2', 'DST_GROUP': b'\x00\x00\x02'}
+            {'SRC_GROUP': '\x00\x00\x01', 'DST_NET': 'IPSC2', 'DST_GROUP': '\x00\x00\x02'}
         ],
+        # THESE ARE OUR PARAMETERS, SINCE WE ARE A PEER IN THE IPSC NETWORK
         'LOCAL': {
-            'MODE': b'\x6A',        # Decoded values below, use this only for now
+            'MODE': '\x6A',        # Decoded values below, use this only for now
             'PEER_OPER': True,      # Not yet in use, must be hand-coded in MODE
             'PEER_MODE': 'DIGITAL', # Not yet in use, must be hand-coded in MODE
             'TS1_LINK': True,       # Not yet in use, must be hand-coded in MODE
             'TS2_LINK': True,       # Not yet in use, must be hand-coded in MODE
-            'FLAGS': b'\x00\x00\x00\x14',
+            'FLAGS': '\x00\x00\x00\x14',
             'PORT': 50001,
             'ALIVE_TIMER': 5, # Seconds between keep-alives and registration attempts
             'MAX_MISSED': 5, # Maximum number of keep-alives missed before de-registration
-            'RADIO_ID': b'\x00\x00\x00\x0A',
+            'RADIO_ID': '\x00\x00\x00\x0A',
             'AUTH_ENABLED': True,
-            'AUTH_KEY': b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01',
+            'AUTH_KEY': '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01',
             'ENABLED': True,
             # MAKE NO CHANGES BELOW HERE!!!
             'NUM_PEERS': 0,
@@ -32,17 +33,18 @@ NETWORK = {
                 'ACTIVE': False
             }
         },
+        # THIS IS TO CONNECT TO OUR MASTER. NOTE, WE ONLY NEED TO KNOW THE IP AND PORT
         'MASTER': {
             'IP': '1.2.3.4',
             'PORT': 50000,
             # MAKE NO CHANGES BELOW HERE!!!
-            'RADIO_ID': b'\x00\x00\x00\x00',
-            'MODE': b'\x00',
+            'RADIO_ID': '\x00\x00\x00\x00',
+            'MODE': '\x00',
             'PEER_OPER': False,
             'PEER_MODE': '',
             'TS1_LINK': False,
             'TS2_LINK': False,
-            'FLAGS': b'\x00\x00\x00\x00',
+            'FLAGS': '\x00\x00\x00\x00',
             'STATUS': {
                 'CONNECTED': False,
                 'PEER-LIST': False,
@@ -55,13 +57,13 @@ NETWORK = {
 #        each list item contains {
 #           'IP': '100.200.1.1',
 #           'PORT': 50000,
-#           'RADIO_ID': b'\x00\x00\x00\x00',
-#           'MODE': b'\x00,
+#           'RADIO_ID': '\x00\x00\x00\x00',
+#           'MODE': '\x00,
 #           'PEER_OPER': False,
 #           'PEER_MODE': '',
 #           'TS1_LINK': False,
 #           'TS2_LINK': False,
-#           'FLAGS': b'\x00\x00\x00\x00',
+#           'FLAGS': '\x00\x00\x00\x00',
 #           'STATUS': {
 #               'CONNECTED': False,
 #               'KEEP_ALIVES_SENT': 0,
@@ -70,4 +72,6 @@ NETWORK = {
 #               }
 #       }
     }
+    # COPY FROM "IPSC1" TO THE LINE ABOVE THIS AND PASTE BELOW
+    # CHANGE APPROPRIATE ITEMS FOR THE SECOND IPSC AND SO ON...
 }
