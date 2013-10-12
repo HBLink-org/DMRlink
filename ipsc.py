@@ -50,6 +50,8 @@ except ImportError:
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
 
+ACTIVE_CALLS = []
+
 NETWORK = {}
 
 config = ConfigParser.ConfigParser()
@@ -127,9 +129,28 @@ def xcmp_xnl():
     
 def group_voice(_network, _data):
 #    _log = logger.debug
-    _src_group = _data[9:12]
-    _src_ipsc  = _data[1:5]
-    print('Group Voice Packet Recieved from {} with destination group {}' .format(int(binascii.b2a_hex(_src_ipsc), 16), int(binascii.b2a_hex(_src_group), 16)))
+    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
+    _src_group = int(binascii.b2a_hex(_data[9:12]), 16)
+    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
+    _call  = binascii.b2a_hex(_data[17:18])
+    
+    if _call == '00':
+        if (_network, 'Slot 1') not in ACTIVE_CALLS:
+            ACTIVE_CALLS.append((_network, 'Slot 1'))
+            print('({}) CALL START Group Voice: IPSC SRC {}, RF SRC: {}, DST Group {}, Slot 1' .format(_network, _src_ipsc, _src_sub, _src_group))
+    
+    if _call == '20':
+        if (_network, 'Slot 2') not in ACTIVE_CALLS:
+            ACTIVE_CALLS.append((_network, 'Slot 2'))
+            print('({}) CALL START Group Voice: IPSC SRC {}, RF SRC: {}, DST Group {}, Slot 2' .format(_network, _src_ipsc, _src_sub, _src_group))
+    
+    if _call == '40':
+        ACTIVE_CALLS.remove((_network, 'Slot 1'))
+        print('({}) CALL END Group Voice:   IPSC SRC {}, RF SRC: {}, DST Group {}, Slot 1' .format(_network, _src_ipsc, _src_sub, _src_group))
+        
+    if _call == '60':
+        ACTIVE_CALLS.remove((_network, 'Slot 2'))
+        print('({}) CALL END Group Voice:   IPSC SRC {}, RF SRC: {}, DST Group {}, Slot 2' .format(_network, _src_ipsc, _src_sub, _src_group))
     
     '''
     for source in NETWORK[_network]['RULES']['GROUP_VOICE']:
@@ -440,7 +461,7 @@ class IPSC(DatagramProtocol):
 
     def timed_loop(self):
         # Right now, without this, we really dont' know anything is happening.  
-        print_peer_list(self._network)
+        # print_peer_list(self._network)
         
         # If the master isn't connected, we have to do that before we can do anything else!
         if self._master_stat['CONNECTED'] == False:
