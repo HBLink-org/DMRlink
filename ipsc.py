@@ -10,6 +10,8 @@ from __future__ import print_function
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
+import ConfigParser
+import os
 import sys
 import argparse
 import binascii
@@ -29,13 +31,6 @@ try:
 except ImportError:
     sys.exit('System logger configuration not found or invalid')
 
-# Import configuration and informational data structures
-#
-try:
-    from ipsc.my_ipsc_config import NETWORK
-except ImportError:
-    sys.exit('Configuration file not found or not valid formatting')
-
 # Import IPSC message types and version information
 #
 try:
@@ -51,6 +46,68 @@ except ImportError:
     sys.exit('IPSC mask values file not found or invalid')
    
 
+#************************************************
+#     PARSE THE CONFIG FILE AND BUILD STRUCTURE
+#************************************************
+
+NETWORK = {}
+
+config = ConfigParser.ConfigParser()
+config.read('./dmrlink.cfg')
+
+for section in config.sections():
+    NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': []}})
+    NETWORK[section]['LOCAL'].update({
+        'MODE': '',
+        'PEER_OPER': True,
+        'PEER_MODE': 'DIGITAL',
+        'FLAGS': '',
+        'MAX_MISSED': 5,
+        'NUM_PEERS': 0,
+        'STATUS': {
+            'ACTIVE': False
+            },
+        'ENABLED': config.getboolean(section, 'ENABLED'),
+        'TS1_LINK': config.getboolean(section, 'TS1_LINK'),
+        'TS2_LINK': config.getboolean(section, 'TS2_LINK'),
+        'AUTH_ENABLED': config.getboolean(section, 'AUTH_ENABLED'),
+        'RADIO_ID': (config.get(section, 'RADIO_ID').rjust(8,'0')).decode('hex'),
+        'PORT': config.getint(section, 'PORT'),
+        'ALIVE_TIMER': config.getint(section, 'ALIVE_TIMER'),
+        'AUTH_KEY': (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
+        })
+    NETWORK[section]['MASTER'].update({
+        'RADIO_ID': '\x00\x00\x00\x00',
+        'MODE': '\x00',
+        'PEER_OPER': False,
+        'PEER_MODE': '',
+        'TS1_LINK': False,
+        'TS2_LINK': False,
+        'FLAGS': '\x00\x00\x00\x00',
+        'STATUS': {
+            'CONNECTED': False,
+            'PEER-LIST': False,
+            'KEEP_ALIVES_SENT': 0,
+            'KEEP_ALIVES_MISSED': 0,
+            'KEEP_ALIVES_OUTSTANDING': 0 
+        },
+        'IP': config.get(section, 'MASTER_IP'),
+        'PORT': config.getint(section, 'MASTER_PORT')
+        })
+        
+    if NETWORK[section]['LOCAL']['AUTH_ENABLED']:
+        NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x14'
+    else:
+        NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x04'
+    
+    if not NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
+        NETWORK[section]['LOCAL']['MODE'] = '\x65'
+    elif NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
+        NETWORK[section]['LOCAL']['MODE'] = '\x66'
+    elif not NETWORK[section]['LOCAL']['TS1_LINK'] and NETWORK[section]['LOCAL']['TS2_LINK']:    
+        NETWORK[section]['LOCAL']['MODE'] = '\x69'
+    else:
+        NETWORK[section]['LOCAL']['MODE'] = '\x6A'
 
 #************************************************
 #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
@@ -68,11 +125,13 @@ def call_ctl_3():
 def xcmp_xnl():
     pass
     
-def group_voice():
+def group_voice(_network, _data):
 #    _log = logger.debug
     _src_group = _data[9:12]
     _src_ipsc  = _data[1:5]
+    print('Group Voice Packet Recieved from {} with destination group {}' .format(int(binascii.b2a_hex(_src_ipsc), 16), int(binascii.b2a_hex(_src_group), 16)))
     
+    '''
     for source in NETWORK[_network]['RULES']['GROUP_VOICE']:
         # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
         if source['SRC_GROUP'] == _src_group:
@@ -87,6 +146,9 @@ def group_voice():
                 _data = hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _data)
             # Send the packet to all peers in the target IPSC
             send_to_ipsc(_target, _data)
+    '''
+ 
+
     
 def private_voice():
     pass
@@ -328,7 +390,7 @@ class IPSC(DatagramProtocol):
             self.PEER_REG_REPLY_PKT   = (PEER_REG_REPLY + self._local_id + IPSC_VER)
             self.PEER_ALIVE_REQ_PKT   = (PEER_ALIVE_REQ + self._local_id + self.TS_FLAGS)
             self.PEER_ALIVE_REPLY_PKT = (PEER_ALIVE_REPLY + self._local_id + self.TS_FLAGS)
-     
+            
         else:
             # If we didn't get called correctly, log it!
             #
@@ -380,7 +442,6 @@ class IPSC(DatagramProtocol):
         # Right now, without this, we really dont' know anything is happening.  
         print_peer_list(self._network)
         
-
         # If the master isn't connected, we have to do that before we can do anything else!
         if self._master_stat['CONNECTED'] == False:
             reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REQ_PKT)
@@ -621,7 +682,7 @@ class UnauthIPSC(IPSC):
 if __name__ == '__main__':
     networks = {}
     for ipsc_network in NETWORK:
-        if (NETWORK[ipsc_network]['LOCAL']['ENABLED']): 
+        if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
             if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
                 networks[ipsc_network] = IPSC(ipsc_network)
             else:
