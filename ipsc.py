@@ -18,7 +18,7 @@ import binascii
 import hmac
 import hashlib
 import socket
-
+import csv
 
 #************************************************
 #     IMPORTING OTHER FILES - '#include'
@@ -46,6 +46,16 @@ except ImportError:
     sys.exit('IPSC mask values file not found or invalid')
    
 
+ids = []
+try:
+    with open('./radioids.csv', 'r') as radioids_csv:
+        radio_ids = csv.reader(radioids_csv, dialect='excel', delimiter=',')
+        for row in radio_ids:
+            ids.append(row)
+except ImportError:
+    sys.exit('No Radio ID CSV file found')
+    
+    
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
@@ -134,24 +144,35 @@ def group_voice(_network, _data):
     _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
     _call  = binascii.b2a_hex(_data[17:18])
     
+    for id in ids:
+        if int(id[1]) == _src_sub:
+            _src_sub = id[0]
+            
+        if int(id[1]) == _src_group:
+            _src_group = id[0]
+    
+        if int(id[1]) == _src_ipsc:
+            _src_ipsc = id[0]        
+    
+    
     if _call == '00':
         if (_network, 'Slot 1') not in ACTIVE_CALLS:
             ACTIVE_CALLS.append((_network, 'Slot 1'))
-            print('({}) CALL START Group Voice: IPSC SRC {}, RF SRC: {}, DST Group {}, Slot 1' .format(_network, _src_ipsc, _src_sub, _src_group))
+            print('({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_network, _src_ipsc, _src_sub, _src_group))
     
     if _call == '20':
         if (_network, 'Slot 2') not in ACTIVE_CALLS:
             ACTIVE_CALLS.append((_network, 'Slot 2'))
-            print('({}) CALL START Group Voice: IPSC SRC {}, RF SRC: {}, DST Group {}, Slot 2' .format(_network, _src_ipsc, _src_sub, _src_group))
+            print('({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_network, _src_ipsc, _src_sub, _src_group))
     
     if _call == '40':
         ACTIVE_CALLS.remove((_network, 'Slot 1'))
-        print('({}) CALL END Group Voice:   IPSC SRC {}, RF SRC: {}, DST Group {}, Slot 1' .format(_network, _src_ipsc, _src_sub, _src_group))
+        print('({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_network, _src_ipsc, _src_sub, _src_group))
         
     if _call == '60':
         ACTIVE_CALLS.remove((_network, 'Slot 2'))
-        print('({}) CALL END Group Voice:   IPSC SRC {}, RF SRC: {}, DST Group {}, Slot 2' .format(_network, _src_ipsc, _src_sub, _src_group))
-    
+        print('({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_network, _src_ipsc, _src_sub, _src_group))
+        
     '''
     for source in NETWORK[_network]['RULES']['GROUP_VOICE']:
         # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
