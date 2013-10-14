@@ -7,7 +7,7 @@ PEER:
 90   00 c8 32 68   65   00 00 e0 3c   04 03      04 02     0f 9b 2d d4 d3 af 36 da c2 fe
      |--SRC ID-| |MODE| |  FLAGS  |  |IPSC VER| |IPSC VER|  |-1st 10 bytes of SHA-1 Hash-|
        13120104
-	   
+
 MASTER:
 91   00 04 c2 c0   6a   00 00 80 5d 00 03   04 03      04 00     5c b8 4e e4 7e 44 b6 bb df dd
      |--SRC ID-| |MODE| |  FLAGS  ||PEERS||IPSC VER| |IPSC VER|  |-1st 10 bytes of SHA-1 Hash-|
