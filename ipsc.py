@@ -241,7 +241,7 @@ def private_data(_network, _data):
 def unknown_message(_network, _packettype, _data):
     _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
     _src_ipsc = get_info(_src_ipsc)
-    print("({}) Unknown message type encountered, Packet Type: {} From: {} " .format(_network, _packettype, _src_sub))
+    print("({}) Unknown message type encountered, Packet Type: {} From: {} " .format(_network, _packettype, _src_ipsc))
     print(binascii.b2a_hex(_data))
 
     
