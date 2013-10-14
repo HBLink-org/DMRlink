@@ -74,7 +74,7 @@ for section in config.sections():
         'PEER_OPER': True,
         'PEER_MODE': 'DIGITAL',
         'FLAGS': '',
-        'MAX_MISSED': 5,
+        'MAX_MISSED': 10,
         'NUM_PEERS': 0,
         'STATUS': {
             'ACTIVE': False
@@ -142,35 +142,36 @@ def group_voice(_network, _data):
     _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
     _src_group = int(binascii.b2a_hex(_data[9:12]), 16)
     _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
-    _call  = binascii.b2a_hex(_data[17:18])
-    
-    for id in ids:
-        if int(id[1]) == _src_sub:
-            _src_sub = id[0]
-            
-        if int(id[1]) == _src_group:
-            _src_group = id[0]
-    
-        if int(id[1]) == _src_ipsc:
-            _src_ipsc = id[0]        
-    
+    _call  = binascii.b2a_hex(_data[17:18])    
     
     if _call == '00':
         if (_network, 'Slot 1') not in ACTIVE_CALLS:
             ACTIVE_CALLS.append((_network, 'Slot 1'))
+            _src_group = get_info(_src_group)
+            _src_ipsc = get_info(_src_ipsc)
+            _src_sub = get_info(_src_sub)
             print('({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_network, _src_ipsc, _src_sub, _src_group))
     
     if _call == '20':
         if (_network, 'Slot 2') not in ACTIVE_CALLS:
             ACTIVE_CALLS.append((_network, 'Slot 2'))
+            _src_group = get_info(_src_group)
+            _src_ipsc = get_info(_src_ipsc)
+            _src_sub = get_info(_src_sub)
             print('({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_network, _src_ipsc, _src_sub, _src_group))
     
     if _call == '40':
         ACTIVE_CALLS.remove((_network, 'Slot 1'))
+        _src_group = get_info(_src_group)
+        _src_ipsc = get_info(_src_ipsc)
+        _src_sub = get_info(_src_sub)
         print('({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_network, _src_ipsc, _src_sub, _src_group))
         
     if _call == '60':
         ACTIVE_CALLS.remove((_network, 'Slot 2'))
+        _src_group = get_info(_src_group)
+        _src_ipsc = get_info(_src_ipsc)
+        _src_sub = get_info(_src_sub)
         print('({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_network, _src_ipsc, _src_sub, _src_group))
         
     '''
@@ -209,6 +210,14 @@ def unknown_message():
 #************************************************
 #     UTILITY FUNCTIONS FOR INTERNAL USE
 #************************************************
+
+# Lookup text data for numeric IDs
+#
+def get_info(_id):
+    for id in ids:
+        if int(id[1]) == _id:
+            return id[0]
+    return _id
 
 # Remove the hash from a paket and return the payload
 #
