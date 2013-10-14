@@ -108,9 +108,9 @@ for section in config.sections():
         })
         
     if NETWORK[section]['LOCAL']['AUTH_ENABLED']:
-        NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x14'
+        NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x1C'
     else:
-        NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x04'
+        NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x0C'
     
     if not NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
         NETWORK[section]['LOCAL']['MODE'] = '\x65'
@@ -125,54 +125,50 @@ for section in config.sections():
 #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
 #************************************************
 
-def call_ctl_1():
-    pass
+def call_ctl_1(_network, _data):
+    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
+    _src_sub = get_info(_src_sub)
+    print('({}) Call Control Type 1 Packet Received From: {}' .format(_network, _src_sub))
     
-def call_ctl_2():
-    pass
+def call_ctl_2(_network, _data):
+    print('({}) Call Control Type 2 Packet Received' .format(_network))
     
-def call_ctl_3():
-    pass
+def call_ctl_3(_network, _data):
+    print('({}) Call Control Type 3 Packet Received' .format(_network))
     
-def xcmp_xnl():
-    pass
+def xcmp_xnl(_network, _data):
+    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
+    _src_sub = get_info(_src_sub)
+    print('({}) XCMP/XNL Packet Received From: {}' .format(_network, _src_sub))
     
 def group_voice(_network, _data):
 #    _log = logger.debug
     _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
-    _src_group = int(binascii.b2a_hex(_data[9:12]), 16)
+    _dst_group = int(binascii.b2a_hex(_data[9:12]), 16)
     _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
-    _call  = binascii.b2a_hex(_data[17:18])    
+    _call  = binascii.b2a_hex(_data[17:18])
+    
+    _dst_group = get_info(_dst_group)
+    _src_ipsc = get_info(_src_ipsc)
+    _src_sub = get_info(_src_sub)
     
     if _call == '00':
         if (_network, 'Slot 1') not in ACTIVE_CALLS:
             ACTIVE_CALLS.append((_network, 'Slot 1'))
-            _src_group = get_info(_src_group)
-            _src_ipsc = get_info(_src_ipsc)
-            _src_sub = get_info(_src_sub)
-            print('({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_network, _src_ipsc, _src_sub, _src_group))
+            print('({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_network, _src_ipsc, _src_sub, _dst_group))
     
     if _call == '20':
         if (_network, 'Slot 2') not in ACTIVE_CALLS:
             ACTIVE_CALLS.append((_network, 'Slot 2'))
-            _src_group = get_info(_src_group)
-            _src_ipsc = get_info(_src_ipsc)
-            _src_sub = get_info(_src_sub)
-            print('({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_network, _src_ipsc, _src_sub, _src_group))
+            print('({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_network, _src_ipsc, _src_sub, _dst_group))
     
     if _call == '40':
         ACTIVE_CALLS.remove((_network, 'Slot 1'))
-        _src_group = get_info(_src_group)
-        _src_ipsc = get_info(_src_ipsc)
-        _src_sub = get_info(_src_sub)
-        print('({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_network, _src_ipsc, _src_sub, _src_group))
+        print('({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_network, _src_ipsc, _src_sub, _dst_group))
         
     if _call == '60':
         ACTIVE_CALLS.remove((_network, 'Slot 2'))
-        _src_group = get_info(_src_group)
-        _src_ipsc = get_info(_src_ipsc)
-        _src_sub = get_info(_src_sub)
-        print('({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_network, _src_ipsc, _src_sub, _src_group))
+        print('({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_network, _src_ipsc, _src_sub, _dst_group))
         
     '''
     for source in NETWORK[_network]['RULES']['GROUP_VOICE']:
@@ -190,20 +186,63 @@ def group_voice(_network, _data):
             # Send the packet to all peers in the target IPSC
             send_to_ipsc(_target, _data)
     '''
- 
+    
+def private_voice(_network, _data):
+#   _log = logger.debug
+    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
+    _dst_sub = int(binascii.b2a_hex(_data[9:12]), 16)
+    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
+    _call  = binascii.b2a_hex(_data[17:18])
+    
+    _dst_sub = get_info(_dst_sub)
+    _src_ipsc = get_info(_src_ipsc)
+    _src_sub = get_info(_src_sub)
+    
+    if _call == '00':
+        if (_network, 'Slot 1') not in ACTIVE_CALLS:
+            ACTIVE_CALLS.append((_network, 'Slot 1'))
+            print('({}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_network, _src_ipsc, _src_sub, _dst_sub))
+    
+    if _call == '20':
+        if (_network, 'Slot 2') not in ACTIVE_CALLS:
+            ACTIVE_CALLS.append((_network, 'Slot 2'))
+            print('({}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_network, _src_ipsc, _src_sub, _dst_sub))
+    
+    if _call == '40':
+        ACTIVE_CALLS.remove((_network, 'Slot 1'))
+        print('({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_network, _src_ipsc, _src_sub, _dst_sub))
+        
+    if _call == '60':
+        ACTIVE_CALLS.remove((_network, 'Slot 2'))
+        print('({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_network, _src_ipsc, _src_sub, _dst_sub))
+    
+def group_data(_network, _data):
+    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
+    _dst_sub = int(binascii.b2a_hex(_data[9:12]), 16)
+    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
+    _call  = binascii.b2a_hex(_data[17:18])
+    
+    _dst_sub = get_info(_dst_sub)
+    _src_ipsc = get_info(_src_ipsc)
+    _src_sub = get_info(_src_sub)
+    print('({}) Group Data Packet Received From: {}' .format(_network, _src_sub))
+    
+def private_data(_network, _data):
+    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
+    _dst_sub = int(binascii.b2a_hex(_data[9:12]), 16)
+    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
+    _call  = binascii.b2a_hex(_data[17:18])
+    
+    _dst_sub = get_info(_dst_sub)
+    _src_ipsc = get_info(_src_ipsc)
+    _src_sub = get_info(_src_sub)
+    print('({}) Private Data Packet Received From: {} To: {}' .format(_network, _src_sub, _dst_sub))
 
-    
-def private_voice():
-    pass
-    
-def group_data():
-    pass
-    
-def private_data():
-    pass
-
-def unknown_message():
-    pass
+def unknown_message(_network, _packettype, _data):
+    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
+    _src_ipsc = get_info(_src_ipsc)
+    print("({}) Unknown message type encountered, Packet Type: {} From: {} " .format(_network, _packettype, _src_sub))
+    print(binascii.b2a_hex(_data))
 
     
 
@@ -683,29 +722,50 @@ class IPSC(DatagramProtocol):
         # Other "user" related packet types that we don't do much or anything with yet
         #
         elif (_packettype == PVT_VOICE):
-            private_voice()
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
+                return
+            private_voice(self._network, data)
         
         elif (_packettype == GROUP_DATA):
-            group_data()
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
+                return
+            group_data(self._network, data)
         
         elif (_packettype == PVT_DATA):
-            private_data()
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
+                return
+            private_data(self._network, data)
      
         elif (_packettype == XCMP_XNL): # NOTE: We currently indicate we are not XCMP/XNL capable!
-            xcmp_xnl()
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
+                return
+            xcmp_xnl(self._network, data)
             
         elif (_packettype == CALL_CTL_1):
-            call_control_1()
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
+                return
+            call_ctl_1(self._network, data)
         
         elif (_packettype == CALL_CTL_2):
-            call_control_2()
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
+                return
+            call_ctl_2(self._network, data)
                 
         elif (_packettype == CALL_CTL_3):
-            call_control_3()
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
+                return
+            call_ctl_3(self._network, data)
             
         # If there's a packet type we don't know aobut, it should be logged so we can figure it out and take an appropriate action!    
         else:
-            unknown_message(_packettype, data)
+            unknown_message(self._network, _packettype, data)
 
 #************************************************
 #     Derived Class
