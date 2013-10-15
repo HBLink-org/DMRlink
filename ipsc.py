@@ -144,7 +144,7 @@ def xcmp_xnl(_network, _data):
     
 def group_voice(_network, _data):
 #    _log = logger.debug
-    _time = time.strftime('%H:%M:%S')
+    _time = time.strftime('%m/%d/%y %H:%M:%S')
     _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
     _dst_group = int(binascii.b2a_hex(_data[9:12]), 16)
     _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
@@ -203,20 +203,20 @@ def private_voice(_network, _data):
     if _call == '00':
         if (_network, 'Slot 1') not in ACTIVE_CALLS:
             ACTIVE_CALLS.append((_network, 'Slot 1'))
-            print('({}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_network, _src_ipsc, _src_sub, _dst_sub))
+            print('{} ({}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_time, _network, _src_ipsc, _src_sub, _dst_sub))
     
     if _call == '20':
         if (_network, 'Slot 2') not in ACTIVE_CALLS:
             ACTIVE_CALLS.append((_network, 'Slot 2'))
-            print('({}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_network, _src_ipsc, _src_sub, _dst_sub))
+            print('({} {}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_time, _network, _src_ipsc, _src_sub, _dst_sub))
     
     if _call == '40':
         ACTIVE_CALLS.remove((_network, 'Slot 1'))
-        print('({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_network, _src_ipsc, _src_sub, _dst_sub))
+        print('{} ({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_time, _network, _src_ipsc, _src_sub, _dst_sub))
         
     if _call == '60':
         ACTIVE_CALLS.remove((_network, 'Slot 2'))
-        print('({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_network, _src_ipsc, _src_sub, _dst_sub))
+        print('{} ({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_time, _network, _src_ipsc, _src_sub, _dst_sub))
     
 def group_data(_network, _data):
     _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
