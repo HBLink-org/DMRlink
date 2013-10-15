@@ -144,6 +144,7 @@ def xcmp_xnl(_network, _data):
     
 def group_voice(_network, _data):
 #    _log = logger.debug
+    _timestamp = int(time.time())
     _time = time.strftime('%m/%d/%y %H:%M:%S')
     _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
     _dst_group = int(binascii.b2a_hex(_data[9:12]), 16)
@@ -191,6 +192,8 @@ def group_voice(_network, _data):
     
 def private_voice(_network, _data):
 #   _log = logger.debug
+    _timestamp = int(time.time())
+    _time = time.strftime('%m/%d/%y %H:%M:%S')
     _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
     _dst_sub = int(binascii.b2a_hex(_data[9:12]), 16)
     _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
