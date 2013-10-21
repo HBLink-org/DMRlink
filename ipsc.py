@@ -20,6 +20,7 @@ import hashlib
 import socket
 import csv
 import time
+import re
 
 #************************************************
 #     IMPORTING OTHER FILES - '#include'
@@ -60,6 +61,35 @@ except ImportError:
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
+
+'''
+***LINKING STATUS: Byte 6***
+
+	Byte 1 - BIT FLAGS:
+	      xx.. .... = Peer Operational (01 only known valid value)
+	      ..xx .... = Peer MODE: 00 - No Radio, 01 - Analog, 10 - Digital
+	      .... xx.. = IPSC Slot 1: 10 on, 01 off 
+	      .... ..xx = IPSC Slot 2: 10 on, 01 off
+
+***SERVICE FLAGS: Bytes 7-10 (or 7-12)***
+
+	Byte 1 - 0x00  	= Unknown
+	Byte 2 - 0x00	= Unknown
+	Byte 3 - BIT FLAGS:
+	      x... .... = CSBK Message
+	      .x.. .... = Repeater Call Monitoring
+	      ..x. .... = 3rd Party "Console" Application
+	      ...x xxxx = Unknown - default to 0
+	Byte 4 = BIT FLAGS:
+	      x... .... = XNL Connected (1=true)
+	      .x.. .... = XNL Master Device
+	      ..x. .... = XNL Slave Device
+	      ...x .... = Set if packets are authenticated
+	      .... x... = Set if data calls are supported
+	      .... .x.. = Set if voice calls are supported
+	      .... ..x. = Unknown - default to 0
+	      .... ...x = Set if master
+'''
 
 ACTIVE_CALLS = []
 
@@ -254,6 +284,15 @@ def unknown_message(_network, _packettype, _data):
 #************************************************
 #     UTILITY FUNCTIONS FOR INTERNAL USE
 #************************************************
+
+# Re-Write Source Radio-ID (DMR NAT)
+#
+def dmr_nat(_data, _nat_id):
+#    _log = logger.warning
+    src_radio_id = _data[6:9]
+    _data = re.sub(src_radio_id, _nat_id, _data)
+#    _log('DMR NAT: Source %s re-written as %s', int(binascii.b2a_hex(src_radio_id), 16), int(binascii.b2a_hex(_nat_id), 16))
+    return _data
 
 # Lookup text data for numeric IDs
 #
