@@ -7,6 +7,7 @@
 # California, 94041, USA.
 
 # Known IPSC Message Types
+PVT_CALL_SETUP        = b'\x05' # Something to do with private call setup
 CALL_CTL_1            = b'\x61' #  |
 CALL_CTL_2            = b'\x62' #  | Exact meaning unknown
 CALL_CTL_3            = b'\x63' #  |
