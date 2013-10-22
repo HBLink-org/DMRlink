@@ -92,7 +92,6 @@ except ImportError:
 '''
 
 ACTIVE_CALLS = []
-
 NETWORK = {}
 
 config = ConfigParser.ConfigParser()
@@ -157,8 +156,6 @@ for section in config.sections():
 #************************************************
 
 def call_ctl_1(_network, _data):
-    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
-    _src_sub = get_info(_src_sub)
     print('({}) Call Control Type 1 Packet Received From: {}' .format(_network, _src_sub))
     
 def call_ctl_2(_network, _data):
@@ -168,40 +165,44 @@ def call_ctl_3(_network, _data):
     print('({}) Call Control Type 3 Packet Received' .format(_network))
     
 def xcmp_xnl(_network, _data):
-    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
-    _src_sub = get_info(_src_sub)
     print('({}) XCMP/XNL Packet Received From: {}' .format(_network, _src_sub))
     
-def group_voice(_network, _data):
+def group_voice(_network, _src_sub, _dst_group, _call, _peerid, _data):
 #    _log = logger.debug
-    _timestamp = int(time.time())
-    _time = time.strftime('%m/%d/%y %H:%M:%S')
-    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
-    _dst_group = int(binascii.b2a_hex(_data[9:12]), 16)
-    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
-    _call  = binascii.b2a_hex(_data[17:18])
     
-    _dst_group = get_info(_dst_group)
-    _src_ipsc = get_info(_src_ipsc)
-    _src_sub = get_info(_src_sub)
-    
-    if _call == '00':
+    if _call == '\x00':
         if (_network, 'Slot 1') not in ACTIVE_CALLS:
+            _time       = time.strftime('%m/%d/%y %H:%M:%S')
+            _dst_group  = get_info(int(binascii.b2a_hex(_dst_group), 16))
+            _peerid     = get_info(int(binascii.b2a_hex(_peerid), 16))
+            _src_sub    = get_info(int(binascii.b2a_hex(_src_sub), 16))
             ACTIVE_CALLS.append((_network, 'Slot 1'))
-            print('{} ({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_time, _network, _src_ipsc, _src_sub, _dst_group))
+            print('{} ({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_time, _network, _peerid, _src_sub, _dst_group))
     
-    if _call == '20':
+    if _call == '\x20':
         if (_network, 'Slot 2') not in ACTIVE_CALLS:
+            _time       = time.strftime('%m/%d/%y %H:%M:%S')
+            _dst_group  = get_info(int(binascii.b2a_hex(_dst_group), 16))
+            _peerid     = get_info(int(binascii.b2a_hex(_peerid), 16))
+            _src_sub    = get_info(int(binascii.b2a_hex(_src_sub), 16))
             ACTIVE_CALLS.append((_network, 'Slot 2'))
-            print('{} ({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_time, _network, _src_ipsc, _src_sub, _dst_group))
+            print('{} ({}) CALL START Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_time, _network, _peerid, _src_sub, _dst_group))
     
-    if _call == '40':
+    if _call == '\x40':
+        _time       = time.strftime('%m/%d/%y %H:%M:%S')
+        _dst_group  = get_info(int(binascii.b2a_hex(_dst_group), 16))
+        _peerid     = get_info(int(binascii.b2a_hex(_peerid), 16))
+        _src_sub    = get_info(int(binascii.b2a_hex(_src_sub), 16))
         ACTIVE_CALLS.remove((_network, 'Slot 1'))
-        print('{} ({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_time, _network, _src_ipsc, _src_sub, _dst_group))
+        print('{} ({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_time, _network, _peerid, _src_sub, _dst_group))
         
-    if _call == '60':
+    if _call == '\x60':
+        _time       = time.strftime('%m/%d/%y %H:%M:%S')
+        _dst_group  = get_info(int(binascii.b2a_hex(_dst_group), 16))
+        _peerid     = get_info(int(binascii.b2a_hex(_peerid), 16))
+        _src_sub    = get_info(int(binascii.b2a_hex(_src_sub), 16))
         ACTIVE_CALLS.remove((_network, 'Slot 2'))
-        print('{} ({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_time, _network, _src_ipsc, _src_sub, _dst_group))
+        print('{} ({}) CALL END Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_time, _network, _peerid, _src_sub, _dst_group))
         
     '''
     for source in NETWORK[_network]['RULES']['GROUP_VOICE']:
@@ -210,7 +211,7 @@ def group_voice(_network, _data):
             _target = source['DST_NET']
             _target_sock = NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']
             # Re-Write the IPSC SRC to match the target network's ID
-            _data = _data.replace(_src_ipsc, NETWORK[_target]['LOCAL']['RADIO_ID'])
+            _data = _data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
             # Re-Write the destinaion Group ID
             _data = _data.replace(_src_group, source['DST_GROUP'])
             # Calculate and append the authentication hash for the target network... if necessary
@@ -220,63 +221,62 @@ def group_voice(_network, _data):
             send_to_ipsc(_target, _data)
     '''
     
-def private_voice(_network, _data):
+def private_voice(_network, _src_sub, _dst_sub, _call, _peerid, _data):
 #   _log = logger.debug
-    _timestamp = int(time.time())
-    _time = time.strftime('%m/%d/%y %H:%M:%S')
-    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
-    _dst_sub = int(binascii.b2a_hex(_data[9:12]), 16)
-    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
-    _call  = binascii.b2a_hex(_data[17:18])
     
-    _dst_sub = get_info(_dst_sub)
-    _src_ipsc = get_info(_src_ipsc)
-    _src_sub = get_info(_src_sub)
-    
-    if _call == '00':
+    if _call == '\x00':
         if (_network, 'Slot 1') not in ACTIVE_CALLS:
+            _time       = time.strftime('%m/%d/%y %H:%M:%S')
+            _dst_sub    = get_info(int(binascii.b2a_hex(_dst_sub), 16))
+            _peerid     = get_info(int(binascii.b2a_hex(_peerid), 16))
+            _src_sub    = get_info(int(binascii.b2a_hex(_src_sub), 16))
             ACTIVE_CALLS.append((_network, 'Slot 1'))
-            print('{} ({}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_time, _network, _src_ipsc, _src_sub, _dst_sub))
+            print('{} ({}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1' .format(_time, _network, _peerid, _src_sub, _dst_sub))
     
-    if _call == '20':
+    if _call == '\x20':
         if (_network, 'Slot 2') not in ACTIVE_CALLS:
+            _time       = time.strftime('%m/%d/%y %H:%M:%S')
+            _dst_sub    = get_info(int(binascii.b2a_hex(_dst_sub), 16))
+            _peerid     = get_info(int(binascii.b2a_hex(_peerid), 16))
+            _src_sub    = get_info(int(binascii.b2a_hex(_src_sub), 16))
             ACTIVE_CALLS.append((_network, 'Slot 2'))
-            print('({} {}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_time, _network, _src_ipsc, _src_sub, _dst_sub))
+            print('({} {}) CALL START Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2' .format(_time, _network, _peerid, _src_sub, _dst_sub))
     
-    if _call == '40':
+    if _call == '\x40':
+        _time       = time.strftime('%m/%d/%y %H:%M:%S')
+        _dst_sub    = get_info(int(binascii.b2a_hex(_dst_sub), 16))
+        _peerid     = get_info(int(binascii.b2a_hex(_peerid), 16))
+        _src_sub    = get_info(int(binascii.b2a_hex(_src_sub), 16))
         ACTIVE_CALLS.remove((_network, 'Slot 1'))
-        print('{} ({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_time, _network, _src_ipsc, _src_sub, _dst_sub))
+        print('{} ({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t1 \a' .format(_time, _network, _peerid, _src_sub, _dst_sub))
         
-    if _call == '60':
+    if _call == '\x60':
+        _time       = time.strftime('%m/%d/%y %H:%M:%S')
+        _dst_sub    = get_info(int(binascii.b2a_hex(_dst_sub), 16))
+        _peerid     = get_info(int(binascii.b2a_hex(_peerid), 16))
+        _src_sub    = get_info(int(binascii.b2a_hex(_src_sub), 16))
         ACTIVE_CALLS.remove((_network, 'Slot 2'))
-        print('{} ({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_time, _network, _src_ipsc, _src_sub, _dst_sub))
+        print('{} ({}) CALL END Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t2 \a' .format(_time, _network, _peerid, _src_sub, _dst_sub))
     
-def group_data(_network, _data):
-    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
-    _dst_sub = int(binascii.b2a_hex(_data[9:12]), 16)
-    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
-    _call  = binascii.b2a_hex(_data[17:18])
+def group_data(_network, _src_sub, _dst_sub, _call, _peerid, _data):
     
     _dst_sub = get_info(_dst_sub)
-    _src_ipsc = get_info(_src_ipsc)
+    _peerid = get_info(_peerid)
     _src_sub = get_info(_src_sub)
     print('({}) Group Data Packet Received From: {}' .format(_network, _src_sub))
     
-def private_data(_network, _data):
-    _src_sub = int(binascii.b2a_hex(_data[6:9]), 16)
-    _dst_sub = int(binascii.b2a_hex(_data[9:12]), 16)
-    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
-    _call  = binascii.b2a_hex(_data[17:18])
+def private_data(__network, _src_sub, _dst_sub, _call, _peerid, _data):
     
     _dst_sub = get_info(_dst_sub)
-    _src_ipsc = get_info(_src_ipsc)
+    _peerid = get_info(_peerid)
     _src_sub = get_info(_src_sub)
     print('({}) Private Data Packet Received From: {} To: {}' .format(_network, _src_sub, _dst_sub))
 
 def unknown_message(_network, _packettype, _data):
-    _src_ipsc = int(binascii.b2a_hex(_data[1:5]), 16)
-    _src_ipsc = get_info(_src_ipsc)
-    print("({}) Unknown message type encountered, Packet Type: {} From: {} " .format(_network, _packettype, _src_ipsc))
+    _peerid = binascii.b2a_hex(_data[1:5])
+    _packettype = binascii.b2a_hex(_packettype)
+    _peerid = get_info(_peerid)
+    print("({}) Unknown message type encountered, Packet Type: {} From: {} " .format(_network, _packettype, _peerid))
     print(binascii.b2a_hex(_data))
 
     
@@ -302,7 +302,7 @@ def get_info(_id):
             return id[0]
     return _id
 
-# Remove the hash from a paket and return the payload
+# Remove the hash from a packet and return the payload
 #
 def strip_hash(_data):
 #    _log = logger.debug
@@ -324,7 +324,7 @@ def valid_peer(_peer_list, _peerid):
 # Determine if the provided master ID is valid for the provided network
 #
 def valid_master(_network, _peerid):
-#    _log = logger.debug
+#    _log = logger.warning
     if NETWORK[_network]['MASTER']['RADIO_ID'] == _peerid:
 #        _log('Master ID is Valid: %s', binascii.b2a_hex(_peerid))
         return True     
@@ -370,8 +370,6 @@ def de_register_peer(_network, _peerid):
 #
 def process_peer_list(_data, _network, _peer_list):
 #    _log = logger.debug
-    # Set the status flag to indicate we have recieved a Peer List
-    NETWORK[_network]['MASTER']['STATUS']['PEER-LIST'] = True
     # Determine the length of the peer list for the parsing iterator
     _peer_list_length = int(binascii.b2a_hex(_data[5:7]), 16)
     # Record the number of peers in the data structure... we'll use it later (11 bytes per peer entry)
@@ -508,9 +506,7 @@ class IPSC(DatagramProtocol):
             # Spendy than iterating a list of dictionaries... Maybe I'll find a better way in the future. Also
             # We have to know when we have a new peer list, so a variable to indicate we do (or don't)
             #
-            self._peer_list = []
-            self._peer_list_new = False
-            
+            self._peer_list = [] 
             args = ()
             
             # Packet 'constructors' - builds the necessary control packets for this IPSC instance.
@@ -529,6 +525,7 @@ class IPSC(DatagramProtocol):
             # If we didn't get called correctly, log it!
             #
             logger.error('(%s) Unexpected arguments found.', self._network)
+            sys.exit()
 
 
     # This is called by REACTOR when it starts, We use it to set up the timed
@@ -546,25 +543,22 @@ class IPSC(DatagramProtocol):
     # Take a packet to be SENT, calcualte auth hash and return the whole thing
     #
     def hashed_packet(self, _key, _data):
-    #    _log = logger.debug
         _hash = binascii.a2b_hex((hmac.new(_key,_data,hashlib.sha1)).hexdigest()[:20])
-    #    _log('Hash for: %s is %s', binascii.b2a_hex(_data), binascii.b2a_hex(_hash)
         return (_data + _hash)    
     
     
     # Take a RECEIVED packet, calculate the auth hash and verify authenticity
     #
     def validate_auth(self, _key, _data):
-    #    _log = logger.debug
+        _log = logger.info
         _payload = strip_hash(_data)
         _hash = _data[-10:]
         _chk_hash = binascii.a2b_hex((hmac.new(_key,_payload,hashlib.sha1)).hexdigest()[:20])   
 
         if _chk_hash == _hash:
-    #        _log('    AUTH: Valid   - Payload: %s, Hash: %s', binascii.b2a_hex(_payload), binascii.b2a_hex(_hash))
             return True
         else:
-    #        _log('    AUTH: Invalid - Payload: %s, Hash: %s', binascii.b2a_hex(_payload), binascii.b2a_hex(_hash))
+            _log('AUTHENTICATION FAILURE: \n\t Payload: %s\n\t Hash: %s', binascii.b2a_hex(_payload), binascii.b2a_hex(_hash))
             return False
 
 
@@ -577,6 +571,7 @@ class IPSC(DatagramProtocol):
         # print_peer_list(self._network)
         
         # If the master isn't connected, we have to do that before we can do anything else!
+        #
         if self._master_stat['CONNECTED'] == False:
             reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REQ_PKT)
             self.transport.write(reg_packet, (self._master_sock))
@@ -601,16 +596,21 @@ class IPSC(DatagramProtocol):
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] += 1
             
         else:
-            # This is bad. If we get this message, probably need to restart the program.
+            # This is bad. If we get this message, we need to reset the state and try again
             logger.error('->> (%s) Master in UNKOWN STATE:%s:%s', self._network, self._master_sock)
+            self._master_stat['CONNECTED'] == False
         
-        # If the master is connected and we don't have a peer-list yet....        
+        
+        # If the master is connected and we don't have a peer-list yet....
+        #
         if  ((self._master_stat['CONNECTED'] == True) and (self._master_stat['PEER-LIST'] == False)):
             # Ask the master for a peer-list
             peer_list_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_LIST_REQ_PKT)
             self.transport.write(peer_list_req_packet, (self._master_sock))
 
+
         # If we do ahve a peer-list, we need to register with the peers and send keep-alives...
+        #
         if (self._master_stat['PEER-LIST'] == True):
             # Iterate the list of peers... so we do this for each one.
             for peer in (self._peers):
@@ -641,6 +641,9 @@ class IPSC(DatagramProtocol):
                     peer['STATUS']['KEEP_ALIVES_SENT'] += 1
                     peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] += 1
     
+    
+    # For public display of information, etc. - anything not part of internal logging/diagnostics
+    #
     def _notify_event(self, network, event, info):
         """
             Used internally whenever an event happens that may be useful to notify the outside world about.
@@ -650,8 +653,8 @@ class IPSC(DatagramProtocol):
                 info:    dict, in the interest of accomplishing as much as possible without code changes.
                          The dict will typically contain a peer_id so the origin of the event is known.
         """
-
         pass
+        return
     
 #************************************************
 #     RECEIVED DATAGRAM - ACT IMMEDIATELY!!!
@@ -669,147 +672,151 @@ class IPSC(DatagramProtocol):
         _peerid     = data[1:5]
         _dec_peerid = int(binascii.b2a_hex(_peerid), 16)
         
-        # First action: if Authentication is active, authenticate the packet
-        #
-        if bool(self._local['AUTH_KEY']) == True:
-            # Validate
-            if self.validate_auth(self._local['AUTH_KEY'], data) == False:
-                logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer ID: %s', self._network, binascii.b2a_hex(_packettype), _dec_peerid)
-                return
-            # Strip the hash, we won't need it anymore
-            data = strip_hash(data)
+        # Authenticate the packet
+        if self.validate_auth(self._local['AUTH_KEY'], data) == False:
+            logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer ID: %s', self._network, binascii.b2a_hex(_packettype), _dec_peerid)
+            return
+            
+        # Strip the hash, we won't need it anymore
+        data = strip_hash(data)
 
-        # Packets generated by "users" that are the most common should come first for efficiency.
-        #
-        if (_packettype == GROUP_VOICE):
-            # Don't take action unless it's from a valid peer (including the master, of course)
+        # Packets types that must be originated from a peer (including master peer)
+        if (_packettype in ANY_PEER_REQUIRED):
             if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
                 logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
                 return
-            self._notify_event(self._network, 'group_voice', {'peer_id': _dec_peerid})
-            group_voice(self._network, data)
+                
+            # User, as in "subscriber" generated packets - a.k.a someone trasmitted
+            if (_packettype in USER_PACKETS):
+                # Extract commonly used items from the packet header
+                _src_sub    = data[6:9]
+                _dst_sub    = data[9:12]
+                _call       = data[17:18]
+
+                # User Voice and Data Call Types:
+                if (_packettype == GROUP_VOICE):
+                    self._notify_event(self._network, 'group_voice', {'peer_id': _dec_peerid})
+                    group_voice(self._network, _src_sub, _dst_sub, _call, _peerid, data)
+                    return
+            
+                elif (_packettype == PVT_VOICE):
+                    self._notify_event(self._network, 'private_voice', {'peer_id': _dec_peerid})
+                    private_voice(self._network, _src_sub, _dst_sub, _call, _peerid, data)
+                    return
+                    
+                elif (_packettype == GROUP_DATA):
+                    self._notify_event(self._network, 'group_data', {'peer_id': _dec_peerid})
+                    group_data(self._network, _src_sub, _dst_sub, _call, _peerid, data)
+                    return
+                    
+                elif (_packettype == PVT_DATA):
+                    self._notify_event(self._network, 'private_voice', {'peer_id': _dec_peerid})
+                    private_data(self._network, _src_sub, _dst_sub, _call, _peerid, data)
+                    return
+                return
+                
+            # Other peer-required types that we don't do much or anything with yet   
+            elif (_packettype == XCMP_XNL):
+                xcmp_xnl(self._network, data)
+                return
+            
+            elif (_packettype == CALL_CTL_1):
+                call_ctl_1(self._network, data)
+                return
+                
+            elif (_packettype == CALL_CTL_2):
+                call_ctl_2(self._network, data)
+                return
+                
+            elif (_packettype == CALL_CTL_3):
+                call_ctl_3(self._network, data)
+                return
+                
+            # Connection maintenance packets that fall into this category
+            elif (_packettype == DE_REG_REQ):
+                de_register_peer(self._network, _peerid)
+                logger.warning('<<- (%s) Peer De-Registration Request From:%s:%s', self._network, host, port)
+                return
+            
+            elif (_packettype == DE_REG_REPLY):
+                logger.warning('<<- (%s) Peer De-Registration Reply From:%s:%s', self._network, host, port)
+                return
+                
+            elif (_packettype == RPT_WAKE_UP):
+                logger.warning('<<- (%s) Repeater Wake-Up Packet From:%s:%s', self._network, host, port)
+                return
+            return
 
 
-        # IPSC keep alives, master and peer, come next in processing priority
-        #
-        elif (_packettype == PEER_ALIVE_REQ):
-            # We should not answer a keep-alive request from a peer we don't know about!
+        # Packets types that must be originated from a peer
+        if (_packettype in PEER_REQUIRED):
             if valid_peer(self._peer_list, _peerid) == False:
                 logger.warning('(%s) PeerError: Peer %s not in peer-list: %s', self._network, _dec_peerid, self._peer_list)
                 return
-                
-            # Generate a hashed paket from our template and send it.
-            peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
-            self._notify_event(self._network, 'peer_keepalive', {'peer_id': _dec_peerid})
-            self.transport.write(peer_alive_reply_packet, (host, port))
-
-        elif (_packettype == MASTER_ALIVE_REPLY):
-            # We should not accept keep-alive reply from someone claming to be a master who isn't!
-            if valid_master(self._network, _peerid) == False:
-                logger.warning('(%s) PeerError: Peer %s not in peer-list: %s', self._network, _dec_peerid, self._peer_list)
+            
+            # Packets we send...
+            if (_packettype == PEER_ALIVE_REQ):
+                # Generate a hashed paket from our template and send it.
+                peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
+                self.transport.write(peer_alive_reply_packet, (host, port))
                 return
-                 
-            # logger.debug('<<- (%s) Master Keep-alive Reply From: %s \t@ IP: %s:%s', self._network, _dec_peerid, host, port)
-            # This action is so simple, it doesn't require a callback function, master is responding, we're good.
-            self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
+                                
+            elif (_packettype == PEER_REG_REQ):
+                peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
+                self.transport.write(peer_reg_reply_packet, (host, port))
+                return
+                
+            # Packets we recieve...
+            elif (_packettype == PEER_ALIVE_REPLY):
+                for peer in self._config['PEERS']:
+                    if peer['RADIO_ID'] == _peerid:
+                        peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
+                return
 
-        elif (_packettype == PEER_ALIVE_REPLY):
-            # Find the peer in our list of peers...
-            for peer in self._config['PEERS']:
-                if peer['RADIO_ID'] == _peerid:
-                    # No callback funcntion needed, set the outstanding keepalives to 0, and move on.
-                    peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0     
+            elif (_packettype == PEER_REG_REPLY):
+                for peer in self._config['PEERS']:
+                    if peer['RADIO_ID'] == _peerid:
+                        peer['STATUS']['CONNECTED'] = True
+                return
+            return
         
-        # Registration requests and replies are infrequent, but important. Peer lists can go here too as a part
-        # of the registration process.
-        #    
-        elif (_packettype == MASTER_REG_REQ):
-            # We can't operate as a master as of now, so we should never receive one of these.
-            # logger.debug('<<- (%s) Master Registration Packet Recieved', self._network)
-            pass
-
+        
+        # Packets types that must be originated from a Master
+        if (_packettype in MASTER_REQUIRED):
+            if valid_master(self._network, _peerid) == False:
+                logger.warning('(%s) PeerError: Master %s is invalid: %s', self._network, _dec_peerid, self._peer_list)
+                return
+                
+            if (_packettype == MASTER_ALIVE_REPLY):
+                # This action is so simple, it doesn't require a callback function, master is responding, we're good.
+                self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
+                return
+            
+            elif (_packettype == PEER_LIST_REPLY):
+                NETWORK[self._network]['MASTER']['STATUS']['PEER-LIST'] = True
+                if len(data) > 18:
+                    self._peer_list = process_peer_list(data, self._network, self._peer_list)
+                return
+            return
+            
+        
         # When we hear from the maseter, record it's ID, flag that we're connected, and reset the dead counter.
         elif (_packettype == MASTER_REG_REPLY):
             self._master['RADIO_ID'] = _peerid
             self._master_stat['CONNECTED'] = True
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
+            return
         
-        # Answer a peer registration request -- simple, no callback runction needed
-        elif (_packettype == PEER_REG_REQ):
-            if valid_peer(self._peer_list, _peerid):
-                peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
-                self.transport.write(peer_reg_reply_packet, (host, port))
-                self._notify_event(self._network, 'peer_registration', {'peer_id': _dec_peerid})
-
-        elif (_packettype == PEER_REG_REPLY):
-            self._notify_event(self._network, 'peer_registration_reply', {'peer_id': _dec_peerid})
-            for peer in self._config['PEERS']:
-                if peer['RADIO_ID'] == _peerid:
-                    peer['STATUS']['CONNECTED'] = True
-
-        elif (_packettype == PEER_LIST_REPLY):
-            if len(data) > 18:
-                self._peer_list = process_peer_list(data, self._network, self._peer_list)
-            else:
-                NETWORK[self._network]['MASTER']['STATUS']['PEER-LIST'] = True
- 
-        elif (_packettype == DE_REG_REQ):
-            de_register_peer(self._network, _peerid)
-            logger.warning('<<- (%s) Peer De-Registration Request From:%s:%s', self._network, host, port)
-            
-        elif (_packettype == DE_REG_REPLY):
-            logger.warning('<<- (%s) Peer De-Registration Reply From:%s:%s', self._network, host, port)
-            
-        elif (_packettype == RPT_WAKE_UP):
-            logger.warning('<<- (%s) Repeater Wake-Up Packet From:%s:%s', self._network, host, port)
-    
-        # Other "user" related packet types that we don't do much or anything with yet
-        #
-        elif (_packettype == PVT_VOICE):
-            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
-                return
-            private_voice(self._network, data)
-        
-        elif (_packettype == GROUP_DATA):
-            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
-                return
-            group_data(self._network, data)
-        
-        elif (_packettype == PVT_DATA):
-            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
-                return
-            private_data(self._network, data)
-     
-        elif (_packettype == XCMP_XNL): # NOTE: We currently indicate we are not XCMP/XNL capable!
-            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
-                return
-            xcmp_xnl(self._network, data)
-            
-        elif (_packettype == CALL_CTL_1):
-            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
-                return
-            call_ctl_1(self._network, data)
-        
-        elif (_packettype == CALL_CTL_2):
-            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
-                return
-            call_ctl_2(self._network, data)
-                
-        elif (_packettype == CALL_CTL_3):
-            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, _dec_peerid)
-                return
-            call_ctl_3(self._network, data)
+        # We know about these types, but absolutely don't take an action
+        elif (_packettype == MASTER_REG_REQ):
+            # We can't operate as a master as of now, so we should never receive one of these.
+            # logger.debug('<<- (%s) Master Registration Packet Recieved', self._network)
+            return 
             
         # If there's a packet type we don't know aobut, it should be logged so we can figure it out and take an appropriate action!    
         else:
             unknown_message(self._network, _packettype, data)
+            return
 
 #************************************************
 #     Derived Class
