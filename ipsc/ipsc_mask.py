@@ -49,3 +49,13 @@ PKT_AUTH_MSK       = 0b00010000
 DATA_CALL_MSK      = 0b00001000
 VOICE_CALL_MSK     = 0b00000100
 MSTR_PEER_MSK      = 0b00000001
+
+# TIMESLOT CALL & STATUS BYTE
+
+#   Byte 17 of Group and Private Voice/Data Packets
+#       ..x.. ....TS Value (0=TS1, 1=TS2)
+#       .x... ....TS In Progress/End (0=In Progress, 1=End)
+#       Possible values: 0x00=TS1, 0x20=TS2, 0x40=TS1 End, 0x60=TS2 End
+#   MASK VALUE:
+END_MSK             = 0b01000000
+TS_CALL_MSK         = 0b00100000
