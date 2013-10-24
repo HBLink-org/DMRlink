@@ -407,7 +407,7 @@ def process_peer_list(_data, _network, _peer_list):
 def print_peer_list(_network):
 #    _log = logger.info
     _status = NETWORK[_network]['MASTER']['STATUS']['PEER-LIST']
-    print('Peer List Status for {}: {}' .format(_network, _status))
+    #print('Peer List Status for {}: {}' .format(_network, _status))
     
     if _status and not NETWORK[_network]['PEERS']:
         print('We are the only peer for: %s' % _network)
@@ -426,6 +426,16 @@ def print_peer_list(_network):
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(dictionary['STATUS']['CONNECTED'], dictionary['STATUS']['KEEP_ALIVES_SENT'], dictionary['STATUS']['KEEP_ALIVES_OUTSTANDING'], dictionary['STATUS']['KEEP_ALIVES_MISSED']))
     print('')
         
+# Gratuituous print-out of Master info.. Pretty much debug stuff.
+#
+def print_master(_network):
+#    _log = logger.info
+    _master = NETWORK[_network]['MASTER']
+    print('Master for %s' % _network)
+    print('\tRADIO ID: {}' .format(int(binascii.b2a_hex(_master['RADIO_ID']), 16)))
+    print('\t\tIP Address: {}:{}' .format(_master['IP'], _master['PORT']))
+    print('\t\tOperational: {},  Mode: {},  TS1 Link: {},  TS2 Link: {}' .format(_master['PEER_OPER'], _master['PEER_MODE'], _master['TS1_LINK'], _master['TS2_LINK']))
+    print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
 
 
 #************************************************
@@ -494,12 +504,15 @@ class IPSC(DatagramProtocol):
     # loop for each instance of the IPSC engine
     #       
     def startProtocol(self):
-        # Timed loop for IPSC connection establishment and maintenance
-        # Others could be added later for things like updating a status
-        # Web page, etc....
+        # Timed loops for:
+        #   IPSC connection establishment and maintenance
+        #   Reporting/Housekeeping
         #
-        self._call = task.LoopingCall(self.timed_loop)
-        self._loop = self._call.start(self._local['ALIVE_TIMER'])
+        self._maintenance = task.LoopingCall(self.maintenance_loop)
+        self._maintenance_loop = self._maintenance.start(self._local['ALIVE_TIMER'])
+        #
+        self._reporting = task.LoopingCall(self.reporting_loop)
+        self._reporting_loop = self._reporting.start(10)
 
 
     # Take a packet to be SENT, calcualte auth hash and return the whole thing
@@ -527,10 +540,13 @@ class IPSC(DatagramProtocol):
 #************************************************
 #     TIMED LOOP - MY CONNECTION MAINTENANCE
 #************************************************
-
-    def timed_loop(self):
+    
+    def reporting_loop(self):
         # Right now, without this, we really dont' know anything is happening.  
-        # print_peer_list(self._network)
+        print_master(self._network)
+        print_peer_list(self._network)
+    
+    def maintenance_loop(self):
         
         # If the master isn't connected, we have to do that before we can do anything else!
         #
