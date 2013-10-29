@@ -31,7 +31,8 @@ Each peer will send keep-alives to each other peer in the IPSC network at an int
 **KNOWN IPSC PACKET TYPES:**  
 The following sections of this document will include various packet types. This is a list of currently known types and their meanings. Note: The names are arbitrarily chosen with the intention of being descriptive, and each is defined by what they've been "observed" to do in the wild.  
 
-	CALL_CTL_1                = 0x61        |
+	CALL_CONFIRMATION         = 0x05        Confirmation FROM the recipient of a confirmed call.
+    CALL_CTL_1                = 0x61        |
 	CALL_CTL_2                = 0x62        | Call control messages, exact use unknown
 	CALL_CTL_3                = 0x63        |	
 	XCMP_XNL         		  = 0x70		Control protocol messages
