@@ -2,4 +2,8 @@
 .dropbox
 Icon
 dmrlink.cfg
+pubnub.py
+log.py
+bridge.py
+pubnub.html
 *.pyc
