@@ -11,6 +11,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
 
+import struct
 import time
 import binascii
 import dmrlink
@@ -40,10 +41,10 @@ class logIPSC(IPSC):
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
     #    _log = logger.debug
-        if _data[30:31] == b'\x01':
-            rssi  = int(binascii.b2a_hex(_data[-2:]), 16)
-            rssi1 = int(binascii.b2a_hex(_data[-1]), 16)
-            rssi2 = int(binascii.b2a_hex(_data[-2:-1]), 16)
+        if _data[30:31] == '\x01':
+            rssi  = struct.unpack('h', _data[-2:])
+            rssi1 = struct.unpack('b', _data[-1])
+            rssi2 = struct.unpack('b', _data[-2:-1])
             print('RSSI:  ', rssi)
             print('RSSI1: ', rssi1)
             print('RSSI2: ', rssi2)
