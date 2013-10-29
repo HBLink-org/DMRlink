@@ -130,11 +130,11 @@ for section in config.sections():
             'FLAGS': '\x00\x00\x00\x00',
             'STATUS': {
                 'CONNECTED': False,
-                'PEER-LIST': False,
+                'PEER_LIST': False,
                 'KEEP_ALIVES_SENT': 0,
                 'KEEP_ALIVES_MISSED': 0,
                 'KEEP_ALIVES_OUTSTANDING': 0 
-            },
+                },
             'IP': config.get(section, 'MASTER_IP'),
             'PORT': config.getint(section, 'MASTER_PORT')
             })
@@ -152,7 +152,7 @@ for section in config.sections():
             NETWORK[section]['LOCAL']['MODE'] = '\x69'
         else:
             NETWORK[section]['LOCAL']['MODE'] = '\x6A'
-    
+
 
 #************************************************
 #     UTILITY FUNCTIONS FOR INTERNAL USE
@@ -321,7 +321,7 @@ def process_peer_list(_data, _network, _peer_list):
 #
 def print_peer_list(_network):
 #    _log = logger.info
-    _status = NETWORK[_network]['MASTER']['STATUS']['PEER-LIST']
+    _status = NETWORK[_network]['MASTER']['STATUS']['PEER_LIST']
     #print('Peer List Status for {}: {}' .format(_network, _status))
     
     if _status and not NETWORK[_network]['PEERS']:
@@ -397,7 +397,6 @@ class IPSC(DatagramProtocol):
             #
             # A place to keep track of calls that are active on this IPSC
             self.ACTIVE_CALLS = []
-            
             args = ()
             
             
@@ -451,67 +450,28 @@ class IPSC(DatagramProtocol):
         print('({}) XCMP/XNL Packet Received From: {}' .format(_network, _src_sub))
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-    #    _log = logger.debug    
-        if (_ts not in self.ACTIVE_CALLS) or _end:
-            _time       = time.strftime('%m/%d/%y %H:%M:%S')
-            _dst_sub    = get_info(int_id(_dst_sub))
-            _peerid     = get_info(int_id(_peerid))
-            _src_sub    = get_info(int_id(_src_sub))
-            if not _end:    self.ACTIVE_CALLS.append(_ts)
-            if _end:        self.ACTIVE_CALLS.remove(_ts)
-        
-            if _ts:     _ts = 2
-            else:       _ts = 1
-            if _end:    _end = 'END'
-            else:       _end = 'START'
-        
-            print('{} ({}) Call {} Group Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t{}' .format(_time, _network, _end, _peerid, _src_sub, _dst_sub, _ts))
-        
-        '''
-        for source in NETWORK[_network]['RULES']['GROUP_VOICE']:
-            # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
-            if source['SRC_GROUP'] == _src_group:
-                _target = source['DST_NET']
-                _target_sock = NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']
-                # Re-Write the IPSC SRC to match the target network's ID
-                _data = _data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
-                # Re-Write the destinaion Group ID
-                _data = _data.replace(_src_group, source['DST_GROUP'])
-                # Calculate and append the authentication hash for the target network... if necessary
-                if NETWORK[_target]['LOCAL']['AUTH_KEY'] == True:
-                    _data = hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _data)
-                # Send the packet to all peers in the target IPSC
-                send_to_ipsc(_target, _data)
-        '''
+        _dst_sub    = get_info(int_id(_dst_sub))
+        _peerid     = get_info(int_id(_peerid))
+        _src_sub    = get_info(int_id(_src_sub))
+        print('({}) Group Voice Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
     
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-    #    _log = logger.debug    
-        if ((_network, _ts) not in self.ACTIVE_CALLS) or _end:
-            _time       = time.strftime('%m/%d/%y %H:%M:%S')
-            _dst_sub    = get_info(int_id(_dst_sub))
-            _peerid     = get_info(int_id(_peerid))
-            _src_sub    = get_info(int_id(_src_sub))
-            if not _end:    self.ACTIVE_CALLS.append((_network, _ts))
-            if _end:        self.ACTIVE_CALLS.remove((_network, _ts))
-        
-            if _ts:     _ts = 2
-            else:       _ts = 1
-            if _end:    _end = 'END'
-            else:       _end = 'START'
-        
-            print('{} ({}) Call {} Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t{}' .format(_time, _network, _end, _peerid, _src_sub, _dst_sub, _ts))
+        _dst_sub    = get_info(int_id(_dst_sub))
+        _peerid     = get_info(int_id(_peerid))
+        _src_sub    = get_info(int_id(_src_sub))
+        print('({}) Private Voice Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
     
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         _dst_sub    = get_info(int_id(_dst_sub))
         _peerid     = get_info(int_id(_peerid))
         _src_sub    = get_info(int_id(_src_sub))
-        print('({}) Group Data Packet Received From: {}' .format(_network, _src_sub))
+        print('({}) Group Data Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
     
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         _dst_sub    = get_info(int_id(_dst_sub))
         _peerid     = get_info(int_id(_peerid))
         _src_sub    = get_info(int_id(_src_sub))
-        print('({}) Private Data Packet Received From: {} To: {}' .format(_network, _src_sub, _dst_sub))
+        print('({}) Private Data Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
         _time = time.strftime('%m/%d/%y %H:%M:%S')
@@ -587,15 +547,15 @@ class IPSC(DatagramProtocol):
         
         # If the master is connected and we don't have a peer-list yet....
         #
-        if  ((self._master_stat['CONNECTED'] == True) and (self._master_stat['PEER-LIST'] == False)):
+        if  ((self._master_stat['CONNECTED'] == True) and (self._master_stat['PEER_LIST'] == False)):
             # Ask the master for a peer-list
             peer_list_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_LIST_REQ_PKT)
             self.transport.write(peer_list_req_packet, (self._master_sock))
 
 
-        # If we do ahve a peer-list, we need to register with the peers and send keep-alives...
+        # If we do have a peer-list, we need to register with the peers and send keep-alives...
         #
-        if (self._master_stat['PEER-LIST'] == True):
+        if (self._master_stat['PEER_LIST'] == True):
             # Iterate the list of peers... so we do this for each one.
             for peer in (self._peers):
                 # We will show up in the peer list, but shouldn't try to talk to ourselves.
@@ -605,6 +565,7 @@ class IPSC(DatagramProtocol):
                 if peer['STATUS']['CONNECTED'] == False:
                     peer_reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REQ_PKT)
                     self.transport.write(peer_reg_packet, (peer['IP'], peer['PORT']))
+                    print
                 # If we have registered with the peer, then send a keep-alive
                 elif peer['STATUS']['CONNECTED'] == True:
                     peer_alive_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REQ_PKT)
@@ -779,7 +740,7 @@ class IPSC(DatagramProtocol):
                 return
             
             elif (_packettype == PEER_LIST_REPLY):
-                NETWORK[self._network]['MASTER']['STATUS']['PEER-LIST'] = True
+                NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
                 if len(data) > 18:
                     self._peer_list = process_peer_list(data, self._network, self._peer_list)
                 return
@@ -829,7 +790,7 @@ class UnauthIPSC(IPSC):
 #************************************************
 
 if __name__ == '__main__':
-#networks = {}
+    networks = {}
     for ipsc_network in NETWORK:
         if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
             if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
