@@ -17,6 +17,7 @@ import dmrlink
 from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id
 
 class logIPSC(IPSC):
+    
     def __init__(self, *args, **kwargs):
         IPSC.__init__(self, *args, **kwargs)
         self.ACTIVE_CALLS = []
@@ -38,7 +39,14 @@ class logIPSC(IPSC):
         print('({}) XCMP/XNL Packet Received From: {}' .format(_network, _src_sub))
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-    #    _log = logger.debug    
+    #    _log = logger.debug
+        if _data[30:31] == b'\x01':
+            rssi  = int(binascii.b2a_hex(_data[-2:]), 16)
+            rssi1 = int(binascii.b2a_hex(_data[-1]), 16)
+            rssi2 = int(binascii.b2a_hex(_data[-2:-1]), 16)
+            print('RSSI:  ', rssi)
+            print('RSSI1: ', rssi1)
+            print('RSSI2: ', rssi2)
         if (_ts not in self.ACTIVE_CALLS) or _end:
             _time       = time.strftime('%m/%d/%y %H:%M:%S')
             _dst_sub    = get_info(int_id(_dst_sub))

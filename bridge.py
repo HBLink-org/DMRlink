@@ -16,7 +16,7 @@ import dmrlink
 from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info
 
 class bridgeIPSC(IPSC):
-    
+      
     def __init__(self, *args, **kwargs):
         IPSC.__init__(self, *args, **kwargs)
         self.ACTIVE_CALLS = []
