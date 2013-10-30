@@ -15,7 +15,7 @@ import struct
 import time
 import binascii
 import dmrlink
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id
+from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids
 
 class logIPSC(IPSC):
     
@@ -48,9 +48,9 @@ class logIPSC(IPSC):
             print('RSSI (not quite correct yet): ', rssi)
         if (_ts not in self.ACTIVE_CALLS) or _end:
             _time       = time.strftime('%m/%d/%y %H:%M:%S')
-            _dst_sub    = get_info(int_id(_dst_sub))
-            _peerid     = get_info(int_id(_peerid))
-            _src_sub    = get_info(int_id(_src_sub))
+            _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
+            _peerid     = get_info(int_id(_peerid), peer_ids)
+            _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
             if not _end:    self.ACTIVE_CALLS.append(_ts)
             if _end:        self.ACTIVE_CALLS.remove(_ts)
         
@@ -65,9 +65,9 @@ class logIPSC(IPSC):
     #    _log = logger.debug    
         if (_ts not in self.ACTIVE_CALLS) or _end:
             _time       = time.strftime('%m/%d/%y %H:%M:%S')
-            _dst_sub    = get_info(int_id(_dst_sub))
-            _peerid     = get_info(int_id(_peerid))
-            _src_sub    = get_info(int_id(_src_sub))
+            _dst_sub    = get_info(int_id(_dst_sub), subscriber_ids)
+            _peerid     = get_info(int_id(_peerid), peer_ids)
+            _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
             if not _end:    self.ACTIVE_CALLS.append(_ts)
             if _end:        self.ACTIVE_CALLS.remove(_ts)
         
@@ -79,15 +79,15 @@ class logIPSC(IPSC):
             print('{} ({}) Call {} Private Voice: \n\tIPSC Source:\t{}\n\tSubscriber:\t{}\n\tDestination:\t{}\n\tTimeslot\t{}' .format(_time, _network, _end, _peerid, _src_sub, _dst_sub, _ts))
     
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        _dst_sub    = get_info(int_id(_dst_sub))
-        _peerid     = get_info(int_id(_peerid))
-        _src_sub    = get_info(int_id(_src_sub))
+        _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
+        _peerid     = get_info(int_id(_peerid), peer_ids)
+        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         print('({}) Group Data Packet Received From: {}' .format(_network, _src_sub))
     
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        _dst_sub    = get_info(int_id(_dst_sub))
-        _peerid     = get_info(int_id(_peerid))
-        _src_sub    = get_info(int_id(_src_sub))
+        _dst_sub    = get_info(int_id(_dst_sub), subscriber_ids)
+        _peerid     = get_info(int_id(_peerid), peer_ids)
+        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         print('({}) Private Data Packet Received From: {} To: {}' .format(_network, _src_sub, _dst_sub))
 
 class logUnauthIPSC(logIPSC):

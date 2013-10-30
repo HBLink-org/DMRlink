@@ -46,15 +46,37 @@ try:
 except ImportError:
     sys.exit('IPSC mask values file not found or invalid')
 
-ids = {}
+# Import the Alias files for numeric ids. This is split to save
+# time making lookukps in one huge dictionary
+#
+subscriber_ids = {}
+peer_ids = {}
+talkgroup_ids = {}
+
 try:
-    with open('./radioids.csv', 'r') as radioids_csv:
-        radio_ids = csv.reader(radioids_csv, dialect='excel', delimiter=',')
-        for row in radio_ids:
-            ids[int(row[1])] = (row[0])
+    with open('./subscriber_ids.csv', 'rU') as subscriber_ids_csv:
+        subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
+        for row in subscribers:
+            subscriber_ids[int(row[1])] = (row[0])
 except ImportError:
-    sys.exit('No Radio ID CSV file found')
+    print('subscriber_ids.csv not found: Subscriber aliases will not be avaiale')
     
+try:
+    with open('./peer_ids.csv', 'rU') as peer_ids_csv:
+        peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
+        for row in peers:
+            peer_ids[int(row[1])] = (row[0])
+except ImportError:
+    print('peer_ids.csv not found: Peer aliases will not be avaiale')
+
+try:
+    with open('./talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
+        talkgroups = csv.reader(talkgroup_ids_csv, dialect='excel', delimiter=',')
+        for row in talkgroups:
+            talkgroup_ids[int(row[1])] = (row[0])
+except ImportError:
+    print('talkgroup_ids.csv not found: Talkgroup aliases will not be avaiale')
+
     
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
@@ -140,8 +162,8 @@ for section in config.sections():
         
         if NETWORK[section]['LOCAL']['AUTH_ENABLED']:
             # 0x1C - Voice and Data calls only, 0xDC - Voice, Data and XCMP/XNL
-            #NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x1C'
-            NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\xDC'
+            NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x1C'
+            #NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\xDC'
         else:
             NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x0C'
     
@@ -175,9 +197,9 @@ def dmr_nat(_data, _nat_id):
 
 # Lookup text data for numeric IDs
 #
-def get_info(_id):
-    if _id in ids:
-            return ids[_id]
+def get_info(_id, _dict):
+    if _id in _dict:
+            return _dict[_id]
     return _id
 
 # Remove the hash from a packet and return the payload
@@ -448,33 +470,33 @@ class IPSC(DatagramProtocol):
         print('({}) XCMP/XNL Packet Received From: {}' .format(_network, _src_sub))
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        _dst_sub    = get_info(int_id(_dst_sub))
-        _peerid     = get_info(int_id(_peerid))
-        _src_sub    = get_info(int_id(_src_sub))
+        _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
+        _peerid     = get_info(int_id(_peerid), peer_ids)
+        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         print('({}) Group Voice Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
     
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        _dst_sub    = get_info(int_id(_dst_sub))
-        _peerid     = get_info(int_id(_peerid))
-        _src_sub    = get_info(int_id(_src_sub))
+        _dst_sub    = get_info(int_id(_dst_sub), subscriber_ids)
+        _peerid     = get_info(int_id(_peerid), peer_ids)
+        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         print('({}) Private Voice Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
     
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        _dst_sub    = get_info(int_id(_dst_sub))
-        _peerid     = get_info(int_id(_peerid))
-        _src_sub    = get_info(int_id(_src_sub))
+        _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
+        _peerid     = get_info(int_id(_peerid), peer_ids)
+        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         print('({}) Group Data Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
     
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        _dst_sub    = get_info(int_id(_dst_sub))
-        _peerid     = get_info(int_id(_peerid))
-        _src_sub    = get_info(int_id(_src_sub))
+        _dst_sub    = get_info(int_id(_dst_sub), subscriber_ids)
+        _peerid     = get_info(int_id(_peerid), peer_ids)
+        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         print('({}) Private Data Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
         _time = time.strftime('%m/%d/%y %H:%M:%S')
         _packettype = binascii.b2a_hex(_packettype)
-        _peerid = get_info(int_id(_peerid))
+        _peerid = get_info(int_id(_peerid), peer_ids)
         print('{} ({}) Unknown message type encountered\n\tPacket Type: {}\n\tFrom: {}' .format(_time, _network, _packettype, _peerid))
         print('\t', binascii.b2a_hex(_data))
 
