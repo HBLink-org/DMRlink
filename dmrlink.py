@@ -202,14 +202,6 @@ def get_info(_id, _dict):
             return _dict[_id]
     return _id
 
-# Remove the hash from a packet and return the payload
-#
-def strip_hash(_data):
-#    _log = logger.debug
-#    _log('Stripped Packet: %s', binascii.b2a_hex(_data[:-10]))
-    return _data[:-10]
-
-
 # Determine if the provided peer ID is valid for the provided network 
 #
 def valid_peer(_peer_list, _peerid):
@@ -507,12 +499,18 @@ class IPSC(DatagramProtocol):
         _hash = binascii.a2b_hex((hmac.new(_key,_data,hashlib.sha1)).hexdigest()[:20])
         return (_data + _hash)    
     
+    # Remove the hash from a packet and return the payload
+    #
+    def strip_hash(self, _data):
+    #    _log = logger.debug
+    #    _log('Stripped Packet: %s', binascii.b2a_hex(_data[:-10]))
+        return _data[:-10]
     
     # Take a RECEIVED packet, calculate the auth hash and verify authenticity
     #
     def validate_auth(self, _key, _data):
         _log = logger.info
-        _payload = strip_hash(_data)
+        _payload = self.strip_hash(_data)
         _hash = _data[-10:]
         _chk_hash = binascii.a2b_hex((hmac.new(_key,_payload,hashlib.sha1)).hexdigest()[:20])   
 
@@ -643,7 +641,7 @@ class IPSC(DatagramProtocol):
             return
             
         # Strip the hash, we won't need it anymore
-        data = strip_hash(data)
+        data = self.strip_hash(data)
 
         # Packets types that must be originated from a peer (including master peer)
         if (_packettype in ANY_PEER_REQUIRED):
@@ -798,7 +796,12 @@ class UnauthIPSC(IPSC):
     # There isn't a hash to build, so just return the data
     #
     def hashed_packet(self, _key, _data):
-        return (_data)    
+        return _data
+    
+    # Remove the hash from a packet and return the payload
+    #
+    def strip_hash(_self, data):
+        return _data
     
     # Everything is validated, so just return True
     #

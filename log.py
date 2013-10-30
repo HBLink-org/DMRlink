@@ -95,7 +95,12 @@ class logUnauthIPSC(logIPSC):
     # There isn't a hash to build, so just return the data
     #
     def hashed_packet(self, _key, _data):
-        return (_data)    
+        return _data   
+    
+    # Remove the hash from a packet and return the payload
+    #
+    def strip_hash(self, _data):
+        return _data
     
     # Everything is validated, so just return True
     #

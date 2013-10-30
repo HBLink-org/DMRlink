@@ -66,12 +66,28 @@ class bridgeIPSC(IPSC):
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         pass
 
-        
+class bridgeUnauthIPSC(logIPSC):
+    
+    # There isn't a hash to build, so just return the data
+    #
+    def hashed_packet(self, _key, _data):
+        return _data   
+    
+    # Remove the hash from a packet and return the payload
+    #
+    def strip_hash(self, _data):
+        return _data
+    
+    # Everything is validated, so just return True
+    #
+    def validate_auth(self, _key, _data):
+        return True
+      
 for ipsc_network in NETWORK:
     if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
         if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
             networks[ipsc_network] = bridgeIPSC(ipsc_network)
         else:
-            networks[ipsc_network] = UnauthIPSC(ipsc_network)
+            networks[ipsc_network] = bridgeUnauthIPSC(ipsc_network)
         reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
 reactor.run()
