@@ -139,7 +139,9 @@ for section in config.sections():
             })
         
         if NETWORK[section]['LOCAL']['AUTH_ENABLED']:
-            NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x1C'
+            # 0x1C - Voice and Data calls only, 0xDC - Voice, Data and XCMP/XNL
+            #NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x1C'
+            NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\xDC'
         else:
             NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x0C'
     
