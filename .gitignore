@@ -2,6 +2,5 @@
 .dropbox
 Icon
 dmrlink.cfg
-pubnub.py
-pubnub.html
+pub*
 *.pyc
