@@ -92,12 +92,23 @@ class logIPSC(IPSC):
         _src_sub    = get_info(int_id(_src_sub))
         print('({}) Private Data Packet Received From: {} To: {}' .format(_network, _src_sub, _dst_sub))
 
+class logUnauthIPSC(logIPSC):
+    
+    # There isn't a hash to build, so just return the data
+    #
+    def hashed_packet(self, _key, _data):
+        return (_data)    
+    
+    # Everything is validated, so just return True
+    #
+    def validate_auth(self, _key, _data):
+        return True
         
 for ipsc_network in NETWORK:
     if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
         if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
             networks[ipsc_network] = logIPSC(ipsc_network)
         else:
-            networks[ipsc_network] = UnauthIPSC(ipsc_network)
+            networks[ipsc_network] = logUnauthIPSC(ipsc_network)
         reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
 reactor.run()
