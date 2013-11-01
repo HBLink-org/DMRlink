@@ -136,7 +136,7 @@ for section in config.sections():
             'TS1_LINK': config.getboolean(section, 'TS1_LINK'),
             'TS2_LINK': config.getboolean(section, 'TS2_LINK'),
             'AUTH_ENABLED': config.getboolean(section, 'AUTH_ENABLED'),
-            'RADIO_ID': (config.get(section, 'RADIO_ID').rjust(8,'0')).decode('hex'),
+            'RADIO_ID': hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
             'PORT': config.getint(section, 'PORT'),
             'ALIVE_TIMER': config.getint(section, 'ALIVE_TIMER'),
             'AUTH_KEY': (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
