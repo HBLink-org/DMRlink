@@ -13,7 +13,11 @@ from twisted.internet import task
 
 import binascii
 import dmrlink
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info
+from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id
+
+SOMETHING = {'GROUP_VOICE': [
+            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'N0RC', 'DST_GROUP': b'\x00\x0C\x30'}
+        ]}
 
 class bridgeIPSC(IPSC):
       
@@ -66,7 +70,7 @@ class bridgeIPSC(IPSC):
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         pass
 
-class bridgeUnauthIPSC(logIPSC):
+class bridgeUnauthIPSC(bridgeIPSC):
     
     # There isn't a hash to build, so just return the data
     #
