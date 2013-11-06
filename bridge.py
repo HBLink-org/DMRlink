@@ -13,11 +13,24 @@ from twisted.internet import task
 
 import binascii
 import dmrlink
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id
+from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc
 
-SOMETHING = {'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'N0RC', 'DST_GROUP': b'\x00\x0C\x30'}
-        ]}
+RULES = {
+    'K0USY': {
+        'GROUP_VOICE': [
+            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'LAWRENCE', 'DST_GROUP': b'\x00\x0C\x30'}
+        ],
+        'PRIVATE_VOICE': [
+        ]
+    },
+    'LAWRENCE': {
+        'GROUP_VOICE': [
+            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'K0USY', 'DST_GROUP': b'\x00\x0C\x30'}
+        ],
+        'PRIVATE_VOICE': [
+        ]
+    }
+}
 
 class bridgeIPSC(IPSC):
       
@@ -25,14 +38,40 @@ class bridgeIPSC(IPSC):
         IPSC.__init__(self, *args, **kwargs)
         self.ACTIVE_CALLS = []
         
-    def datagramReceived(self, data, (host, port)):
-        print(binascii.b2a_hex(data))
+    #def datagramReceived(self, data, (host, port)):
+    #    print(binascii.b2a_hex(data))
         
         
     #************************************************
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
-
+    
+    def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+        for source in RULES[_network]['GROUP_VOICE']:
+            # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
+            if source['SRC_GROUP'] == _dst_sub:
+                _target = source['DST_NET']
+                _target_sock = NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']
+                # Re-Write the IPSC SRC to match the target network's ID
+                _data = _data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
+                # Re-Write the destinaion Group ID
+                _data = _data.replace(_dst_sub, source['DST_GROUP'])
+                # Calculate and append the authentication hash for the target network... if necessary
+                if NETWORK[_target]['LOCAL']['AUTH_KEY'] == True:
+                    _data = hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _data)
+                # Send the packet to all peers in the target IPSC
+                send_to_ipsc(_target, _data)
+                print(_target, binascii.b2a_hex(_data))
+    
+    def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data): 
+        pass
+    
+    def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
+        pass
+    
+    def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
+        pass
+        
     def call_ctl_1(self, _network, _data):
         pass
     
@@ -43,31 +82,6 @@ class bridgeIPSC(IPSC):
         pass
     
     def xcmp_xnl(self, _network, _data):
-        pass
-    
-    def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        for source in NETWORK[_network]['RULES']['GROUP_VOICE']:
-            # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
-            if source['SRC_GROUP'] == _src_group:
-                _target = source['DST_NET']
-                _target_sock = NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']
-                # Re-Write the IPSC SRC to match the target network's ID
-                _data = _data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
-                # Re-Write the destinaion Group ID
-                _data = _data.replace(_src_group, source['DST_GROUP'])
-                # Calculate and append the authentication hash for the target network... if necessary
-                if NETWORK[_target]['LOCAL']['AUTH_KEY'] == True:
-                    _data = hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _data)
-                # Send the packet to all peers in the target IPSC
-                send_to_ipsc(_target, _data)
-    
-    def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data): 
-        pass
-    
-    def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        pass
-    
-    def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         pass
 
 class bridgeUnauthIPSC(bridgeIPSC):
