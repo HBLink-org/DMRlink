@@ -18,16 +18,38 @@ from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, d
 RULES = {
     'K0USY': {
         'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'LAWRENCE', 'DST_GROUP': b'\x00\x0C\x30'}
+            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'LAWRENCE', 'DST_GROUP': b'\x00\x0C\x30'},
+            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'TEST', 'DST_GROUP': b'\x00\x00\xD2'}
         ],
         'PRIVATE_VOICE': [
+        ],
+        'GROUP_DATA': [            
+        ],
+        'PRIVATE_DATA': [
         ]
     },
     'LAWRENCE': {
         'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'K0USY', 'DST_GROUP': b'\x00\x0C\x30'}
+            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'K0USY', 'DST_GROUP': b'\x00\x0C\x30'},
+            {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'TEST', 'DST_GROUP': b'\x00\x00\xD2'}
         ],
         'PRIVATE_VOICE': [
+        ],
+        'GROUP_DATA': [            
+        ],
+        'PRIVATE_DATA': [
+        ]
+    },
+    'TEST': {
+        'GROUP_VOICE': [
+            {'SRC_GROUP': b'\x00\x00\xD2', 'DST_NET': 'K0USY', 'DST_GROUP': b'\x00\x0C\x30'},
+            {'SRC_GROUP': b'\x00\x00\xD2', 'DST_NET': 'LAWRENCE', 'DST_GROUP': b'\x00\x0C\x30'}
+        ],
+        'PRIVATE_VOICE': [
+        ],
+        'GROUP_DATA': [            
+        ],
+        'PRIVATE_DATA': [
         ]
     }
 }
@@ -56,7 +78,6 @@ class bridgeIPSC(IPSC):
                 _data = _data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                 # Re-Write the destinaion Group ID
                 _data = _data.replace(_dst_sub, source['DST_GROUP'])
-                _data = dmr_nat(_data, '\x00\x0C\x30')
                 # Calculate and append the authentication hash for the target network... if necessary
                 if NETWORK[_target]['LOCAL']['AUTH_ENABLED'] == True:
                     _data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _data)
