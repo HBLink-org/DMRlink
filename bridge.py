@@ -13,7 +13,7 @@ from twisted.internet import task
 
 import binascii
 import dmrlink
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc
+from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, dmr_nat
 
 RULES = {
     'K0USY': {
@@ -56,12 +56,12 @@ class bridgeIPSC(IPSC):
                 _data = _data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                 # Re-Write the destinaion Group ID
                 _data = _data.replace(_dst_sub, source['DST_GROUP'])
+                _data = dmr_nat(_data, '\x00\x0C\x30')
                 # Calculate and append the authentication hash for the target network... if necessary
-                if NETWORK[_target]['LOCAL']['AUTH_KEY'] == True:
-                    _data = hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _data)
+                if NETWORK[_target]['LOCAL']['AUTH_ENABLED'] == True:
+                    _data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _data)
                 # Send the packet to all peers in the target IPSC
                 send_to_ipsc(_target, _data)
-                print(_target, binascii.b2a_hex(_data))
     
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data): 
         pass

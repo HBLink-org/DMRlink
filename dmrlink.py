@@ -228,11 +228,8 @@ def valid_master(_network, _peerid):
 # Accept a complete packet, ready to be sent, and send it to all active peers + master in an IPSC
 #
 def send_to_ipsc(_target, _packet):
-#    _log = logger.debug
-    # Send to the Master
-#    _log('Sending %s to:', binascii.b2a_hex(_packet)    
+    # Send to the Master 
     networks[_target].transport.write(_packet, (NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']))
-#    _log('     Master: %s', binascii.b2a_hex(NETWORK[_target]['MASTER']['RADIO_ID']))
     # Send to each connected Peer
     for peer in NETWORK[_target]['PEERS']:
         if peer['STATUS']['CONNECTED'] == True:
