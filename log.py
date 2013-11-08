@@ -41,11 +41,16 @@ class logIPSC(IPSC):
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
     #    _log = logger.debug
+        ''' RSSI STUFF IS LIKELY NOT CORRECT!!!
+            WILL BE REMOVED IN FUTURE RELEASES
+            
         if _data[30:31] == '\x01':
             rssi1 = struct.unpack('B', _data[-1])[0]
             rssi2 = struct.unpack('B', _data[-2:-1])[0]
             rssi = (rssi1 + (((rssi2*1000)+128)/256000))
             print('RSSI (not quite correct yet): ', rssi)
+        '''
+            
         if (_ts not in self.ACTIVE_CALLS) or _end:
             _time       = time.strftime('%m/%d/%y %H:%M:%S')
             _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
