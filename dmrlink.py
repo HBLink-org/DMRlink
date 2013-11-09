@@ -235,8 +235,8 @@ def send_to_ipsc(_target, _packet):
         if peer['STATUS']['CONNECTED'] == True:
             networks[_target].transport.write(_packet, (peer['IP'], peer['PORT']))
 #            _log('     Peer: %s', binascii.b2a_hex(peer['RADIO_ID']))
-        
-        
+
+    
 # De-register a peer from an IPSC by removing it's infomation
 #
 def de_register_peer(_network, _peerid):

@@ -72,17 +72,18 @@ class bridgeIPSC(IPSC):
         for source in RULES[_network]['GROUP_VOICE']:
             # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
             if source['SRC_GROUP'] == _dst_sub:
+                _tmp_data = _data
                 _target = source['DST_NET']
                 _target_sock = NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']
                 # Re-Write the IPSC SRC to match the target network's ID
-                _data = _data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
+                _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                 # Re-Write the destinaion Group ID
-                _data = _data.replace(_dst_sub, source['DST_GROUP'])
+                _tmp_data = _tmp_data.replace(_dst_sub, source['DST_GROUP'])
                 # Calculate and append the authentication hash for the target network... if necessary
                 if NETWORK[_target]['LOCAL']['AUTH_ENABLED'] == True:
-                    _data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _data)
+                    _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
-                send_to_ipsc(_target, _data)
+                send_to_ipsc(_target, _tmp_data)
     
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data): 
         pass
