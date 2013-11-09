@@ -15,7 +15,7 @@ import struct
 import time
 import binascii
 import dmrlink
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids
+from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids, logger
 
 class logIPSC(IPSC):
     
@@ -111,12 +111,13 @@ class logUnauthIPSC(logIPSC):
     #
     def validate_auth(self, _key, _data):
         return True
-        
-for ipsc_network in NETWORK:
-    if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
-        if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
-            networks[ipsc_network] = logIPSC(ipsc_network)
-        else:
-            networks[ipsc_network] = logUnauthIPSC(ipsc_network)
-        reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
-reactor.run()
+if __name__ == '__main__':
+    logger.info('DMRlink \'log.py\' (c) 2013 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    for ipsc_network in NETWORK:
+        if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
+            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
+                networks[ipsc_network] = logIPSC(ipsc_network)
+            else:
+                networks[ipsc_network] = logUnauthIPSC(ipsc_network)
+            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
+    reactor.run()

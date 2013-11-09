@@ -11,6 +11,9 @@
 from logging.config import dictConfig
 import logging
 
+# Full path/name of the log file:
+_log_file_name = '/tmp/dmrlink.log'
+
 dictConfig({
     'version': 1,
     'disable_existing_loggers': False,
@@ -33,31 +36,36 @@ dictConfig({
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'formatter': 'simple',
-            'filename': '/tmp/ipsc.log',
-        },
         'console-timed': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'timed'
         },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'formatter': 'simple',
+            'filename': _log_file_name,
+        },
         'file-timed': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'formatter': 'timed',
-            'filename': '/tmp/ipsc.log',
+            'filename': _log_file_name,
         },
+        'syslog': {
+            'level': 'INFO',
+            'class': 'logging.handlers.SysLogHandler',
+            'formatter': 'verbose',
+        }
     },
     'loggers': {
-        'ipsc': {
-#            'handlers': ['file-timed', 'console-timed'],
-            'handlers': ['file', 'console'],
+        'dmrlink': {
+            'handlers': ['file-timed', 'syslog'],
+#            'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': True,
         }
     }
 })
-logger = logging.getLogger('ipsc')
+logger = logging.getLogger('dmrlink')

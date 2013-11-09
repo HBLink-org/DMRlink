@@ -13,7 +13,7 @@ from twisted.internet import task
 
 import binascii
 import dmrlink
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, dmr_nat
+from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, dmr_nat, logger
 
 RULES = {
     'K0USY': {
@@ -122,12 +122,14 @@ class bridgeUnauthIPSC(bridgeIPSC):
     #
     def validate_auth(self, _key, _data):
         return True
-      
-for ipsc_network in NETWORK:
-    if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
-        if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
-            networks[ipsc_network] = bridgeIPSC(ipsc_network)
-        else:
-            networks[ipsc_network] = bridgeUnauthIPSC(ipsc_network)
-        reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
-reactor.run()
+
+if __name__ == '__main__':
+    logger.info('DMRlink \'bridge.py\' (c) 2013 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    for ipsc_network in NETWORK:
+        if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
+            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
+                networks[ipsc_network] = bridgeIPSC(ipsc_network)
+            else:
+                networks[ipsc_network] = bridgeUnauthIPSC(ipsc_network)
+            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
+    reactor.run()

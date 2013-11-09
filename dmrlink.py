@@ -59,7 +59,7 @@ try:
         for row in subscribers:
             subscriber_ids[int(row[1])] = (row[0])
 except ImportError:
-    print('subscriber_ids.csv not found: Subscriber aliases will not be avaiale')
+    logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be avaiale')
     
 try:
     with open('./peer_ids.csv', 'rU') as peer_ids_csv:
@@ -67,7 +67,7 @@ try:
         for row in peers:
             peer_ids[int(row[1])] = (row[0])
 except ImportError:
-    print('peer_ids.csv not found: Peer aliases will not be avaiale')
+    logger.warning('peer_ids.csv not found: Peer aliases will not be avaiale')
 
 try:
     with open('./talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
@@ -75,41 +75,12 @@ try:
         for row in talkgroups:
             talkgroup_ids[int(row[1])] = (row[0])
 except ImportError:
-    print('talkgroup_ids.csv not found: Talkgroup aliases will not be avaiale')
+    logger.warning('talkgroup_ids.csv not found: Talkgroup aliases will not be avaiale')
 
     
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
-
-'''
-***LINKING STATUS: Byte 6***
-
-	Byte 1 - BIT FLAGS:
-	      xx.. .... = Peer Operational (01 only known valid value)
-	      ..xx .... = Peer MODE: 00 - No Radio, 01 - Analog, 10 - Digital
-	      .... xx.. = IPSC Slot 1: 10 on, 01 off 
-	      .... ..xx = IPSC Slot 2: 10 on, 01 off
-
-***SERVICE FLAGS: Bytes 7-10 (or 7-12)***
-
-	Byte 1 - 0x00  	= Unknown
-	Byte 2 - 0x00	= Unknown
-	Byte 3 - BIT FLAGS:
-	      x... .... = CSBK Message
-	      .x.. .... = Repeater Call Monitoring
-	      ..x. .... = 3rd Party "Console" Application
-	      ...x xxxx = Unknown - default to 0
-	Byte 4 = BIT FLAGS:
-	      x... .... = XNL Connected (1=true)
-	      .x.. .... = XNL Master Device
-	      ..x. .... = XNL Slave Device
-	      ...x .... = Set if packets are authenticated
-	      .... x... = Set if data calls are supported
-	      .... .x.. = Set if voice calls are supported
-	      .... ..x. = Unknown - default to 0
-	      .... ...x = Set if master
-'''
 
 networks = {}
 NETWORK = {}
@@ -117,65 +88,68 @@ NETWORK = {}
 config = ConfigParser.ConfigParser()
 config.read('./dmrlink.cfg')
 
-for section in config.sections():
-    if section == 'GLOBAL':
-        pass
-    else:
-        NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': []}})
-        NETWORK[section]['LOCAL'].update({
-            'MODE': '',
-            'PEER_OPER': True,
-            'PEER_MODE': 'DIGITAL',
-            'FLAGS': '',
-            'MAX_MISSED': 10,
-            'NUM_PEERS': 0,
-            'STATUS': {
-                'ACTIVE': False
-                },
-            'ENABLED': config.getboolean(section, 'ENABLED'),
-            'TS1_LINK': config.getboolean(section, 'TS1_LINK'),
-            'TS2_LINK': config.getboolean(section, 'TS2_LINK'),
-            'AUTH_ENABLED': config.getboolean(section, 'AUTH_ENABLED'),
-            'RADIO_ID': hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
-            'PORT': config.getint(section, 'PORT'),
-            'ALIVE_TIMER': config.getint(section, 'ALIVE_TIMER'),
-            'AUTH_KEY': (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
-            })
-        NETWORK[section]['MASTER'].update({
-            'RADIO_ID': '\x00\x00\x00\x00',
-            'MODE': '\x00',
-            'PEER_OPER': False,
-            'PEER_MODE': '',
-            'TS1_LINK': False,
-            'TS2_LINK': False,
-            'FLAGS': '\x00\x00\x00\x00',
-            'STATUS': {
-                'CONNECTED': False,
-                'PEER_LIST': False,
-                'KEEP_ALIVES_SENT': 0,
-                'KEEP_ALIVES_MISSED': 0,
-                'KEEP_ALIVES_OUTSTANDING': 0 
-                },
-            'IP': config.get(section, 'MASTER_IP'),
-            'PORT': config.getint(section, 'MASTER_PORT')
-            })
+try:
+    for section in config.sections():
+        if section == 'GLOBAL':
+            pass
+        else:
+            NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': []}})
+            NETWORK[section]['LOCAL'].update({
+                'MODE': '',
+                'PEER_OPER': True,
+                'PEER_MODE': 'DIGITAL',
+                'FLAGS': '',
+                'MAX_MISSED': 10,
+                'NUM_PEERS': 0,
+                'STATUS': {
+                    'ACTIVE': False
+                    },
+                'ENABLED': config.getboolean(section, 'ENABLED'),
+                'TS1_LINK': config.getboolean(section, 'TS1_LINK'),
+                'TS2_LINK': config.getboolean(section, 'TS2_LINK'),
+                'AUTH_ENABLED': config.getboolean(section, 'AUTH_ENABLED'),
+                'RADIO_ID': hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
+                'PORT': config.getint(section, 'PORT'),
+                'ALIVE_TIMER': config.getint(section, 'ALIVE_TIMER'),
+                'AUTH_KEY': (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
+                })
+            NETWORK[section]['MASTER'].update({
+                'RADIO_ID': '\x00\x00\x00\x00',
+                'MODE': '\x00',
+                'PEER_OPER': False,
+                'PEER_MODE': '',
+                'TS1_LINK': False,
+                'TS2_LINK': False,
+                'FLAGS': '\x00\x00\x00\x00',
+                'STATUS': {
+                    'CONNECTED': False,
+                    'PEER_LIST': False,
+                    'KEEP_ALIVES_SENT': 0,
+                    'KEEP_ALIVES_MISSED': 0,
+                    'KEEP_ALIVES_OUTSTANDING': 0 
+                    },
+                'IP': config.get(section, 'MASTER_IP'),
+                'PORT': config.getint(section, 'MASTER_PORT')
+                })
         
-        if NETWORK[section]['LOCAL']['AUTH_ENABLED']:
-            # 0x1C - Voice and Data calls only, 0xDC - Voice, Data and XCMP/XNL
-            NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x1C'
-            #NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\xDC'
-        else:
-            NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x0C'
+            if NETWORK[section]['LOCAL']['AUTH_ENABLED']:
+                # 0x1C - Voice and Data calls only, 0xDC - Voice, Data and XCMP/XNL
+                NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x1C'
+                #NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\xDC'
+            else:
+                NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x00\x0C'
     
-        if not NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
-            NETWORK[section]['LOCAL']['MODE'] = '\x65'
-        elif NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
-            NETWORK[section]['LOCAL']['MODE'] = '\x66'
-        elif not NETWORK[section]['LOCAL']['TS1_LINK'] and NETWORK[section]['LOCAL']['TS2_LINK']:    
-            NETWORK[section]['LOCAL']['MODE'] = '\x69'
-        else:
-            NETWORK[section]['LOCAL']['MODE'] = '\x6A'
-
+            if not NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
+                NETWORK[section]['LOCAL']['MODE'] = '\x65'
+            elif NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
+                NETWORK[section]['LOCAL']['MODE'] = '\x66'
+            elif not NETWORK[section]['LOCAL']['TS1_LINK'] and NETWORK[section]['LOCAL']['TS2_LINK']:    
+                NETWORK[section]['LOCAL']['MODE'] = '\x69'
+            else:
+                NETWORK[section]['LOCAL']['MODE'] = '\x6A'
+except:
+    logger.critical('Could not parse configuration file, exiting...')
+    sys.exit('Could not parse configuration file, exiting...')
 
 #************************************************
 #     UTILITY FUNCTIONS FOR INTERNAL USE
@@ -189,10 +163,8 @@ def int_id(_hex_string):
 # Re-Write Source Radio-ID (DMR NAT)
 #
 def dmr_nat(_data, _nat_id):
-#    _log = logger.warning
     src_radio_id = _data[6:9]
     _data = re.sub(src_radio_id, _nat_id, _data)
-#    _log('DMR NAT: Source %s re-written as %s', int(binascii.b2a_hex(src_radio_id), 16), int(binascii.b2a_hex(_nat_id), 16))
     return _data
 
 # Lookup text data for numeric IDs
@@ -205,23 +177,17 @@ def get_info(_id, _dict):
 # Determine if the provided peer ID is valid for the provided network 
 #
 def valid_peer(_peer_list, _peerid):
-#    _log = logger.debug
     if _peerid in _peer_list:
-#        _log('Peer List Has An Entry For: %s', binascii.b2a_hex(_peerid))
-        return True
-#    _log('Peer List Does NOT Have An Entry For: %s', binascii.b2a_hex(_peerid))        
+        return True        
     return False
 
 
 # Determine if the provided master ID is valid for the provided network
 #
 def valid_master(_network, _peerid):
-#    _log = logger.warning
     if NETWORK[_network]['MASTER']['RADIO_ID'] == _peerid:
-#        _log('Master ID is Valid: %s', binascii.b2a_hex(_peerid))
         return True     
     else:
-#        _log('Master ID is NOT Valid: %s', binascii.b2a_hex(_peerid))
         return False
         
             
@@ -234,23 +200,20 @@ def send_to_ipsc(_target, _packet):
     for peer in NETWORK[_target]['PEERS']:
         if peer['STATUS']['CONNECTED'] == True:
             networks[_target].transport.write(_packet, (peer['IP'], peer['PORT']))
-#            _log('     Peer: %s', binascii.b2a_hex(peer['RADIO_ID']))
 
     
 # De-register a peer from an IPSC by removing it's infomation
 #
 def de_register_peer(_network, _peerid):
-#    _log = logger.debug
     # Iterate for the peer in our data
-#    _log('Peer De-Registration Requested for: %s', binascii.b2a_hex(_peerid))
     for peer in NETWORK[_network]['PEERS']:
         # If we find the peer, remove it (we should find it)
         if _peerid == peer['RADIO_ID']:
             NETWORK[_network]['PEERS'].remove(peer)
-#            _log('     Peer Found And De-Registered')
+            logger.info('(%s) Peer De-Registration Requested for: %s', _network, binascii.b2a_hex(_peerid))
             return
         else:
-#            _log('     Peer NOT Found')
+            logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', _network, binascii.b2a_hex(_peerid))
             pass
        
         
@@ -258,12 +221,11 @@ def de_register_peer(_network, _peerid):
 # data structure in my_ipsc_config with the results, and return a simple list of peers.
 #
 def process_peer_list(_data, _network, _peer_list):
-#    _log = logger.debug
     # Determine the length of the peer list for the parsing iterator
     _peer_list_length = int(binascii.b2a_hex(_data[5:7]), 16)
     # Record the number of peers in the data structure... we'll use it later (11 bytes per peer entry)
     NETWORK[_network]['LOCAL']['NUM_PEERS'] = _peer_list_length/11
-    #    _log('<<- (%s) The Peer List has been Received from Master\n%s There are %s peers in this IPSC Network', _network, (' '*(len(_network)+7)), _num_peers)
+    logger.info('(%s) Peer List Received from Master: %s peers in this IPSC', _network, _peer_list_length/11)
     
     # Iterate each peer entry in the peer list. Skip the header, then pull the next peer, the next, etc.
     for i in range(7, (_peer_list_length)+7, 11):
@@ -420,11 +382,11 @@ class IPSC(DatagramProtocol):
             self.PEER_REG_REPLY_PKT   = (PEER_REG_REPLY + self._local_id + IPSC_VER)
             self.PEER_ALIVE_REQ_PKT   = (PEER_ALIVE_REQ + self._local_id + self.TS_FLAGS)
             self.PEER_ALIVE_REPLY_PKT = (PEER_ALIVE_REPLY + self._local_id + self.TS_FLAGS)
-            
+            logger.info('(%s) IPSC Instance Created', self._network)
         else:
             # If we didn't get called correctly, log it!
             #
-            logger.error('(%s) Unexpected arguments found.', self._network)
+            logger.error('(%s) IPSC Instance Could Not be Created... Exiting', self._network)
             sys.exit()
 
 
@@ -499,14 +461,11 @@ class IPSC(DatagramProtocol):
     # Remove the hash from a packet and return the payload
     #
     def strip_hash(self, _data):
-    #    _log = logger.debug
-    #    _log('Stripped Packet: %s', binascii.b2a_hex(_data[:-10]))
         return _data[:-10]
     
     # Take a RECEIVED packet, calculate the auth hash and verify authenticity
     #
     def validate_auth(self, _key, _data):
-        _log = logger.info
         _payload = self.strip_hash(_data)
         _hash = _data[-10:]
         _chk_hash = binascii.a2b_hex((hmac.new(_key,_payload,hashlib.sha1)).hexdigest()[:20])   
@@ -514,7 +473,6 @@ class IPSC(DatagramProtocol):
         if _chk_hash == _hash:
             return True
         else:
-            _log('AUTHENTICATION FAILURE: \n\t Payload: %s\n\t Hash: %s', binascii.b2a_hex(_payload), binascii.b2a_hex(_hash))
             return False
 
 
@@ -526,6 +484,7 @@ class IPSC(DatagramProtocol):
         # Right now, without this, we really dont' know anything is happening.  
         # print_master(self._network)
         # print_peer_list(self._network)
+        logger.debug('(%s) Periodic Connection Maintenance Loop Started', self._network)
         pass
     
     def maintenance_loop(self):
@@ -596,7 +555,7 @@ class IPSC(DatagramProtocol):
                         peer['STATUS']['CONNECTED'] = False
                         self._peer_list.remove(peer['RADIO_ID']) # Remove the peer from the simple list FIRST
                         self._peers.remove(peer)                 # Becuase once it's out of the dictionary, you can't use it for anything else.
-                        logger.error('Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', peer)
+                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, peer)
                     
                     # Update our stats before moving on...
                     peer['STATUS']['KEEP_ALIVES_SENT'] += 1
@@ -811,6 +770,7 @@ class UnauthIPSC(IPSC):
 #************************************************
 
 if __name__ == '__main__':
+    logger.info('DMRlink \'dmrlink.py\' (c) 2013 N0MJS & the K0USY Group - SYSTEM STARTING...')
     networks = {}
     for ipsc_network in NETWORK:
         if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
