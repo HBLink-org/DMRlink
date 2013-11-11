@@ -504,11 +504,12 @@ class IPSC(DatagramProtocol):
             # If we had a keep-alive outstanding by the time we send another, mark it missed.
             if (self._master_stat['KEEP_ALIVES_OUTSTANDING']) > 0:
                 self._master_stat['KEEP_ALIVES_MISSED'] += 1
+                logger.info('(%s) Master Keep-Alive Missed', self._network)
             
             # If we have missed too many keep-alives, de-regiseter the master and start over.
             if self._master_stat['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                 self._master_stat['CONNECTED'] = False
-                logger.error('Maximum Master Keep-Alives Missed -- De-registering the Master')
+                logger.error('(%s) Maximum Master Keep-Alives Missed -- De-registering the Master', self._network)
             
             # Update our stats before we move on...
             self._master_stat['KEEP_ALIVES_SENT'] += 1
@@ -526,6 +527,7 @@ class IPSC(DatagramProtocol):
             # Ask the master for a peer-list
             peer_list_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_LIST_REQ_PKT)
             self.transport.write(peer_list_req_packet, (self._master_sock))
+            logger.info('(%s), No Peer List - Requesting One From the Master', self._network)
 
 
         # If we do have a peer-list, we need to register with the peers and send keep-alives...
@@ -540,7 +542,7 @@ class IPSC(DatagramProtocol):
                 if peer['STATUS']['CONNECTED'] == False:
                     peer_reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REQ_PKT)
                     self.transport.write(peer_reg_packet, (peer['IP'], peer['PORT']))
-                    print
+                    logger.info('(%s) Registering with Peer %s', self._network, int_id(peer['RADIO_ID']))
                 # If we have registered with the peer, then send a keep-alive
                 elif peer['STATUS']['CONNECTED'] == True:
                     peer_alive_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REQ_PKT)
@@ -549,13 +551,14 @@ class IPSC(DatagramProtocol):
                     # If we have a keep-alive outstanding by the time we send another, mark it missed.
                     if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] > 0:
                         peer['STATUS']['KEEP_ALIVES_MISSED'] += 1
+                        logger.info('(%s) Peer Keep-Alive Missed for %s', self._network, int_id(peer['RADIO_ID']))
                     
                     # If we have missed too many keep-alives, de-register the peer and start over.
                     if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                         peer['STATUS']['CONNECTED'] = False
                         self._peer_list.remove(peer['RADIO_ID']) # Remove the peer from the simple list FIRST
                         self._peers.remove(peer)                 # Becuase once it's out of the dictionary, you can't use it for anything else.
-                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, peer)
+                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer['RADIO_ID']))
                     
                     # Update our stats before moving on...
                     peer['STATUS']['KEEP_ALIVES_SENT'] += 1
@@ -656,15 +659,15 @@ class IPSC(DatagramProtocol):
             # Connection maintenance packets that fall into this category
             elif (_packettype == DE_REG_REQ):
                 de_register_peer(self._network, _peerid)
-                logger.warning('<<- (%s) Peer De-Registration Request From:%s:%s', self._network, host, port)
+                logger.warning('(%s) Peer De-Registration Request From:%s:%s', self._network, host, port)
                 return
             
             elif (_packettype == DE_REG_REPLY):
-                logger.warning('<<- (%s) Peer De-Registration Reply From:%s:%s', self._network, host, port)
+                logger.warning('(%s) Peer De-Registration Reply From:%s:%s', self._network, host, port)
                 return
                 
             elif (_packettype == RPT_WAKE_UP):
-                logger.warning('<<- (%s) Repeater Wake-Up Packet From:%s:%s', self._network, host, port)
+                logger.debug('(%s) Repeater Wake-Up Packet From:%s:%s', self._network, host, port)
                 return
             return
 
@@ -732,7 +735,7 @@ class IPSC(DatagramProtocol):
         # We know about these types, but absolutely don't take an action
         elif (_packettype == MASTER_REG_REQ):
             # We can't operate as a master as of now, so we should never receive one of these.
-            # logger.debug('<<- (%s) Master Registration Packet Recieved', self._network)
+            logger.debug('(%s) Master Registration Packet Recieved - WE ARE NOT A MASTER!', self._network)
             return 
             
         # If there's a packet type we don't know aobut, it should be logged so we can figure it out and take an appropriate action!    
