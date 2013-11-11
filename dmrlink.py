@@ -695,7 +695,7 @@ class IPSC(DatagramProtocol):
                 for peer in self._config['PEERS']:
                     if peer['RADIO_ID'] == _peerid:
                         peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
-                return
+                return                
 
             elif (_packettype == PEER_REG_REPLY):
                 for peer in self._config['PEERS']:
@@ -709,7 +709,7 @@ class IPSC(DatagramProtocol):
         # Packets we receive...
         if (_packettype in MASTER_REQUIRED):
             if valid_master(self._network, _peerid) == False:
-                logger.warning('(%s) PeerError: Master %s is invalid: %s', self._network, int(binascii.b2a_hex(_peerid), 16), self._peer_list)
+                logger.warning('(%s) MasterError: %s is not the master peer', self._network, int(binascii.b2a_hex(_peerid), 16))
                 return
                 
             if (_packettype == MASTER_ALIVE_REPLY):
