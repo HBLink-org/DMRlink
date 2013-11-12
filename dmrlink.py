@@ -759,7 +759,7 @@ class UnauthIPSC(IPSC):
     
     # Remove the hash from a packet and return the payload
     #
-    def strip_hash(_self, data):
+    def strip_hash(_self, _data):
         return _data
     
     # Everything is validated, so just return True
