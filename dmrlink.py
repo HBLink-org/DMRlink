@@ -10,6 +10,7 @@ from __future__ import print_function
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
+from binascii import b2a_hex as h
 import ConfigParser
 import os
 import sys
@@ -93,7 +94,7 @@ try:
         if section == 'GLOBAL':
             pass
         else:
-            NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': []}})
+            NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': {}}})
             NETWORK[section]['LOCAL'].update({
                 'MODE': '',
                 'PEER_OPER': True,
@@ -158,7 +159,7 @@ except:
 # Convert a hex string to an int (radio ID, etc.)
 #
 def int_id(_hex_string):
-    return int(binascii.b2a_hex(_hex_string), 16)
+    return int(h(_hex_string), 16)
 
 # Re-Write Source Radio-ID (DMR NAT)
 #
@@ -197,7 +198,7 @@ def send_to_ipsc(_target, _packet):
     # Send to the Master 
     networks[_target].transport.write(_packet, (NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']))
     # Send to each connected Peer
-    for peer in NETWORK[_target]['PEERS']:
+    for peer in self._peers.keys():
         if peer['STATUS']['CONNECTED'] == True:
             networks[_target].transport.write(_packet, (peer['IP'], peer['PORT']))
 
@@ -206,23 +207,21 @@ def send_to_ipsc(_target, _packet):
 #
 def de_register_peer(_network, _peerid):
     # Iterate for the peer in our data
-    for peer in NETWORK[_network]['PEERS']:
-        # If we find the peer, remove it (we should find it)
-        if _peerid == peer['RADIO_ID']:
-            NETWORK[_network]['PEERS'].remove(peer)
-            logger.info('(%s) Peer De-Registration Requested for: %s', _network, binascii.b2a_hex(_peerid))
-            return
-        else:
-            logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', _network, binascii.b2a_hex(_peerid))
-            pass
+    if _peerid in self._peers.keys():
+        del self._peers[_peerid]
+        logger.info('(%s) Peer De-Registration Requested for: %s', _network, h(_peerid))
+        return
+    else:
+        logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', _network, h(_peerid))
+        pass
        
         
 # Take a recieved peer list and the network it belongs to, process and populate the
 # data structure in my_ipsc_config with the results, and return a simple list of peers.
 #
-def process_peer_list(_data, _network, _peer_list):
+def process_peer_list(_data, _network):
     # Determine the length of the peer list for the parsing iterator
-    _peer_list_length = int(binascii.b2a_hex(_data[5:7]), 16)
+    _peer_list_length = int(h(_data[5:7]), 16)
     # Record the number of peers in the data structure... we'll use it later (11 bytes per peer entry)
     NETWORK[_network]['LOCAL']['NUM_PEERS'] = _peer_list_length/11
     logger.info('(%s) Peer List Received from Master: %s peers in this IPSC', _network, _peer_list_length/11)
@@ -234,9 +233,9 @@ def process_peer_list(_data, _network, _peer_list):
         _hex_address  = (_data[i+4:i+8])
         _ip_address   = socket.inet_ntoa(_hex_address)
         _hex_port     = (_data[i+8:i+10])
-        _port         = int(binascii.b2a_hex(_hex_port), 16)
+        _port         = int(h(_hex_port), 16)
         _hex_mode     = (_data[i+10:i+11])
-        _mode         = int(binascii.b2a_hex(_hex_mode), 16)
+        _mode         = int(h(_hex_mode), 16)
         # mask individual Mode parameters
         _link_op      = _mode & PEER_OP_MSK
         _link_mode    = _mode & PEER_MODE_MSK
@@ -275,10 +274,8 @@ def process_peer_list(_data, _network, _peer_list):
         #     Note: We keep a "simple" peer list in addition to the large data
         #           structure because soemtimes, we just need to identify a
         #           peer quickly.
-        if _hex_radio_id not in _peer_list:
-            _peer_list.append(_hex_radio_id)
-            NETWORK[_network]['PEERS'].append({
-                'RADIO_ID':  _hex_radio_id, 
+        if _hex_radio_id not in NETWORK[_network]['PEERS'].keys():
+            NETWORK[_network]['PEERS'][_hex_radio_id] = {
                 'IP':        _ip_address, 
                 'PORT':      _port, 
                 'MODE':      _hex_mode,
@@ -286,15 +283,20 @@ def process_peer_list(_data, _network, _peer_list):
                 'PEER_MODE': _peer_mode,
                 'TS1_LINK':  _ts1,
                 'TS2_LINK':  _ts2,
-                'STATUS':    {'CONNECTED': False, 'KEEP_ALIVES_SENT': 0, 'KEEP_ALIVES_MISSED': 0, 'KEEP_ALIVES_OUTSTANDING': 0}
-            })
-    return _peer_list
+                'STATUS': {
+                    'CONNECTED': False,
+                    'KEEP_ALIVES_SENT': 0,
+                    'KEEP_ALIVES_MISSED': 0,
+                    'KEEP_ALIVES_OUTSTANDING': 0
+                    }
+                }
 
 
 # Gratuituous print-out of the peer list.. Pretty much debug stuff.
 #
 def print_peer_list(_network):
-#    _log = logger.info
+    _peers = NETWORK[_network]['PEERS']
+    
     _status = NETWORK[_network]['MASTER']['STATUS']['PEER_LIST']
     #print('Peer List Status for {}: {}' .format(_network, _status))
     
@@ -302,26 +304,30 @@ def print_peer_list(_network):
         print('We are the only peer for: %s' % _network)
         print('')
         return
-        
+             
     print('Peer List for: %s' % _network)
-    for dictionary in NETWORK[_network]['PEERS']:
-        if dictionary['RADIO_ID'] == NETWORK[_network]['LOCAL']['RADIO_ID']:
+    for peer in _peers.keys():
+        _this_peer = _peers[peer]
+        _this_peer_stat = _this_peer['STATUS']
+        
+        if peer == NETWORK[_network]['LOCAL']['RADIO_ID']:
             me = '(self)'
         else:
             me = ''
-        print('\tRADIO ID: {} {}' .format(int(binascii.b2a_hex(dictionary['RADIO_ID']), 16), me))
-        print('\t\tIP Address: {}:{}' .format(dictionary['IP'], dictionary['PORT']))
-        print('\t\tOperational: {},  Mode: {},  TS1 Link: {},  TS2 Link: {}' .format(dictionary['PEER_OPER'], dictionary['PEER_MODE'], dictionary['TS1_LINK'], dictionary['TS2_LINK']))
-        print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(dictionary['STATUS']['CONNECTED'], dictionary['STATUS']['KEEP_ALIVES_SENT'], dictionary['STATUS']['KEEP_ALIVES_OUTSTANDING'], dictionary['STATUS']['KEEP_ALIVES_MISSED']))
+              
+        print('\tRADIO ID: {} {}' .format(int(h(peer), 16), me))
+        print('\t\tIP Address: {}:{}' .format(_this_peer['IP'], _this_peer['PORT']))
+        print('\t\tOperational: {},  Mode: {},  TS1 Link: {},  TS2 Link: {}' .format(_this_peer['PEER_OPER'], _this_peer['PEER_MODE'], _this_peer['TS1_LINK'], _this_peer['TS2_LINK']))
+        print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_this_peer_stat['CONNECTED'], _this_peer_stat['KEEP_ALIVES_SENT'], _this_peer_stat['KEEP_ALIVES_OUTSTANDING'], _this_peer_stat['KEEP_ALIVES_MISSED']))
+
     print('')
-        
+ 
 # Gratuituous print-out of Master info.. Pretty much debug stuff.
 #
 def print_master(_network):
-#    _log = logger.info
     _master = NETWORK[_network]['MASTER']
     print('Master for %s' % _network)
-    print('\tRADIO ID: {}' .format(int(binascii.b2a_hex(_master['RADIO_ID']), 16)))
+    print('\tRADIO ID: {}' .format(int(h(_master['RADIO_ID']), 16)))
     print('\t\tIP Address: {}:{}' .format(_master['IP'], _master['PORT']))
     print('\t\tOperational: {},  Mode: {},  TS1 Link: {},  TS2 Link: {}' .format(_master['PEER_OPER'], _master['PEER_MODE'], _master['TS1_LINK'], _master['TS2_LINK']))
     print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
@@ -367,7 +373,6 @@ class IPSC(DatagramProtocol):
             # Spendy than iterating a list of dictionaries... Maybe I'll find a better way in the future. Also
             # We have to know when we have a new peer list, so a variable to indicate we do (or don't)
             #
-            self._peer_list = []
             args = ()
             
             
@@ -446,10 +451,10 @@ class IPSC(DatagramProtocol):
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
         _time = time.strftime('%m/%d/%y %H:%M:%S')
-        _packettype = binascii.b2a_hex(_packettype)
+        _packettype = h(_packettype)
         _peerid = get_info(int_id(_peerid), peer_ids)
         print('{} ({}) Unknown message type encountered\n\tPacket Type: {}\n\tFrom: {}' .format(_time, _network, _packettype, _peerid))
-        print('\t', binascii.b2a_hex(_data))
+        print('\t', h(_data))
 
 
     # Take a packet to be SENT, calcualte auth hash and return the whole thing
@@ -534,31 +539,34 @@ class IPSC(DatagramProtocol):
         #
         if (self._master_stat['PEER_LIST'] == True):
             # Iterate the list of peers... so we do this for each one.
-            for peer in (self._peers):
+            for peer_id in self._peers.keys():
+                peer = self._peers[peer_id]
+
                 # We will show up in the peer list, but shouldn't try to talk to ourselves.
-                if (peer['RADIO_ID'] == self._local_id):
+                if peer_id == self._local_id:
                     continue
+
                 # If we haven't registered to a peer, send a registration
                 if peer['STATUS']['CONNECTED'] == False:
                     peer_reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REQ_PKT)
                     self.transport.write(peer_reg_packet, (peer['IP'], peer['PORT']))
-                    logger.info('(%s) Registering with Peer %s', self._network, int_id(peer['RADIO_ID']))
+                    logger.info('(%s) Registering with Peer %s', self._network, int_id(peer_id))
+
                 # If we have registered with the peer, then send a keep-alive
                 elif peer['STATUS']['CONNECTED'] == True:
                     peer_alive_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REQ_PKT)
                     self.transport.write(peer_alive_req_packet, (peer['IP'], peer['PORT']))
-                    
+
                     # If we have a keep-alive outstanding by the time we send another, mark it missed.
                     if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] > 0:
                         peer['STATUS']['KEEP_ALIVES_MISSED'] += 1
-                        logger.info('(%s) Peer Keep-Alive Missed for %s', self._network, int_id(peer['RADIO_ID']))
-                    
+                        logger.info('(%s) Peer Keep-Alive Missed for %s', self._network, int_id(peer_id))
+
                     # If we have missed too many keep-alives, de-register the peer and start over.
                     if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                         peer['STATUS']['CONNECTED'] = False
-                        self._peer_list.remove(peer['RADIO_ID']) # Remove the peer from the simple list FIRST
-                        self._peers.remove(peer)                 # Becuase once it's out of the dictionary, you can't use it for anything else.
-                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer['RADIO_ID']))
+                        del peer                        # Becuase once it's out of the dictionary, you can't use it for anything else.
+                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer_id))
                     
                     # Update our stats before moving on...
                     peer['STATUS']['KEEP_ALIVES_SENT'] += 1
@@ -596,7 +604,7 @@ class IPSC(DatagramProtocol):
         
         # Authenticate the packet
         if self.validate_auth(self._local['AUTH_KEY'], data) == False:
-            logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer ID: %s', self._network, binascii.b2a_hex(_packettype), int(binascii.b2a_hex(_peerid), 16))
+            logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer ID: %s', self._network, h(_packettype), int(h(_peerid), 16))
             return
             
         # Strip the hash, we won't need it anymore
@@ -604,8 +612,8 @@ class IPSC(DatagramProtocol):
 
         # Packets types that must be originated from a peer (including master peer)
         if (_packettype in ANY_PEER_REQUIRED):
-            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peer_list, _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, int(binascii.b2a_hex(_peerid), 16))
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peers.keys(), _peerid) == False):
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, int(h(_peerid), 16))
                 return
                 
             # User, as in "subscriber" generated packets - a.k.a someone trasmitted
@@ -619,22 +627,22 @@ class IPSC(DatagramProtocol):
 
                 # User Voice and Data Call Types:
                 if (_packettype == GROUP_VOICE):
-                    self._notify_event(self._network, 'group_voice', {'peer_id': int(binascii.b2a_hex(_peerid), 16)})
+                    self._notify_event(self._network, 'group_voice', {'peer_id': int(h(_peerid), 16)})
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
                     return
             
                 elif (_packettype == PVT_VOICE):
-                    self._notify_event(self._network, 'private_voice', {'peer_id': int(binascii.b2a_hex(_peerid), 16)})
+                    self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
                     self.private_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
                     return
                     
                 elif (_packettype == GROUP_DATA):
-                    self._notify_event(self._network, 'group_data', {'peer_id': int(binascii.b2a_hex(_peerid), 16)})
+                    self._notify_event(self._network, 'group_data', {'peer_id': int(h(_peerid), 16)})
                     self.group_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
                     return
                     
                 elif (_packettype == PVT_DATA):
-                    self._notify_event(self._network, 'private_voice', {'peer_id': int(binascii.b2a_hex(_peerid), 16)})
+                    self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
                     self.private_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
                     return
                 return
@@ -674,8 +682,8 @@ class IPSC(DatagramProtocol):
 
         # Packets types that must be originated from a peer
         if (_packettype in PEER_REQUIRED):
-            if valid_peer(self._peer_list, _peerid) == False:
-                logger.warning('(%s) PeerError: Peer %s not in peer-list: %s', self._network, int(binascii.b2a_hex(_peerid), 16), self._peer_list)
+            if valid_peer(self._peers.keys(), _peerid) == False:
+                logger.warning('(%s) PeerError: Peer %s not in peer-list: %s', self._network, int(h(_peerid), 16), self._peers.keys())
                 return
             
             # Packets we send...
@@ -692,15 +700,13 @@ class IPSC(DatagramProtocol):
                 
             # Packets we receive...
             elif (_packettype == PEER_ALIVE_REPLY):
-                for peer in self._config['PEERS']:
-                    if peer['RADIO_ID'] == _peerid:
-                        peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
+                if _peerid in self._peers.keys():
+                    self._peers[_peerid]['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
                 return                
 
             elif (_packettype == PEER_REG_REPLY):
-                for peer in self._config['PEERS']:
-                    if peer['RADIO_ID'] == _peerid:
-                        peer['STATUS']['CONNECTED'] = True
+                if _peerid in self._peers.keys():
+                    self._peers[_peerid]['STATUS']['CONNECTED'] = True
                 return
             return
         
@@ -709,7 +715,7 @@ class IPSC(DatagramProtocol):
         # Packets we receive...
         if (_packettype in MASTER_REQUIRED):
             if valid_master(self._network, _peerid) == False:
-                logger.warning('(%s) MasterError: %s is not the master peer', self._network, int(binascii.b2a_hex(_peerid), 16))
+                logger.warning('(%s) MasterError: %s is not the master peer', self._network, int(h(_peerid), 16))
                 return
                 
             if (_packettype == MASTER_ALIVE_REPLY):
@@ -720,7 +726,7 @@ class IPSC(DatagramProtocol):
             elif (_packettype == PEER_LIST_REPLY):
                 NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
                 if len(data) > 18:
-                    self._peer_list = process_peer_list(data, self._network, self._peer_list)
+                    process_peer_list(data, self._network)
                 return
             return
             

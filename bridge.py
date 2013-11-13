@@ -74,7 +74,6 @@ class bridgeIPSC(IPSC):
             if source['SRC_GROUP'] == _dst_sub:
                 _tmp_data = _data
                 _target = source['DST_NET']
-                _target_sock = NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                 # Re-Write the destinaion Group ID
