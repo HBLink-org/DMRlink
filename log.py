@@ -10,6 +10,7 @@ from __future__ import print_function
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
+from binascii import b2a_hex as h
 
 import struct
 import time
@@ -37,7 +38,7 @@ class logIPSC(IPSC):
         print('({}) Call Control Type 3 Packet Received' .format(_network))
     
     def xcmp_xnl(self, _network, _data):
-        print('({}) XCMP/XNL Packet Received From: {}' .format(_network, binascii.b2a_hex(_data)))
+        print('({}) XCMP/XNL Packet Received From: {}' .format(_network, h(_data)))
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
     #    _log = logger.debug
@@ -102,7 +103,7 @@ class logUnauthIPSC(logIPSC):
     def hashed_packet(self, _key, _data):
         return _data   
     
-    # Remove the hash from a packet and return the payload
+    # Remove the hash from a packet and return the payload... except don't
     #
     def strip_hash(self, _data):
         return _data

@@ -195,12 +195,16 @@ def valid_master(_network, _peerid):
 # Accept a complete packet, ready to be sent, and send it to all active peers + master in an IPSC
 #
 def send_to_ipsc(_target, _packet):
-    # Send to the Master 
-    networks[_target].transport.write(_packet, (NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']))
+    _network = NETWORK[_target]
+    _network_instance = networks[_target]
+    _peers = _network['PEERS']
+    
+    # Send to the Master
+    _network_instance.transport.write(_packet, (_network['MASTER']['IP'], _network['MASTER']['PORT']))
     # Send to each connected Peer
-    for peer in networks[_target]['PEERS'].keys():
-        if peer['STATUS']['CONNECTED'] == True:
-            networks[_target].transport.write(_packet, (peer['IP'], peer['PORT']))
+    for peer in _peers.keys():
+        if _peers[peer]['STATUS']['CONNECTED'] == True:
+            _network_instance.transport.write(_packet, (_peers[peer]['IP'], _peers[peer]['PORT']))
 
     
 # De-register a peer from an IPSC by removing it's infomation
@@ -763,7 +767,7 @@ class UnauthIPSC(IPSC):
     def hashed_packet(self, _key, _data):
         return _data
     
-    # Remove the hash from a packet and return the payload
+    # Remove the hash from a packet and return the payload... except don't
     #
     def strip_hash(_self, _data):
         return _data

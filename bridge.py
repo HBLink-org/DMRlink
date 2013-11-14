@@ -10,6 +10,7 @@ from __future__ import print_function
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
+from binascii import b2a_hex as h
 
 import binascii
 import dmrlink
@@ -18,6 +19,7 @@ from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, d
 RULES = {
     'K0USY': {
         'GROUP_VOICE': [
+            {'SRC_GROUP': b'\x00\x00\x03', 'DST_NET': 'LAWRENCE', 'DST_GROUP': b'\x00\x00\x03'},
             {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'LAWRENCE', 'DST_GROUP': b'\x00\x0C\x30'},
             {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'TEST', 'DST_GROUP': b'\x00\x00\xD2'}
         ],
@@ -30,6 +32,7 @@ RULES = {
     },
     'LAWRENCE': {
         'GROUP_VOICE': [
+            {'SRC_GROUP': b'\x00\x00\x03', 'DST_NET': 'K0USY', 'DST_GROUP': b'\x00\x00\x03'},
             {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'K0USY', 'DST_GROUP': b'\x00\x0C\x30'},
             {'SRC_GROUP': b'\x00\x0C\x30', 'DST_NET': 'TEST', 'DST_GROUP': b'\x00\x00\xD2'}
         ],
@@ -61,7 +64,7 @@ class bridgeIPSC(IPSC):
         self.ACTIVE_CALLS = []
         
     #def datagramReceived(self, data, (host, port)):
-    #    print(binascii.b2a_hex(data))
+    #    print(h(data))
         
         
     #************************************************
@@ -112,7 +115,7 @@ class bridgeUnauthIPSC(bridgeIPSC):
     def hashed_packet(self, _key, _data):
         return _data   
     
-    # Remove the hash from a packet and return the payload
+    # Remove the hash from a packet and return the payload... except don't
     #
     def strip_hash(self, _data):
         return _data
