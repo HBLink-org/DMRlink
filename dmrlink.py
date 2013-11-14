@@ -198,7 +198,7 @@ def send_to_ipsc(_target, _packet):
     # Send to the Master 
     networks[_target].transport.write(_packet, (NETWORK[_target]['MASTER']['IP'], NETWORK[_target]['MASTER']['PORT']))
     # Send to each connected Peer
-    for peer in self._peers.keys():
+    for peer in networks[_target]['PEERS'].keys():
         if peer['STATUS']['CONNECTED'] == True:
             networks[_target].transport.write(_packet, (peer['IP'], peer['PORT']))
 
