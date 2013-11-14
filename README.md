@@ -2,6 +2,8 @@
 
 ***THIS CODE CHANGES OFTEN. PLEASE ENSURE YOU ARE UP TO DATE!***
 
+***Known issues... well, known issues that are on the radar to be fixed anyway, are registered as issues. Please review open issues before e-mailing complaints. Also try and remember this is a 1.1 person volunteer effort, and absolutely NOT for commercial use.***
+
 
 ##PROJECT: Open Source IPSC Client.
 **PURPOSE:** Troubleshooting IPSC performance issues, and create applications such as logging, bridging, etc..
