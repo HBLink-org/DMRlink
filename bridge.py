@@ -11,6 +11,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as h
+from time import time
 
 import binascii
 import dmrlink
@@ -71,6 +72,14 @@ class bridgeIPSC(IPSC):
     #************************************************
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+        if (_ts not in self.ACTIVE_CALLS):
+            self.ACTIVE_CALLS.append(_ts)
+            # send repeater wake up, but send them when a repeater is likely not TXing check time since end (see below)
+        if _end:
+            self.ACTIVE_CALLS.remove(_ts)
+            # flag the time here so we can test to see if the last call ened long enough ago to send a wake-up
+            # timer = time()
+            
         for source in RULES[_network]['GROUP_VOICE']:
             # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
             if source['SRC_GROUP'] == _dst_sub:
