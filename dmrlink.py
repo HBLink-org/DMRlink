@@ -418,7 +418,7 @@ class IPSC(DatagramProtocol):
     #************************************************
 
     def call_ctl_1(self, _network, _data):
-        print('({}) Call Control Type 1 Packet Received From: {}' .format(_network, _src_sub))
+        print('({}) Call Control Type 1 Packet Received' .format(_network))
     
     def call_ctl_2(self, _network, _data):
         print('({}) Call Control Type 2 Packet Received' .format(_network))
@@ -427,7 +427,7 @@ class IPSC(DatagramProtocol):
         print('({}) Call Control Type 3 Packet Received' .format(_network))
     
     def xcmp_xnl(self, _network, _data):
-        print('({}) XCMP/XNL Packet Received From: {}' .format(_network, _src_sub))
+        print('({}) XCMP/XNL Packet Received' .format(_network))
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
