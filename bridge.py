@@ -21,44 +21,13 @@ from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, d
 # RPT_WAKE_UP = b'\x85' + NETWORK[_network]['LOCAL']['RADIO_ID] + b'\x00\x00\x00\x01' + b'\x01' + b'\x01'
 # TS1 = 0, TS2 = 1
 
-RULES = {
-    'K0USY': {
-        'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x0C\x30', 'SRC_TS': 1, 'DST_NET': 'LAWRENCE', 'DST_GROUP': b'\x00\x0C\x30', 'SRC_TS': 1},
-            {'SRC_GROUP': b'\x00\x0C\x30', 'SRC_TS': 1, 'DST_NET': 'TEST', 'DST_GROUP': b'\x00\x00\xD2', 'SRC_TS': 1}
-        ],
-        'PRIVATE_VOICE': [
-        ],
-        'GROUP_DATA': [            
-        ],
-        'PRIVATE_DATA': [
-        ]
-    },
-    'LAWRENCE': {
-        'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x0C\x30', 'SRC_TS': 1, 'DST_NET': 'K0USY', 'DST_GROUP': b'\x00\x0C\x30', 'SRC_TS': 1},
-            {'SRC_GROUP': b'\x00\x0C\x30', 'SRC_TS': 1, 'DST_NET': 'TEST', 'DST_GROUP': b'\x00\x00\xD2', 'SRC_TS': 1}
-        ],
-        'PRIVATE_VOICE': [
-        ],
-        'GROUP_DATA': [            
-        ],
-        'PRIVATE_DATA': [
-        ]
-    },
-    'TEST': {
-        'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x00\xD2', 'SRC_TS': 1, 'DST_NET': 'K0USY', 'DST_GROUP': b'\x00\x0C\x30', 'SRC_TS': 1},
-            {'SRC_GROUP': b'\x00\x00\xD2', 'SRC_TS': 1, 'DST_NET': 'LAWRENCE', 'DST_GROUP': b'\x00\x0C\x30', 'SRC_TS': 1}
-        ],
-        'PRIVATE_VOICE': [
-        ],
-        'GROUP_DATA': [            
-        ],
-        'PRIVATE_DATA': [
-        ]
-    }
-}
+# Import Bridging rules
+#
+try:
+    from bridge_rules import RULES
+except ImportError:
+    sys.exit('Bridging rules file not found or invalid')
+
 
 class bridgeIPSC(IPSC):
       

@@ -3,4 +3,5 @@
 Icon
 dmrlink.cfg
 pub*
+bridge_rules.py
 *.pyc
