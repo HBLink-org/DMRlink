@@ -427,8 +427,9 @@ class IPSC(DatagramProtocol):
         print('({}) Call Control Type 3 Packet Received' .format(_network))
     
     def xcmp_xnl(self, _network, _data):
-        print('({}) XCMP/XNL Packet Received' .format(_network))
-    
+        #print('({}) XCMP/XNL Packet Received' .format(_network))
+        pass
+        
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
         _peerid     = get_info(int_id(_peerid), peer_ids)
@@ -491,8 +492,8 @@ class IPSC(DatagramProtocol):
     
     def reporting_loop(self):
         # Right now, without this, we really dont' know anything is happening.  
-        # print_master(self._network)
-        # print_peer_list(self._network)
+        print_master(self._network)
+        print_peer_list(self._network)
         logger.debug('(%s) Periodic Connection Maintenance Loop Started', self._network)
         pass
     
