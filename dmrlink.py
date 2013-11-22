@@ -163,9 +163,8 @@ def int_id(_hex_string):
 
 # Re-Write Source Radio-ID (DMR NAT)
 #
-def dmr_nat(_data, _nat_id):
-    src_radio_id = _data[6:9]
-    _data = _data.replace(src_radio_id, _nat_id)
+def dmr_nat(_data, _src_id, _nat_id):
+    _data = _data.replace(_src_id, _nat_id)
     return _data
 
 # Lookup text data for numeric IDs
