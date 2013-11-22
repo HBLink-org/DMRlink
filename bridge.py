@@ -13,6 +13,8 @@ from twisted.internet import task
 from binascii import b2a_hex as h
 from time import time
 
+import os
+import sys
 import binascii
 import dmrlink
 from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, dmr_nat, logger
@@ -59,6 +61,8 @@ class bridgeIPSC(IPSC):
                 # Re-Write the destinaion Group ID
                 _tmp_data = _tmp_data.replace(_dst_sub, source['DST_GROUP'])
                 # Calculate and append the authentication hash for the target network... if necessary
+                if NAT:
+                    _tmp_data = dmr_nat(_tmp_data, _src_sub, '\x00\x0C\x30')
                 if NETWORK[_target]['LOCAL']['AUTH_ENABLED'] == True:
                     _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC

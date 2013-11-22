@@ -20,7 +20,6 @@ import hmac
 import hashlib
 import socket
 import csv
-import re
 
 #************************************************
 #     IMPORTING OTHER FILES - '#include'
