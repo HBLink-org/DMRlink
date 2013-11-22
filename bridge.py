@@ -19,6 +19,8 @@ import binascii
 import dmrlink
 from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, dmr_nat, logger
 
+NAT = True
+
 # Notes and pieces of next steps...
 # RPT_WAKE_UP = b'\x85' + NETWORK[_network]['LOCAL']['RADIO_ID] + b'\x00\x00\x00\x01' + b'\x01' + b'\x01'
 # TS1 = 0, TS2 = 1
@@ -43,6 +45,7 @@ class bridgeIPSC(IPSC):
     #************************************************
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+	print('packet ', h(_src_sub)) 
         if (_ts not in self.ACTIVE_CALLS):
             self.ACTIVE_CALLS.append(_ts)
             # send repeater wake up, but send them when a repeater is likely not TXing check time since end (see below)

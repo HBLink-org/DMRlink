@@ -490,8 +490,8 @@ class IPSC(DatagramProtocol):
     
     def reporting_loop(self):
         # Right now, without this, we really dont' know anything is happening.  
-        print_master(self._network)
-        print_peer_list(self._network)
+        #print_master(self._network)
+        #print_peer_list(self._network)
         logger.debug('(%s) Periodic Connection Maintenance Loop Started', self._network)
         pass
     
