@@ -417,17 +417,20 @@ class IPSC(DatagramProtocol):
     #************************************************
 
     def call_ctl_1(self, _network, _data):
-        print('({}) Call Control Type 1 Packet Received' .format(_network))
+        print('({}) Call Control Type 1 Packet Received: {}' .format(_network, h(_data)))
     
     def call_ctl_2(self, _network, _data):
-        print('({}) Call Control Type 2 Packet Received' .format(_network))
+        print('({}) Call Control Type 2 Packet Received: {}' .format(_network, h(_data)))
     
     def call_ctl_3(self, _network, _data):
-        print('({}) Call Control Type 3 Packet Received' .format(_network))
+        print('({}) Call Control Type 3 Packet Received: {}' .format(_network, h(_data)))
     
     def xcmp_xnl(self, _network, _data):
         #print('({}) XCMP/XNL Packet Received' .format(_network))
         pass
+        
+    def repeater_wake_up(self, _network, _data):
+        print('({}) Repeater Wake-Up Packet Received: {}' .format(_network, h(_data)))
         
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
@@ -679,6 +682,7 @@ class IPSC(DatagramProtocol):
                 return
                 
             elif (_packettype == RPT_WAKE_UP):
+                self.repeater_wake_up(self._network, data)
                 logger.debug('(%s) Repeater Wake-Up Packet From:%s:%s', self._network, host, port)
                 return
             return
