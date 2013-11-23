@@ -34,9 +34,9 @@ Each peer will send keep-alives to each other peer in the IPSC network at an int
 The following sections of this document will include various packet types. This is a list of currently known types and their meanings. Note: The names are arbitrarily chosen with the intention of being descriptive, and each is defined by what they've been "observed" to do in the wild.  
 
 	CALL_CONFIRMATION         = 0x05        Confirmation FROM the recipient of a confirmed call.
-    CALL_CTL_1                = 0x61        |
-	CALL_CTL_2                = 0x62        | Call control messages, exact use unknown
-	CALL_CTL_3                = 0x63        |	
+    CALL_MON_ORIGIN           = 0x61        Sent to Repeater Call Monitor Peers from repeater originating a call
+	CALL_MON_RPT              = 0x62        Sent to Repeater Call Monitor Peers from all repeaters repeating a call
+	CALL_MON_NACK             = 0x63        Sent to Repeater Call Monitor Peers from repeaters that cannot transmit a call (ie. ID in progress)
 	XCMP_XNL         		  = 0x70		Control protocol messages
 	GROUP_VOICE      		  = 0x80		This is a group voice call
 	PVT_VOICE                 = 0x81        This is a private voice call

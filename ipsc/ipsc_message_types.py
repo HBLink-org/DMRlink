@@ -8,9 +8,9 @@
 
 # Known IPSC Message Types
 CALL_CONFIRMATION     = b'\x05' # Confirmation FROM the recipient of a confirmed call.
-CALL_CTL_1            = b'\x61' #  |
-CALL_CTL_2            = b'\x62' #  | Exact meaning unknown
-CALL_CTL_3            = b'\x63' #  |
+CALL_MON_ORIGIN       = b'\x61' #  |
+CALL_MON_RPT          = b'\x62' #  | Exact meaning unknown
+CALL_MON_NACK         = b'\x63' #  |
 XCMP_XNL              = b'\x70' # XCMP/XNL control message
 GROUP_VOICE           = b'\x80'
 PVT_VOICE             = b'\x81'
@@ -47,7 +47,7 @@ LINK_TYPE_IPSC        = b'\x04'
 IPSC_VER              = LINK_TYPE_IPSC + IPSC_VER_19 + LINK_TYPE_IPSC + IPSC_VER_17
 
 # Packets that must originate from a peer (or master peer)
-ANY_PEER_REQUIRED = [GROUP_VOICE, PVT_VOICE, GROUP_DATA, PVT_DATA, CALL_CTL_1, CALL_CTL_2, CALL_CTL_3, XCMP_XNL, RPT_WAKE_UP, DE_REG_REQ]
+ANY_PEER_REQUIRED = [GROUP_VOICE, PVT_VOICE, GROUP_DATA, PVT_DATA, CALL_MON_ORIGIN, CALL_MON_RPT, CALL_MON_NACK, XCMP_XNL, RPT_WAKE_UP, DE_REG_REQ]
 
 # Packets that must originate from a non-master peer
 PEER_REQUIRED = [PEER_ALIVE_REQ, PEER_ALIVE_REPLY, PEER_REG_REQ, PEER_REG_REPLY]
@@ -71,9 +71,9 @@ REQ_VALID_MASTER = [
 ]
 
 REQ_MASTER_CONNECTED = [
-    CALL_CTL_1,
-    CALL_CTL_2,
-    CALL_CTL_3,
+    CALL_MON_ORIGIN,
+    CALL_MON_RPT,
+    CALL_MON_NACK,
     XCMP_XNL,
     GROUP_VOICE,
     PVT_VOICE,

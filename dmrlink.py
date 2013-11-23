@@ -416,14 +416,14 @@ class IPSC(DatagramProtocol):
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
 
-    def call_ctl_1(self, _network, _data):
-        print('({}) Call Control Type 1 Packet Received: {}' .format(_network, h(_data)))
+    def call_mon_origin(self, _network, _data):
+        print('({}) Repeater Call Monitor Origin Packet Received: {}' .format(_network, h(_data)))
     
-    def call_ctl_2(self, _network, _data):
-        print('({}) Call Control Type 2 Packet Received: {}' .format(_network, h(_data)))
+    def call_mon_rpt(self, _network, _data):
+        print('({}) Repeater Call Monitor Repeating Packet Received: {}' .format(_network, h(_data)))
     
-    def call_ctl_3(self, _network, _data):
-        print('({}) Call Control Type 3 Packet Received: {}' .format(_network, h(_data)))
+    def call_mon_nack(self, _network, _data):
+        print('({}) Repeater Call Monitor NACK Packet Received: {}' .format(_network, h(_data)))
     
     def xcmp_xnl(self, _network, _data):
         #print('({}) XCMP/XNL Packet Received' .format(_network))
@@ -659,16 +659,16 @@ class IPSC(DatagramProtocol):
                 self.xcmp_xnl(self._network, data)
                 return
             
-            elif (_packettype == CALL_CTL_1):
-                self.call_ctl_1(self._network, data)
+            elif (_packettype == call_mon_origin):
+                self.call_mon_origin(self._network, data)
                 return
                 
-            elif (_packettype == CALL_CTL_2):
-                self.call_ctl_2(self._network, data)
+            elif (_packettype == call_mon_rpt):
+                self.call_mon_rpt(self._network, data)
                 return
                 
-            elif (_packettype == CALL_CTL_3):
-                self.call_ctl_3(self._network, data)
+            elif (_packettype == call_mon_nack):
+                self.call_mon_nack(self._network, data)
                 return
                 
             # Connection maintenance packets that fall into this category

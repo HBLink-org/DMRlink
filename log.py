@@ -28,14 +28,14 @@ class logIPSC(IPSC):
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
 
-    def call_ctl_1(self, _network, _data):
-        print('({}) Call Control Type 1 Packet Received From: {}' .format(_network, _src_sub))
+    def call_mon_origin(self, _network, _data):
+        print('({}) Repeater Call Monitor Origin Packet Received From: {}' .format(_network, _src_sub))
     
-    def call_ctl_2(self, _network, _data):
-        print('({}) Call Control Type 2 Packet Received' .format(_network))
+    def call_mon_rpt(self, _network, _data):
+        print('({}) Repeater Call Monitor Repeating Packet Received' .format(_network))
     
-    def call_ctl_3(self, _network, _data):
-        print('({}) Call Control Type 3 Packet Received' .format(_network))
+    def call_mon_nack(self, _network, _data):
+        print('({}) Repeater Call Monitor NACK Packet Received' .format(_network))
     
     def xcmp_xnl(self, _network, _data):
         print('({}) XCMP/XNL Packet Received From: {}' .format(_network, h(_data)))

@@ -82,13 +82,13 @@ class bridgeIPSC(IPSC):
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         pass
         
-    def call_ctl_1(self, _network, _data):
+    def call_mon_origin(self, _network, _data):
         pass
     
-    def call_ctl_2(self, _network, _data):
+    def call_mon_rpt(self, _network, _data):
         pass
     
-    def call_ctl_3(self, _network, _data):
+    def call_mon_nack(self, _network, _data):
         pass
     
     def xcmp_xnl(self, _network, _data):
