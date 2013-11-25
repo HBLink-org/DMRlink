@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
 #
 # This work is licensed under the Creative Commons Attribution-ShareAlike
@@ -5,6 +7,8 @@
 # http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to
 # Creative Commons, 444 Castro Street, Suite 900, Mountain View,
 # California, 94041, USA.
+
+# This is a sample application that snoops voice traffic to log calls
 
 from __future__ import print_function
 from twisted.internet.protocol import DatagramProtocol

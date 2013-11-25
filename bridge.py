@@ -8,6 +8,8 @@
 # Creative Commons, 444 Castro Street, Suite 900, Mountain View,
 # California, 94041, USA.
 
+# This is a sample application to bridge traffic between IPSC networks
+
 from __future__ import print_function
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
