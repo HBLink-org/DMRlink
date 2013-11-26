@@ -35,12 +35,6 @@ NACK = {
     '\x06': 'BSID End'
 }
 
-CLASS = {
-    '\x01': 'Data',
-    '\x02': 'Voice',
-    '\x03': 'Emergency'
-}
-
 TYPE = {
     '\x4F': 'Group Voice',
     '\x50': 'Private Voice',
@@ -75,14 +69,61 @@ class rcmIPSC(IPSC):
     #************************************************
 
     def call_mon_origin(self, _network, _data):
-        print('({}) Repeater Call Monitor Origin Packet: {}' .format(_network, h(_data)))
+        _source = _data[1:5]
+        _ipsc_src = _data[5:9]
+        _rf_src = _data[16:19]
+        _rf_tgt = _data[19:22]
+        
+        _ts = _data[13]
+        _status = _data[15]
+        _type = _data[22]
+        _sec = _data[24]
+        
+        if _ts in TS.keys():
+            _ts = TS[_ts]
+        else:
+            _ts = h(_ts)
+            
+        if _status in STATUS.keys():
+            _status = STATUS[_status]
+        else:
+            _status = h(_status)
+            
+        if _type in TYPE.keys():
+            _type = TYPE[_type]
+        else:
+            _type = h(_type)
+            
+        if _sec in SEC.keys():
+            _sec = SEC[_sec]
+        else:
+            _sec = h(_sec)
+            
+        
+        _rf_src = get_info(int_id(_rf_src), subscriber_ids)
+        
+        if _type == '\x4F':
+            _rf_tgt = get_info(int_id(_rf_tgt), talkgroup_ids)
+        else:
+            _rf_tgt = get_info(int_id(_rf_tgt), subscriber_ids)
+        
+        print('IPSC:        ', _network)
+        print('IPSC Source: ', h(_ipsc_src))
+        print('Timeslot:    ', TS[_ts])
+        print('Status:      ', STATUS[_status])
+        print('Type:        ', TYPE[_type])
+        print('Source Sub:  ', _rf_src)
+        print('Target Sub:  ', _rf_tgt)
+        print()
     
     def call_mon_rpt(self, _network, _data):
-        print('({}) Repeater Call Monitor Repeating Packet: {}' .format(_network, h(data)))
-    
+        #print('({}) Repeater Call Monitor Repeating Packet: {}' .format(_network, h(_data)))
+        pass
+        
     def call_mon_nack(self, _network, _data):
-        print('({}) Repeater Call Monitor NACK Packet: {}' .format(_network, h(data)))
-    
+        #print('({}) Repeater Call Monitor NACK Packet: {}' .format(_network, h(_data)))
+        pass
+        
     def xcmp_xnl(self, _network, _data):
         print('({}) XCMP/XNL Packet Received From: {}' .format(_network, h(_data)))
     
