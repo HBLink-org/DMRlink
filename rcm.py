@@ -78,11 +78,7 @@ class rcmIPSC(IPSC):
         _status = _data[15]
         _type = _data[22]
         _sec = _data[24]
-        
-        if _ts in TS.keys():
-            _ts = TS[_ts]
-        else:
-            _ts = h(_ts)
+
             
         if _status in STATUS.keys():
             _status = STATUS[_status]

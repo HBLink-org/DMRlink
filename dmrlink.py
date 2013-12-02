@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
 #
 # This work is licensed under the Creative Commons Attribution-ShareAlike
@@ -515,6 +513,7 @@ class IPSC(DatagramProtocol):
         if not self._master_stat['CONNECTED']:
             reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REQ_PKT)
             self.transport.write(reg_packet, self._master_sock)
+            logger.info('(%s) Registering to the Master', self._network)
         
         # Once the master is connected, we have to send keep-alives.. and make sure we get them back
         elif self._master_stat['CONNECTED']:
@@ -668,15 +667,15 @@ class IPSC(DatagramProtocol):
                 self.xcmp_xnl(self._network, data)
                 return
             
-            elif _packettype == self.call_mon_origin:
+            elif _packettype == CALL_MON_ORIGIN:
                 self.call_mon_origin(self._network, data)
                 return
                 
-            elif _packettype == self.call_mon_rpt:
+            elif _packettype == CALL_MON_RPT:
                 self.call_mon_rpt(self._network, data)
                 return
                 
-            elif _packettype == self.call_mon_nack:
+            elif _packettype == CALL_MON_NACK:
                 self.call_mon_nack(self._network, data)
                 return
                 
