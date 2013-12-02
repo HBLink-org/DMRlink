@@ -36,6 +36,12 @@ NACK = {
 }
 
 TYPE = {
+    '\x30': 'Private Data Set-Up',
+    '\x31': 'Group Data Set-Up',
+    '\x32': 'Private CSBK Set-Up',
+    '\x47': 'Radio Check Request',
+    '\x45': 'Call Alert',
+    '\x4D': 'Remote Monitor Request',
     '\x4F': 'Group Voice',
     '\x50': 'Private Voice',
     '\x51': 'Group Data',
@@ -78,33 +84,17 @@ class rcmIPSC(IPSC):
         _status = _data[15]
         _type = _data[22]
         _sec = _data[24]
-
-            
-        if _status in STATUS.keys():
-            _status = STATUS[_status]
-        else:
-            _status = h(_status)
-            
-        if _type in TYPE.keys():
-            _type = TYPE[_type]
-        else:
-            _type = h(_type)
-            
-        if _sec in SEC.keys():
-            _sec = SEC[_sec]
-        else:
-            _sec = h(_sec)
-            
         
+        _ipsc_src = get_info(int_id(_ipsc_src), peer_ids)
         _rf_src = get_info(int_id(_rf_src), subscriber_ids)
         
-        if _type == '\x4F':
+        if _type == '\x4F' or '\x51':
             _rf_tgt = get_info(int_id(_rf_tgt), talkgroup_ids)
         else:
             _rf_tgt = get_info(int_id(_rf_tgt), subscriber_ids)
         
         print('IPSC:        ', _network)
-        print('IPSC Source: ', h(_ipsc_src))
+        print('IPSC Source: ', _ipsc_src)
         print('Timeslot:    ', TS[_ts])
         print('Status:      ', STATUS[_status])
         print('Type:        ', TYPE[_type])
@@ -134,6 +124,12 @@ class rcmIPSC(IPSC):
     
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         pass
+        
+    def repeater_wake_up(self, _network, _data):
+        _source = _data[1:5]
+        _source_dec = int_id(_source)
+        _source_name = get_info(_source_dec, peer_ids)
+        print('({}) Repeater Wake-Up Packet Received: {} ({})' .format(_network, _source_name, _source_dec))
 
 class rcmUnauthIPSC(rcmIPSC):
     
