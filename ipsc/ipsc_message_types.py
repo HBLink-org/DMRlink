@@ -7,41 +7,41 @@
 # California, 94041, USA.
 
 # Known IPSC Message Types
-CALL_CONFIRMATION     = b'\x05' # Confirmation FROM the recipient of a confirmed call.
-CALL_MON_ORIGIN       = b'\x61' #  |
-CALL_MON_RPT          = b'\x62' #  | Exact meaning unknown
-CALL_MON_NACK         = b'\x63' #  |
-XCMP_XNL              = b'\x70' # XCMP/XNL control message
-GROUP_VOICE           = b'\x80'
-PVT_VOICE             = b'\x81'
-GROUP_DATA            = b'\x83'
-PVT_DATA              = b'\x84'
-RPT_WAKE_UP           = b'\x85' # Similar to OTA DMR "wake up"
-MASTER_REG_REQ        = b'\x90' # FROM peer TO master
-MASTER_REG_REPLY      = b'\x91' # FROM master TO peer
-PEER_LIST_REQ         = b'\x92'
-PEER_LIST_REPLY       = b'\x93'
-PEER_REG_REQ          = b'\x94' # Peer registration request
-PEER_REG_REPLY        = b'\x95' # Peer registration reply
-MASTER_ALIVE_REQ      = b'\x96' # FROM peer TO master
-MASTER_ALIVE_REPLY    = b'\x97' # FROM master TO peer
-PEER_ALIVE_REQ        = b'\x98' # Peer keep alive request
-PEER_ALIVE_REPLY      = b'\x99' # Peer keep alive reply
-DE_REG_REQ            = b'\x9A' # Request de-registration from system
-DE_REG_REPLY          = b'\x9B' # De-registration reply
+CALL_CONFIRMATION     = '\x05' # Confirmation FROM the recipient of a confirmed call.
+CALL_MON_ORIGIN       = '\x61' #  |
+CALL_MON_RPT          = '\x62' #  | Exact meaning unknown
+CALL_MON_NACK         = '\x63' #  |
+XCMP_XNL              = '\x70' # XCMP/XNL control message
+GROUP_VOICE           = '\x80'
+PVT_VOICE             = '\x81'
+GROUP_DATA            = '\x83'
+PVT_DATA              = '\x84'
+RPT_WAKE_UP           = '\x85' # Similar to OTA DMR "wake up"
+MASTER_REG_REQ        = '\x90' # FROM peer TO master
+MASTER_REG_REPLY      = '\x91' # FROM master TO peer
+PEER_LIST_REQ         = '\x92'
+PEER_LIST_REPLY       = '\x93'
+PEER_REG_REQ          = '\x94' # Peer registration request
+PEER_REG_REPLY        = '\x95' # Peer registration reply
+MASTER_ALIVE_REQ      = '\x96' # FROM peer TO master
+MASTER_ALIVE_REPLY    = '\x97' # FROM master TO peer
+PEER_ALIVE_REQ        = '\x98' # Peer keep alive request
+PEER_ALIVE_REPLY      = '\x99' # Peer keep alive reply
+DE_REG_REQ            = '\x9A' # Request de-registration from system
+DE_REG_REPLY          = '\x9B' # De-registration reply
 
 # IPSC Version Information
-IPSC_VER_14           = b'\x00'
-IPSC_VER_15           = b'\x00'
-IPSC_VER_15A          = b'\x00'
-IPSC_VER_16           = b'\x01'
-IPSC_VER_17           = b'\x02'
-IPSC_VER_18           = b'\x02'
-IPSC_VER_19           = b'\x03'
-IPSC_VER_22           = b'\x04'
+IPSC_VER_14           = '\x00'
+IPSC_VER_15           = '\x00'
+IPSC_VER_15A          = '\x00'
+IPSC_VER_16           = '\x01'
+IPSC_VER_17           = '\x02'
+IPSC_VER_18           = '\x02'
+IPSC_VER_19           = '\x03'
+IPSC_VER_22           = '\x04'
 
 # Link Type Values - assumed that cap+, etc. are different, this is all I can confirm
-LINK_TYPE_IPSC        = b'\x04'
+LINK_TYPE_IPSC        = '\x04'
 
 # IPSC Version and Link Type are Used for a 4-byte version field in registration packets
 IPSC_VER              = LINK_TYPE_IPSC + IPSC_VER_19 + LINK_TYPE_IPSC + IPSC_VER_17
