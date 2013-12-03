@@ -11,17 +11,11 @@
 # This is a sample application to bridge traffic between IPSC networks
 
 from __future__ import print_function
-from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
-from twisted.internet import task
 from binascii import b2a_hex as h
-from time import time
 
-import os
 import sys
-import binascii
-import dmrlink
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, int_id, send_to_ipsc, dmr_nat, logger
+from dmrlink import IPSC, NETWORK, networks, send_to_ipsc, dmr_nat, logger
 
 NAT = 0
 #NAT = '\x2f\x9b\x80'
@@ -50,12 +44,12 @@ class bridgeIPSC(IPSC):
     #************************************************
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        if (_ts not in self.ACTIVE_CALLS):
+        if _ts not in self.ACTIVE_CALLS:
             self.ACTIVE_CALLS.append(_ts)
             # send repeater wake up, but send them when a repeater is likely not TXing check time since end (see below)
         if _end:
             self.ACTIVE_CALLS.remove(_ts)
-            # flag the time here so we can test to see if the last call ened long enough ago to send a wake-up
+            # flag the time here so we can test to see if the last call ended long enough ago to send a wake-up
             # timer = time()
             
         for source in RULES[_network]['GROUP_VOICE']:
@@ -65,12 +59,12 @@ class bridgeIPSC(IPSC):
                 _target = source['DST_NET']
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
-                # Re-Write the destinaion Group ID
+                # Re-Write the destination Group ID
                 _tmp_data = _tmp_data.replace(_dst_sub, source['DST_GROUP'])
                 # Calculate and append the authentication hash for the target network... if necessary
 		if NAT:
                     _tmp_data = dmr_nat(_tmp_data, _src_sub, NAT)
-                if NETWORK[_target]['LOCAL']['AUTH_ENABLED'] == True:
+                if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
                     _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 send_to_ipsc(_target, _tmp_data)
@@ -116,8 +110,8 @@ class bridgeUnauthIPSC(bridgeIPSC):
 if __name__ == '__main__':
     logger.info('DMRlink \'bridge.py\' (c) 2013 N0MJS & the K0USY Group - SYSTEM STARTING...')
     for ipsc_network in NETWORK:
-        if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
-            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
+        if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
+            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED']:
                 networks[ipsc_network] = bridgeIPSC(ipsc_network)
             else:
                 networks[ipsc_network] = bridgeUnauthIPSC(ipsc_network)
