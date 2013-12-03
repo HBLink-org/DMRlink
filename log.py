@@ -11,15 +11,10 @@
 # This is a sample application that snoops voice traffic to log calls
 
 from __future__ import print_function
-from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
-from twisted.internet import task
 from binascii import b2a_hex as h
 
-import struct
 import time
-import binascii
-import dmrlink
 from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids, logger
 
 class logIPSC(IPSC):
@@ -33,7 +28,7 @@ class logIPSC(IPSC):
     #************************************************
 
     def call_mon_origin(self, _network, _data):
-        print('({}) Repeater Call Monitor Origin Packet Received From: {}' .format(_network, _src_sub))
+        print('({}) Repeater Call Monitor Origin Packet Received' .format(_network))
     
     def call_mon_rpt(self, _network, _data):
         print('({}) Repeater Call Monitor Repeating Packet Received' .format(_network))
@@ -46,16 +41,6 @@ class logIPSC(IPSC):
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
     #    _log = logger.debug
-        ''' RSSI STUFF IS LIKELY NOT CORRECT!!!
-            WILL BE REMOVED IN FUTURE RELEASES
-            
-        if _data[30:31] == '\x01':
-            rssi1 = struct.unpack('B', _data[-1])[0]
-            rssi2 = struct.unpack('B', _data[-2:-1])[0]
-            rssi = (rssi1 + (((rssi2*1000)+128)/256000))
-            print('RSSI (not quite correct yet): ', rssi)
-        '''
-            
         if (_ts not in self.ACTIVE_CALLS) or _end:
             _time       = time.strftime('%m/%d/%y %H:%M:%S')
             _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
@@ -119,8 +104,8 @@ class logUnauthIPSC(logIPSC):
 if __name__ == '__main__':
     logger.info('DMRlink \'log.py\' (c) 2013 N0MJS & the K0USY Group - SYSTEM STARTING...')
     for ipsc_network in NETWORK:
-        if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
-            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
+        if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
+            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED']:
                 networks[ipsc_network] = logIPSC(ipsc_network)
             else:
                 networks[ipsc_network] = logUnauthIPSC(ipsc_network)
