@@ -299,6 +299,7 @@ def process_peer_list(_data, _network):
                     'KEEP_ALIVES_OUTSTANDING': 0
                     }
                 }
+            logger.info('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
 
 
 # Gratuitous print-out of the peer list.. Pretty much debug stuff.
@@ -434,8 +435,7 @@ class IPSC(DatagramProtocol):
         print('({}) Repeater Call Monitor NACK Packet Received: {}' .format(_network, h(_data)))
     
     def xcmp_xnl(self, _network, _data):
-        #print('({}) XCMP/XNL Packet Received' .format(_network))
-        pass
+        print('({}) XCMP/XNL Packet Received: {}' .format(_network, h(_data)))
         
     def repeater_wake_up(self, _network, _data):
         print('({}) Repeater Wake-Up Packet Received: {}' .format(_network, h(_data)))
@@ -513,7 +513,7 @@ class IPSC(DatagramProtocol):
         if not self._master_stat['CONNECTED']:
             reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REQ_PKT)
             self.transport.write(reg_packet, self._master_sock)
-            logger.info('(%s) Registering to the Master', self._network)
+            logger.info('(%s) Registering with the Master', self._network)
         
         # Once the master is connected, we have to send keep-alives.. and make sure we get them back
         elif self._master_stat['CONNECTED']:
@@ -682,16 +682,16 @@ class IPSC(DatagramProtocol):
             # Connection maintenance packets that fall into this category
             elif _packettype == DE_REG_REQ:
                 de_register_peer(self._network, _peerid)
-                logger.warning('(%s) Peer De-Registration Request From:%s:%s', self._network, host, port)
+                logger.warning('(%s) Peer De-Registration Request From: %s', self._network, int(h(_peerid), 16))
                 return
             
             elif _packettype == DE_REG_REPLY:
-                logger.warning('(%s) Peer De-Registration Reply From:%s:%s', self._network, host, port)
+                logger.warning('(%s) Peer De-Registration Reply From: %s', self._network, int(h(_peerid), 16))
                 return
                 
             elif _packettype == RPT_WAKE_UP:
                 self.repeater_wake_up(self._network, data)
-                logger.debug('(%s) Repeater Wake-Up Packet From:%s:%s', self._network, host, port)
+                logger.debug('(%s) Repeater Wake-Up Packet From: %s', self._network, int(h(_peerid), 16))
                 return
             return
 
@@ -712,6 +712,7 @@ class IPSC(DatagramProtocol):
             elif _packettype == PEER_REG_REQ:
                 peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
                 self.transport.write(peer_reg_reply_packet, (host, port))
+                logger.info('(%s) Peer Registration Request From: %s', self._network, int(h(_peerid), 16))
                 return
                 
             # Packets we receive...
@@ -723,6 +724,7 @@ class IPSC(DatagramProtocol):
             elif _packettype == PEER_REG_REPLY:
                 if _peerid in self._peers.keys():
                     self._peers[_peerid]['STATUS']['CONNECTED'] = True
+                    logger.info('(%s) Registration Reply From: %s', self._network, int(h(_peerid), 16))
                 return
             return
         
