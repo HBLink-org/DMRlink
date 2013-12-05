@@ -470,6 +470,14 @@ class IPSC(DatagramProtocol):
         print('{} ({}) Unknown message type encountered\n\tPacket Type: {}\n\tFrom: {}' .format(_network, _packettype, _peerid))
         print('\t', h(_data))
 
+    # Reset the outstanding keep-alive counter for _peerid...
+    # Used when receiving acks OR when we see traffic from a repeater, since they ignore keep-alives when transmitting
+    #
+    def reset_keep_alive(self, _peerid):
+        if _peerid in self._peers.keys():
+            self._peers[_peerid]['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
+        if _peerid == self._master['RADIO_ID']:
+            self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
 
     # Take a packet to be SENT, calculate auth hash and return the whole thing
     #
@@ -642,11 +650,13 @@ class IPSC(DatagramProtocol):
 
                 # User Voice and Data Call Types:
                 if _packettype == GROUP_VOICE:
+                    self.reset_keep_alive(_peerid)
                     self._notify_event(self._network, 'group_voice', {'peer_id': int(h(_peerid), 16)})
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
                     return
             
                 elif _packettype == PVT_VOICE:
+                    self.reset_keep_alive(_peerid)
                     self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
                     self.private_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
                     return
@@ -717,8 +727,7 @@ class IPSC(DatagramProtocol):
                 
             # Packets we receive...
             elif _packettype == PEER_ALIVE_REPLY:
-                if _peerid in self._peers.keys():
-                    self._peers[_peerid]['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
+                self.reset_keep_alive(_peerid)
                 return                
 
             elif _packettype == PEER_REG_REPLY:
@@ -737,8 +746,7 @@ class IPSC(DatagramProtocol):
                 return
                 
             if _packettype == MASTER_ALIVE_REPLY:
-                # This action is so simple, it doesn't require a callback function, master is responding, we're good.
-                self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
+                self.reset_keep_alive(_peerid)
                 return
             
             elif _packettype == PEER_LIST_REPLY:
