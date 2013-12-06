@@ -299,7 +299,7 @@ def process_peer_list(_data, _network):
                     'KEEP_ALIVES_OUTSTANDING': 0
                     }
                 }
-            logger.info('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+            logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
 
 
 # Gratuitous print-out of the peer list.. Pretty much debug stuff.

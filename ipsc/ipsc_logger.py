@@ -61,8 +61,8 @@ dictConfig({
     },
     'loggers': {
         'dmrlink': {
-            'handlers': ['file-timed', 'syslog'],
-#            'handlers': ['file', 'console'],
+#            'handlers': ['file-timed', 'syslog'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         }
