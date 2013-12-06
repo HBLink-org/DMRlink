@@ -635,7 +635,7 @@ class IPSC(DatagramProtocol):
 
         # Packets types that must be originated from a peer (including master peer)
         if _packettype in ANY_PEER_REQUIRED:
-            if not(valid_master(self._network, _peerid)) or not(valid_peer(self._peers.keys(), _peerid)):
+            if not(valid_master(self._network, _peerid) == False or valid_peer(self._peers.keys(), _peerid) == False):
                 logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, int(h(_peerid), 16))
                 return
                 
