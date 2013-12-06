@@ -23,7 +23,7 @@ IPSC_TS2_MSK      = 0b00000011
 #	Byte 1 - 0x00  	= Unknown
 #	Byte 2 - 0x00	= Unknown
 #	Byte 3 - BIT FLAGS:
-#	      x... .... = CBSK Message
+#	      x... .... = CSBK Message
 #	      .x.. .... = Repeater Call Monitoring
 #	      ..x. .... = 3rd Party "Console" Application
 #	      ...x xxxx = Unknown - default to 0
