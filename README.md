@@ -2,11 +2,6 @@
 
 ***THIS CODE CHANGES OFTEN. PLEASE ENSURE YOU ARE UP TO DATE!***
 
-***This is important: If you e-mail me asking about dmrlink and don't use the phrase "here I am, rock you like a hurricane" (at least initially), I will probably delete your e-mail without reading it. I need to be very clear. This software is NOT intended to be an out-of-box replacement for c-Bridge, SmartPTT, GenWatch, RDAC, etc. Please do not contact me with the express intent of wanting to know how to configure it to do the same thing as any of these fine products, because it doesn't do what they do, and will likely never be something you can "just run" and peform those functions with. This is free software, shared with the world so that others can learn from or do useful things with it. The price of open source is that I didn't sell you a product, and there is no support or warranty, or even responsiblity on my part for your use of it. If you want something that is a c-Bridge or SmartPTT, then please go buy one of those products -- they work great, I own both. Using dmrlink will require you to get your hands dirty. Using dmrlink requires basic understanding of Python. If you have read this README.md, have looked for comments or other direction within the files themsleves, and understand I owe you nothing, then please e-mail me, and I'll try to help.***
-***Yes, this note probably sounds heavy handed. I have received a great deal of e-mail from a great deal of folks since posting this project. They have ranged from folks helping with development by fixing problems for me or offering the right way to do something where I clearly did it wrong (which I GREATLY APPRECIATE), all the way down to a growing number of people who seem to want to know things such as, "how do you expect me to use this in place of a c-Bridge?". The answer is, I don't. And I need to minimize those e-mails so that I have time to concentrate on making dmrlink a better piece of software.***
-
-***73 DE N0MJS***
-
 
 ##PROJECT: Open Source IPSC Client.
 **PURPOSE:** Troubleshooting IPSC performance issues, and create applications such as logging, bridging, etc..
@@ -232,6 +227,14 @@ Number of peers can be derived from PEER_LIST_LENGTH, as each peer entry is 11 b
 		
 		FULL_PAYLOAD = add_authentication(PAYLOAD, KEY)
 		print(binascii.b2a_hex(FULL_PAYLOAD))
+
+**NOTE:**
+
+This is important: If you e-mail me asking about dmrlink and don't use the phrase "here I am, rock you like a hurricane" (at least initially), I will probably delete your e-mail without reading it. I need to be very clear. This software is NOT intended to be an out-of-box replacement for c-Bridge, SmartPTT, GenWatch, RDAC, etc. Please do not contact me with the express intent of wanting to know how to configure it to do the same thing as any of these fine products, because it doesn't do what they do, and will likely never be something you can "just run" and peform those functions with. This is free software, shared with the world so that others can learn from or do useful things with it. The price of open source is that I didn't sell you a product, and there is no support or warranty, or even responsiblity on my part for your use of it. If you want something that is a c-Bridge or SmartPTT, then please go buy one of those products -- they work great, I own both. Using dmrlink will require you to get your hands dirty. Using dmrlink requires basic understanding of Python. If you have read this README.md, have looked for comments or other direction within the files themsleves, and understand I owe you nothing, then please e-mail me, and I'll try to help.
+
+Yes, this note probably sounds heavy handed. I have received a great deal of e-mail from a great deal of folks since posting this project. They have ranged from folks helping with development by fixing problems for me or offering the right way to do something where I clearly did it wrong (which I GREATLY APPRECIATE), all the way down to a growing number of people who seem to want to know things such as, "how do you expect me to use this in place of a c-Bridge?". The answer is, I don't. And I need to minimize those e-mails so that I have time to concentrate on making dmrlink a better piece of software.
+
+***73 DE N0MJS***
 
 
 Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
