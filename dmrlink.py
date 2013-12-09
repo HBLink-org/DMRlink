@@ -229,6 +229,8 @@ def de_register_peer(_network, _peerid):
 # data structure in my_ipsc_config with the results, and return a simple list of peers.
 #
 def process_peer_list(_data, _network):
+    # Create a temporary peer list to track who we should have in our list -- used to find old peers we should remove.
+    _temp_peers = []
     # Determine the length of the peer list for the parsing iterator
     _peer_list_length = int(h(_data[5:7]), 16)
     # Record the number of peers in the data structure... we'll use it later (11 bytes per peer entry)
@@ -249,7 +251,9 @@ def process_peer_list(_data, _network):
         _link_op      = _mode & PEER_OP_MSK
         _link_mode    = _mode & PEER_MODE_MSK
         _ts1          = _mode & IPSC_TS1_MSK
-        _ts2          = _mode & IPSC_TS2_MSK    
+        _ts2          = _mode & IPSC_TS2_MSK
+        # Add this peer to a temporary PeerID list - used to remove any old peers no longer with us
+        _temp_peers.append(_hex_radio_id)
         
         # Determine whether or not the peer is operational
         if   _link_op == 0b01000000:
@@ -300,6 +304,13 @@ def process_peer_list(_data, _network):
                     }
                 }
             logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+    
+    # Finally, check to see if there's a peer already in our list that was not in this peer list
+    # and if so, delete it.
+    for peerid in NETWORK[_network]['PEERS'].keys():
+        if peerid not in _temp_peers:
+            de_register_peer(_network, peerid)
+            logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, peerid)
 
 
 # Gratuitous print-out of the peer list.. Pretty much debug stuff.
