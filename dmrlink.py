@@ -426,49 +426,48 @@ class IPSC(DatagramProtocol):
     #************************************************
 
     def call_mon_origin(self, _network, _data):
-        print('({}) Repeater Call Monitor Origin Packet Received: {}' .format(_network, h(_data)))
+        logger.debug('(%s) Repeater Call Monitor Origin Packet Received: %s',_network, h(_data))
     
     def call_mon_rpt(self, _network, _data):
-        print('({}) Repeater Call Monitor Repeating Packet Received: {}' .format(_network, h(_data)))
+        logger.debug('(%s) Repeater Call Monitor Repeating Packet Received: %s', _network, h(_data))
     
     def call_mon_nack(self, _network, _data):
-        print('({}) Repeater Call Monitor NACK Packet Received: {}' .format(_network, h(_data)))
+        logger.debug('(%s) Repeater Call Monitor NACK Packet Received: %s', _network, h(_data))
     
     def xcmp_xnl(self, _network, _data):
-        print('({}) XCMP/XNL Packet Received: {}' .format(_network, h(_data)))
+        logger.debug('(%s) XCMP/XNL Packet Received: %s', _network, h(_data))
         
     def repeater_wake_up(self, _network, _data):
-        print('({}) Repeater Wake-Up Packet Received: {}' .format(_network, h(_data)))
+        logger.debug('(%s) Repeater Wake-Up Packet Received: %s', _network, h(_data))
         
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
         _peerid     = get_info(int_id(_peerid), peer_ids)
         _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
-        print('({}) Group Voice Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
+        logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
     
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         _dst_sub    = get_info(int_id(_dst_sub), subscriber_ids)
         _peerid     = get_info(int_id(_peerid), peer_ids)
         _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
-        print('({}) Private Voice Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
+        logger.debug('(%s) Private Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
     
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
         _peerid     = get_info(int_id(_peerid), peer_ids)
         _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
-        print('({}) Group Data Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
+        logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
     
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         _dst_sub    = get_info(int_id(_dst_sub), subscriber_ids)
         _peerid     = get_info(int_id(_peerid), peer_ids)
         _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
-        print('({}) Private Data Packet Received From: {}, IPSC Peer {}, Destination {}' .format(_network, _src_sub, _peerid, _dst_sub))
+        logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
         _packettype = h(_packettype)
         _peerid = get_info(int_id(_peerid), peer_ids)
-        print('{} ({}) Unknown message type encountered\n\tPacket Type: {}\n\tFrom: {}' .format(_network, _packettype, _peerid))
-        print('\t', h(_data))
+        logger.error('(%s) Unknown message type encountered\n\tPacket Type: %s\n\tFrom: %s\n\tPacket: %s', _network, _packettype, _peerid, h(_data))
 
     # Reset the outstanding keep-alive counter for _peerid...
     # Used when receiving acks OR when we see traffic from a repeater, since they ignore keep-alives when transmitting
@@ -537,6 +536,7 @@ class IPSC(DatagramProtocol):
             # If we have missed too many keep-alives, de-register the master and start over.
             if self._master_stat['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                 self._master_stat['CONNECTED'] = False
+                self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
                 logger.error('(%s) Maximum Master Keep-Alives Missed -- De-registering the Master', self._network)
             
             # Update our stats before we move on...
@@ -588,7 +588,7 @@ class IPSC(DatagramProtocol):
                     # If we have missed too many keep-alives, de-register the peer and start over.
                     if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                         peer['STATUS']['CONNECTED'] = False
-                        del peer                        # Because once it's out of the dictionary, you can't use it for anything else.
+                        peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
                         logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer_id))
                     
                     # Update our stats before moving on...
@@ -651,24 +651,26 @@ class IPSC(DatagramProtocol):
                 # User Voice and Data Call Types:
                 if _packettype == GROUP_VOICE:
                     self.reset_keep_alive(_peerid)
-                    self._notify_event(self._network, 'group_voice', {'peer_id': int(h(_peerid), 16)})
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
+                    self._notify_event(self._network, 'group_voice', {'peer_id': int(h(_peerid), 16)})
                     return
             
                 elif _packettype == PVT_VOICE:
                     self.reset_keep_alive(_peerid)
-                    self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
                     self.private_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
+                    self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
                     return
                     
                 elif _packettype == GROUP_DATA:
-                    self._notify_event(self._network, 'group_data', {'peer_id': int(h(_peerid), 16)})
+                    self.reset_keep_alive(_peerid)
                     self.group_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
+                    self._notify_event(self._network, 'group_data', {'peer_id': int(h(_peerid), 16)})
                     return
                     
                 elif _packettype == PVT_DATA:
-                    self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
+                    self.reset_keep_alive(_peerid)
                     self.private_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
+                    self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
                     return
                 return
                 
@@ -709,7 +711,7 @@ class IPSC(DatagramProtocol):
         # Packets types that must be originated from a peer
         if _packettype in PEER_REQUIRED:
             if not valid_peer(self._peers.keys(), _peerid):
-                logger.warning('(%s) PeerError: Peer %s not in peer-list: %s', self._network, int(h(_peerid), 16), self._peers.keys())
+                logger.warning('(%s) PeerError: Peer %s not in peer-list', self._network, int(h(_peerid), 16))
                 return
             
             # Packets we send...
