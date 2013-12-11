@@ -335,7 +335,7 @@ def print_peer_list(_network):
             me = '(self)'
         else:
             me = ''
-              
+             
         print('\tRADIO ID: {} {}' .format(int(h(peer), 16), me))
         print('\t\tIP Address: {}:{}' .format(_this_peer['IP'], _this_peer['PORT']))
         print('\t\tOperational: {},  Mode: {},  TS1 Link: {},  TS2 Link: {}' .format(_this_peer['PEER_OPER'], _this_peer['PEER_MODE'], _this_peer['TS1_LINK'], _this_peer['TS2_LINK']))
