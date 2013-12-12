@@ -229,15 +229,14 @@ def de_register_peer(_network, _peerid):
 #
 def process_mode_byte(_hex_mode):
     _mode      = int(h(_hex_mode), 16)
-    _peer_op   = False
-    _peer_mode = False
-    _ts1       = False
-    _ts2       = False
     
     # Determine whether or not the peer is operational
-    if   _mode & PEER_OP_MSK:
-        _peer_op = True
-      
+    _peer_op = bool(_mode & PEER_OP_MSK)    
+    # Determine whether or not timeslot 1 is linked
+    _ts1 = bool(_mode & IPSC_TS1_MSK)  
+    # Determine whether or not timeslot 2 is linked
+    _ts2 = bool(_mode & IPSC_TS2_MSK)
+     
     # Determine the operational mode of the peer
     if _mode & PEER_MODE_MSK == PEER_MODE_MSK:
         _peer_mode = 'UNKNOWN'
@@ -250,22 +249,44 @@ def process_mode_byte(_hex_mode):
     else:
         _peer_mode = 'UNKNOWN'
     
-    # Determine whether or not timeslot 1 is linked
-    if _mode & IPSC_TS1_MSK:
-         _ts1 = True   
-    # Determine whether or not timeslot 2 is linked
-    if _mode & IPSC_TS2_MSK:
-        _ts2 = True
-    
-    return {'PEER_OP': _peer_op, 'PEER_MODE': _peer_mode, 'TS_1': _ts1, 'TS_2': _ts2}
+    return {
+        'PEER_OP': _peer_op,
+        'PEER_MODE': _peer_mode,
+        'TS_1': _ts1,
+        'TS_2': _ts2
+        }
 
 
 # Process the FLAGS bytes in registration replies for determining what services are available
 #
 def process_flags_bytes(_hex_flags):
-    # This should be my next endeavor...
-    pass  
-
+    _byte3 = int(h(_hex_flags[2]), 16)
+    _byte4 = int(h(_hex_flags[3]), 16)
+    
+    _csbk       = bool(_byte3 & CSBK_MSK)
+    _rpt_mon    = bool(_byte3 & RPT_MON_MSK)
+    _con_app    = bool(_byte3 & CON_APP_MSK)
+    _xnl_con    = bool(_byte4 & XNL_STAT_MSK)
+    _xnl_master = bool(_byte4 & XNL_MSTR_MSK)
+    _xnl_slave  = bool(_byte4 & XNL_SLAVE_MSK)
+    _auth       = bool(_byte4 & PKT_AUTH_MSK)
+    _data       = bool(_byte4 & DATA_CALL_MSK)
+    _voice      = bool(_byte4 & VOICE_CALL_MSK)
+    _master     = bool(_byte4 & MSTR_PEER_MSK)
+    
+    return {
+        'CSBK Calls': _csbk,
+        'Repeater Monitor': _rpt_mon,
+        '3rd Party App': _con_app,
+        'XNL Connected': _xnl_con,
+        'XNL Master': _xnl_master,
+        'XNL Slave': _xnl_slave,
+        'Authentication': _auth,
+        'Data Calls': _data,
+        'Voice Calls': _voice,
+        'Master Peer': _master
+        } 
+   
         
 # Take a received peer list and the network it belongs to, process and populate the
 # data structure in my_ipsc_config with the results, and return a simple list of peers.
