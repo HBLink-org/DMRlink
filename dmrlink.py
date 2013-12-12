@@ -773,7 +773,7 @@ class IPSC(DatagramProtocol):
         # When we hear from the master, record it's ID, flag that we're connected, and reset the dead counter.
         elif _packettype == MASTER_REG_REPLY:
             
-            _hex_mode     = (data[10:11])
+            _hex_mode     = (data[5])
             _mode         = int(h(_hex_mode), 16)
             # mask individual Mode parameters
             _link_op      = _mode & PEER_OP_MSK
