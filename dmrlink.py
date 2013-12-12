@@ -83,7 +83,6 @@ except ImportError:
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
 
-networks = {}
 NETWORK = {}
 
 config = ConfigParser.ConfigParser()
@@ -122,11 +121,9 @@ try:
             NETWORK[section]['MASTER'].update({
                 'RADIO_ID': '\x00\x00\x00\x00',
                 'MODE': '\x00',
-                'PEER_OPER': False,
-                'PEER_MODE': '',
-                'TS1_LINK': False,
-                'TS2_LINK': False,
+                'MODE_DECODE': '',
                 'FLAGS': '\x00\x00\x00\x00',
+                'FLAGS_DECODE': '',
                 'STATUS': {
                     'CONNECTED': False,
                     'PEER_LIST': False,
@@ -273,16 +270,16 @@ def process_flags_bytes(_hex_flags):
     _master     = bool(_byte4 & MSTR_PEER_MSK)
     
     return {
-        'CSBK Calls': _csbk,
-        'Repeater Monitor': _rpt_mon,
-        '3rd Party App': _con_app,
-        'XNL Connected': _xnl_con,
-        'XNL Master': _xnl_master,
-        'XNL Slave': _xnl_slave,
-        'Authentication': _auth,
-        'Data Calls': _data,
-        'Voice Calls': _voice,
-        'Master Peer': _master
+        'CSBK': _csbk,
+        'RCM': _rpt_mon,
+        'CON_APP': _con_app,
+        'XNL_CON': _xnl_con,
+        'XNL_MASTER': _xnl_master,
+        'XNL_SLAVE': _xnl_slave,
+        'AUTH': _auth,
+        'DATA': _data,
+        'VOICE': _voice,
+        'MASTER': _master
         } 
    
         
@@ -318,17 +315,16 @@ def process_peer_list(_data, _network):
         # This means we'll re-register with a peer who we may have already been registered with, but
         # that doesn't appear to hurt anything.
         NETWORK[_network]['PEERS'][_hex_radio_id] = {
-            'IP':        _ip_address, 
-            'PORT':      _port, 
-            'MODE':      _hex_mode,            
-            'PEER_OPER': _decoded_mode['PEER_OP'],
-            'PEER_MODE': _decoded_mode['PEER_MODE'],
-            'TS1_LINK': _decoded_mode['TS_1'],
-            'TS2_LINK': _decoded_mode['TS_2'],
+            'IP':          _ip_address, 
+            'PORT':        _port, 
+            'MODE':        _hex_mode,            
+            'MODE_DECODE': _decoded_mode,
+            'FLAGS': '',
+            'FLAGS_DECODE': '',
             'STATUS': {
-                'CONNECTED': False,
-                'KEEP_ALIVES_SENT': 0,
-                'KEEP_ALIVES_MISSED': 0,
+                'CONNECTED':               False,
+                'KEEP_ALIVES_SENT':        0,
+                'KEEP_ALIVES_MISSED':      0,
                 'KEEP_ALIVES_OUTSTANDING': 0
                 }
             }
@@ -367,7 +363,14 @@ def print_peer_list(_network):
              
         print('\tRADIO ID: {} {}' .format(int(h(peer), 16), me))
         print('\t\tIP Address: {}:{}' .format(_this_peer['IP'], _this_peer['PORT']))
-        print('\t\tOperational: {},  Mode: {},  TS1 Link: {},  TS2 Link: {}' .format(_this_peer['PEER_OPER'], _this_peer['PEER_MODE'], _this_peer['TS1_LINK'], _this_peer['TS2_LINK']))
+        if _this_peer['MODE_DECODE']:
+            print('\t\tMode Values:')
+            for name, value in _this_peer['MODE_DECODE'].items():
+                print('\t\t\t{}: {}' .format(name, value))
+        if _this_peer['FLAGS_DECODE']:
+            print('\t\tService Flags:')
+            for name, value in _this_peer['FLAGS_DECODE'].items():
+                print('\t\t\t{}: {}' .format(name, value))
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_this_peer_stat['CONNECTED'], _this_peer_stat['KEEP_ALIVES_SENT'], _this_peer_stat['KEEP_ALIVES_OUTSTANDING'], _this_peer_stat['KEEP_ALIVES_MISSED']))
 
     print('')
@@ -378,8 +381,14 @@ def print_master(_network):
     _master = NETWORK[_network]['MASTER']
     print('Master for %s' % _network)
     print('\tRADIO ID: {}' .format(int(h(_master['RADIO_ID']), 16)))
-    print('\t\tIP Address: {}:{}' .format(_master['IP'], _master['PORT']))
-    print('\t\tOperational: {},  Mode: {},  TS1 Link: {},  TS2 Link: {}' .format(_master['PEER_OPER'], _master['PEER_MODE'], _master['TS1_LINK'], _master['TS2_LINK']))
+    if _master['MODE_DECODE']:
+        print('\t\tMode Values:')
+        for name, value in _master['MODE_DECODE'].items():
+            print('\t\t\t{}: {}' .format(name, value))
+    if _master['FLAGS_DECODE']:
+        print('\t\tService Flags:')
+        for name, value in _master['FLAGS_DECODE'].items():
+            print('\t\t\t{}: {}' .format(name, value))
     print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
 
 
@@ -756,6 +765,15 @@ class IPSC(DatagramProtocol):
             
             # Packets we send...
             if _packettype == PEER_ALIVE_REQ:
+                _hex_mode      = (data[5])
+                _hex_flags     = (data[6:10])
+                _decoded_mode  = process_mode_byte(_hex_mode)
+                _decoded_flags = process_flags_bytes(_hex_flags)
+                
+                self._peers[_peerid]['MODE'] = _hex_mode
+                self._peers[_peerid]['MODE_DECODE'] = _decoded_mode
+                self._peers[_peerid]['FLAGS'] = _hex_flags
+                self._peers[_peerid]['FLAGS_DECODE'] = _decoded_flags
                 # Generate a hashed packet from our template and send it.
                 peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
                 self.transport.write(peer_alive_reply_packet, (host, port))
@@ -802,15 +820,16 @@ class IPSC(DatagramProtocol):
         # When we hear from the master, record it's ID, flag that we're connected, and reset the dead counter.
         elif _packettype == MASTER_REG_REPLY:
             
-            _hex_mode     = (data[5])
-            _decoded_mode = process_mode_byte(_hex_mode)
+            _hex_mode      = (data[5])
+            _hex_flags     = (data[6:10])
+            _decoded_mode  = process_mode_byte(_hex_mode)
+            _decoded_flags = process_flags_bytes(_hex_flags)
                 
             self._master['RADIO_ID'] = _peerid
             self._master['MODE'] = _hex_mode
-            self._master['PEER_OPER'] = _decoded_mode['PEER_OP']
-            self._master['PEER_MODE'] = _decoded_mode['PEER_MODE']
-            self._master['TS1_LINK'] = _decoded_mode['TS_1']
-            self._master['TS2_LINK'] = _decoded_mode['TS_2']
+            self._master['MODE_DECODE'] = _decoded_mode
+            self._master['FLAGS'] = _hex_flags
+            self._master['FLAGS_DECODE'] = _decoded_flags
             self._master_stat['CONNECTED'] = True
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
             return
