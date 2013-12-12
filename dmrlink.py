@@ -223,7 +223,42 @@ def de_register_peer(_network, _peerid):
     else:
         logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', _network, h(_peerid))
         pass
-       
+
+# Proccess the MODE byte in for determining master and peer capabilities
+#
+def process_mode_byte(_hex_mode):
+    _mode      = int(h(_hex_mode), 16)
+    _peer_op   = False
+    _peer_mode = False
+    _ts1       = False
+    _ts2       = False
+    
+    # Determine whether or not the peer is operational
+    if   _mode & PEER_OP_MSK:
+        _peer_op = True
+      
+    # Determine the operational mode of the peer
+    if _mode & PEER_MODE_MSK == PEER_MODE_MSK:
+        _peer_mode = 'UNKNOWN'
+    elif not _mode & PEER_MODE_MSK:
+        _peer_mode = 'NO_RADIO'
+    elif _mode & PEER_MODE_ANALOG:
+        _peer_mode = 'ANALOG'
+    elif _mode & PEER_MODE_DIGITAL:
+        _peer_mode = 'DIGITAL'
+    else:
+        _peer_mode = 'UNKNOWN'
+    
+    # Determine whether or not timeslot 1 is linked
+    if _mode & IPSC_TS1_MSK:
+         _ts1 = True
+     
+    # Determine whether or not timeslot 2 is linked
+    if _mode & IPSC_TS2_MSK:
+        _ts2 = True
+    
+    return {'PEER_OP': _peer_op, 'PEER_MODE': _peer_mode, 'TS_1': _ts1, 'TS_2': _ts2}
+          
         
 # Take a received peer list and the network it belongs to, process and populate the
 # data structure in my_ipsc_config with the results, and return a simple list of peers.
@@ -246,64 +281,31 @@ def process_peer_list(_data, _network):
         _hex_port     = (_data[i+8:i+10])
         _port         = int(h(_hex_port), 16)
         _hex_mode     = (_data[i+10:i+11])
-        _mode         = int(h(_hex_mode), 16)
-        # mask individual Mode parameters
-        _link_op      = _mode & PEER_OP_MSK
-        _link_mode    = _mode & PEER_MODE_MSK
-        _ts1          = _mode & IPSC_TS1_MSK
-        _ts2          = _mode & IPSC_TS2_MSK
+     
         # Add this peer to a temporary PeerID list - used to remove any old peers no longer with us
         _temp_peers.append(_hex_radio_id)
         
-        # Determine whether or not the peer is operational
-        if   _link_op == 0b01000000:
-            _peer_op = True
-        else:
-            _peer_op = False
-              
-        # Determine the operational mode of the peer
-        if   _link_mode == 0b00000000:
-            _peer_mode = 'NO_RADIO'
-        elif _link_mode == 0b00010000:
-            _peer_mode = 'ANALOG'
-        elif _link_mode == 0b00100000:
-            _peer_mode = 'DIGITAL'
-        else:
-            _peer_mode = 'NO_RADIO'
-            
-        # Determine whether or not timeslot 1 is linked
-        if _ts1 == 0b00001000:
-             _ts1 = True
-        else:
-             _ts1 = False
-             
-        # Determine whether or not timeslot 2 is linked
-        if _ts2 == 0b00000010:
-            _ts2 = True
-        else:
-            _ts2 = False  
+        # This is done elsewhere for the master too, so we use a separate function
+        _decoded_mode = process_mode_byte(_hex_mode)
 
-        # If this entry was NOT already in our list, add it.
-        #     Note: We keep a "simple" peer list in addition to the large data
-        #           structure because sometimes, we just need to identify a
-        #           peer quickly.
-        if _hex_radio_id not in NETWORK[_network]['PEERS'].keys():
-            NETWORK[_network]['PEERS'][_hex_radio_id] = {
-                'IP':        _ip_address, 
-                'PORT':      _port, 
-                'MODE':      _hex_mode,
-                'PEER_OPER': _peer_op,
-                'PEER_MODE': _peer_mode,
-                'TS1_LINK':  _ts1,
-                'TS2_LINK':  _ts2,
-                'STATUS': {
-                    'CONNECTED': False,
-                    'KEEP_ALIVES_SENT': 0,
-                    'KEEP_ALIVES_MISSED': 0,
-                    'KEEP_ALIVES_OUTSTANDING': 0
-                    }
+        # Write or re-write this peer if it's already in our list. Why re-write? Mode may have changed!
+
+        NETWORK[_network]['PEERS'][_hex_radio_id] = {
+            'IP':        _ip_address, 
+            'PORT':      _port, 
+            'MODE':      _hex_mode,            
+            'PEER_OPER': _decoded_mode['PEER_OP'],
+            'PEER_MODE': _decoded_mode['PEER_MODE'],
+            'TS1_LINK': _decoded_mode['TS_1'],
+            'TS2_LINK': _decoded_mode['TS_2'],
+            'STATUS': {
+                'CONNECTED': False,
+                'KEEP_ALIVES_SENT': 0,
+                'KEEP_ALIVES_MISSED': 0,
+                'KEEP_ALIVES_OUTSTANDING': 0
                 }
-            logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+            }
+        logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
     
     # Finally, check to see if there's a peer already in our list that was not in this peer list
     # and if so, delete it.
@@ -519,8 +521,8 @@ class IPSC(DatagramProtocol):
     
     def reporting_loop(self):
         # Right now, without this, we really don't know anything is happening.
-        #print_master(self._network)
-        #print_peer_list(self._network)
+        print_master(self._network)
+        print_peer_list(self._network)
         logger.debug('(%s) Periodic Connection Maintenance Loop Started', self._network)
         pass
     
@@ -774,48 +776,14 @@ class IPSC(DatagramProtocol):
         elif _packettype == MASTER_REG_REPLY:
             
             _hex_mode     = (data[5])
-            _mode         = int(h(_hex_mode), 16)
-            # mask individual Mode parameters
-            _link_op      = _mode & PEER_OP_MSK
-            _link_mode    = _mode & PEER_MODE_MSK
-            _ts1          = _mode & IPSC_TS1_MSK
-            _ts2          = _mode & IPSC_TS2_MSK
-            
-            
-            # Determine whether or not the peer is operational
-            if   _link_op == 0b01000000:
-                _peer_op = True
-            else:
-                _peer_op = False
-              
-            # Determine the operational mode of the peer
-            if   _link_mode == 0b00000000:
-                _peer_mode = 'NO_RADIO'
-            elif _link_mode == 0b00010000:
-                _peer_mode = 'ANALOG'
-            elif _link_mode == 0b00100000:
-                _peer_mode = 'DIGITAL'
-            else:
-                _peer_mode = 'NO_RADIO'
-            
-            # Determine whether or not timeslot 1 is linked
-            if _ts1 == 0b00001000:
-                 _ts1 = True
-            else:
-                 _ts1 = False
-             
-            # Determine whether or not timeslot 2 is linked
-            if _ts2 == 0b00000010:
-                _ts2 = True
-            else:
-                _ts2 = False
+            _decoded_mode = process_mode_byte(_hex_mode)
                 
             self._master['RADIO_ID'] = _peerid
-            self._master['MODE'] = _mode
-            self._master['PEER_OPER'] = _peer_op
-            self._master['PEER_MODE'] = _peer_mode
-            self._master['TS1_LINK'] = _ts1
-            self._master['TS2_LINK'] = _ts2
+            self._master['MODE'] = _hex_mode
+            self._master['PEER_OPER'] = _decoded_mode['PEER_OP']
+            self._master['PEER_MODE'] = _decoded_mode['PEER_MODE']
+            self._master['TS1_LINK'] = _decoded_mode['TS_1']
+            self._master['TS2_LINK'] = _decoded_mode['TS_2']
             self._master_stat['CONNECTED'] = True
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
             return
