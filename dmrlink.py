@@ -224,7 +224,8 @@ def de_register_peer(_network, _peerid):
         logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', _network, h(_peerid))
         pass
 
-# Proccess the MODE byte in for determining master and peer capabilities
+
+# Process the MODE byte in registration/peer list packets for determining master and peer capabilities
 #
 def process_mode_byte(_hex_mode):
     _mode      = int(h(_hex_mode), 16)
@@ -251,14 +252,20 @@ def process_mode_byte(_hex_mode):
     
     # Determine whether or not timeslot 1 is linked
     if _mode & IPSC_TS1_MSK:
-         _ts1 = True
-     
+         _ts1 = True   
     # Determine whether or not timeslot 2 is linked
     if _mode & IPSC_TS2_MSK:
         _ts2 = True
     
     return {'PEER_OP': _peer_op, 'PEER_MODE': _peer_mode, 'TS_1': _ts1, 'TS_2': _ts2}
-          
+
+
+# Process the FLAGS bytes in registration replies for determining what services are available
+#
+def process_flags_bytes(_hex_flags):
+    # This should be my next endeavor...
+    pass  
+
         
 # Take a received peer list and the network it belongs to, process and populate the
 # data structure in my_ipsc_config with the results, and return a simple list of peers.
@@ -289,7 +296,8 @@ def process_peer_list(_data, _network):
         _decoded_mode = process_mode_byte(_hex_mode)
 
         # Write or re-write this peer if it's already in our list. Why re-write? Mode may have changed!
-
+        # This means we'll re-register with a peer who we may have already been registered with, but
+        # that doesn't appear to hurt anything.
         NETWORK[_network]['PEERS'][_hex_radio_id] = {
             'IP':        _ip_address, 
             'PORT':      _port, 
