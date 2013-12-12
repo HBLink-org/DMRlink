@@ -7,15 +7,16 @@
 # California, 94041, USA.
 
 from __future__ import print_function
-from binascii import b2a_hex as h
+
 import ConfigParser
 import sys
 import binascii
-import hmac
-import hashlib
-import socket
 import csv
 
+from hmac import new as hmac_new
+from binascii import b2a_hex as h
+from hashlib import sha1
+from socket import inet_ntoa as IPAddr
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
@@ -300,7 +301,7 @@ def process_peer_list(_data, _network):
         # Extract various elements from each entry...
         _hex_radio_id = (_data[i:i+4])
         _hex_address  = (_data[i+4:i+8])
-        _ip_address   = socket.inet_ntoa(_hex_address)
+        _ip_address   = IPAddr(_hex_address)
         _hex_port     = (_data[i+8:i+10])
         _port         = int(h(_hex_port), 16)
         _hex_mode     = (_data[i+10:i+11])
@@ -530,7 +531,7 @@ class IPSC(DatagramProtocol):
     # Take a packet to be SENT, calculate auth hash and return the whole thing
     #
     def hashed_packet(self, _key, _data):
-        _hash = binascii.a2b_hex((hmac.new(_key,_data,hashlib.sha1)).hexdigest()[:20])
+        _hash = binascii.a2b_hex((hmac_new(_key,_data,sha1)).hexdigest()[:20])
         return _data + _hash
     
     # Remove the hash from a packet and return the payload
@@ -543,7 +544,7 @@ class IPSC(DatagramProtocol):
     def validate_auth(self, _key, _data):
         _payload = self.strip_hash(_data)
         _hash = _data[-10:]
-        _chk_hash = binascii.a2b_hex((hmac.new(_key,_payload,hashlib.sha1)).hexdigest()[:20])   
+        _chk_hash = binascii.a2b_hex((hmac_new(_key,_payload,sha1)).hexdigest()[:20])   
 
         if _chk_hash == _hash:
             return True
