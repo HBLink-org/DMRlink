@@ -772,7 +772,51 @@ class IPSC(DatagramProtocol):
         
         # When we hear from the master, record it's ID, flag that we're connected, and reset the dead counter.
         elif _packettype == MASTER_REG_REPLY:
+            print('JIMMY')
+            
+            _hex_mode     = (data[10:11])
+            _mode         = int(h(_hex_mode), 16)
+            # mask individual Mode parameters
+            _link_op      = _mode & PEER_OP_MSK
+            _link_mode    = _mode & PEER_MODE_MSK
+            _ts1          = _mode & IPSC_TS1_MSK
+            _ts2          = _mode & IPSC_TS2_MSK
+            
+            
+            # Determine whether or not the peer is operational
+            if   _link_op == 0b01000000:
+                _peer_op = True
+            else:
+                _peer_op = False
+              
+            # Determine the operational mode of the peer
+            if   _link_mode == 0b00000000:
+                _peer_mode = 'NO_RADIO'
+            elif _link_mode == 0b00010000:
+                _peer_mode = 'ANALOG'
+            elif _link_mode == 0b00100000:
+                _peer_mode = 'DIGITAL'
+            else:
+                _peer_mode = 'NO_RADIO'
+            
+            # Determine whether or not timeslot 1 is linked
+            if _ts1 == 0b00001000:
+                 _ts1 = True
+            else:
+                 _ts1 = False
+             
+            # Determine whether or not timeslot 2 is linked
+            if _ts2 == 0b00000010:
+                _ts2 = True
+            else:
+                _ts2 = False
+                
             self._master['RADIO_ID'] = _peerid
+            self._master['MODE'] = _mode
+            self._master['PEER_OPER'] = _peer_op
+            self._master['PEER_MODE'] = _peer_mode
+            self._master['TS1_LINK'] = _ts1
+            self._master['TS2_LINK'] = _ts2
             self._master_stat['CONNECTED'] = True
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
             return
