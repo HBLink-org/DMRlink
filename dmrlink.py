@@ -777,6 +777,7 @@ class IPSC(DatagramProtocol):
                 # Generate a hashed packet from our template and send it.
                 peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
                 self.transport.write(peer_alive_reply_packet, (host, port))
+                self.reset_keep_alive(_peerid)  # Might as well reset our own counter, we know it's out there...
                 return
                                 
             elif _packettype == PEER_REG_REQ:
