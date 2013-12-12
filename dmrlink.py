@@ -228,7 +228,7 @@ def de_register_peer(_network, _peerid):
 # Process the MODE byte in registration/peer list packets for determining master and peer capabilities
 #
 def process_mode_byte(_hex_mode):
-    _mode      = int(h(_hex_mode), 16)
+    _mode = int(h(_hex_mode), 16)
     
     # Determine whether or not the peer is operational
     _peer_op = bool(_mode & PEER_OP_MSK)    
@@ -246,8 +246,6 @@ def process_mode_byte(_hex_mode):
         _peer_mode = 'ANALOG'
     elif _mode & PEER_MODE_DIGITAL:
         _peer_mode = 'DIGITAL'
-    else:
-        _peer_mode = 'UNKNOWN'
     
     return {
         'PEER_OP': _peer_op,
