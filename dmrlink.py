@@ -105,7 +105,7 @@ try:
                 'PEER_OPER': True,
                 'PEER_MODE': 'DIGITAL',
                 'FLAGS': '',
-                'MAX_MISSED': 10,
+                'MAX_MISSED': 20,
                 'NUM_PEERS': 0,
                 'STATUS': {
                     'ACTIVE': False
@@ -312,23 +312,22 @@ def process_peer_list(_data, _network):
         # This is done elsewhere for the master too, so we use a separate function
         _decoded_mode = process_mode_byte(_hex_mode)
 
-        # Write or re-write this peer if it's already in our list. Why re-write? Mode may have changed!
-        # This means we'll re-register with a peer who we may have already been registered with, but
-        # that doesn't appear to hurt anything.
-        NETWORK[_network]['PEERS'][_hex_radio_id] = {
-            'IP':          _ip_address, 
-            'PORT':        _port, 
-            'MODE':        _hex_mode,            
-            'MODE_DECODE': _decoded_mode,
-            'FLAGS': '',
-            'FLAGS_DECODE': '',
-            'STATUS': {
-                'CONNECTED':               False,
-                'KEEP_ALIVES_SENT':        0,
-                'KEEP_ALIVES_MISSED':      0,
-                'KEEP_ALIVES_OUTSTANDING': 0
+        # If this entry was NOT already in our list, add it.
+        if _hex_radio_id not in NETWORK[_network]['PEERS'].keys():
+            NETWORK[_network]['PEERS'][_hex_radio_id] = {
+                'IP':          _ip_address, 
+                'PORT':        _port, 
+                'MODE':        _hex_mode,            
+                'MODE_DECODE': _decoded_mode,
+                'FLAGS': '',
+                'FLAGS_DECODE': '',
+                'STATUS': {
+                    'CONNECTED':               False,
+                    'KEEP_ALIVES_SENT':        0,
+                    'KEEP_ALIVES_MISSED':      0,
+                    'KEEP_ALIVES_OUTSTANDING': 0
+                    }
                 }
-            }
         logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
     
     # Finally, check to see if there's a peer already in our list that was not in this peer list
@@ -638,7 +637,7 @@ class IPSC(DatagramProtocol):
                     # If we have missed too many keep-alives, de-register the peer and start over.
                     if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                         peer['STATUS']['CONNECTED'] = False
-                        peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
+                        del peer   # Becuase once it's out of the dictionary, you can't use it for anything else.
                         logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer_id))
                     
                     # Update our stats before moving on...
