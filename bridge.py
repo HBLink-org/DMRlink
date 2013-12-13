@@ -41,7 +41,7 @@ class bridgeIPSC(IPSC):
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
     
-    def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+    def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _ts not in self.ACTIVE_CALLS:
             self.ACTIVE_CALLS.append(_ts)
             # send repeater wake up, but send them when a repeater is likely not TXing check time since end (see below)
@@ -50,23 +50,26 @@ class bridgeIPSC(IPSC):
             # flag the time here so we can test to see if the last call ended long enough ago to send a wake-up
             # timer = time()
             
-        for source in RULES[_network]['GROUP_VOICE']:
+        for rule in RULES[_network]['GROUP_VOICE']:
             # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
-            if source['SRC_GROUP'] == _dst_sub:
+            if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
                 _tmp_data = _data
-                _target = source['DST_NET']
+                _target = rule['DST_NET']
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                 # Re-Write the destination Group ID
-                _tmp_data = _tmp_data.replace(_dst_sub, source['DST_GROUP'])
-                # Calculate and append the authentication hash for the target network... if necessary
-		if NAT:
+                _tmp_data = _tmp_data.replace(_dst_group, rule['DST_GROUP'])
+                
+                # NAT doesn't work well... use at your own risk!
+                if NAT:
                     _tmp_data = dmr_nat(_tmp_data, _src_sub, NAT)
+                
+                # Calculate and append the authentication hash for the target network... if necessary
                 if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
                     _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 send_to_ipsc(_target, _tmp_data)
-    
+
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data): 
         pass
     
