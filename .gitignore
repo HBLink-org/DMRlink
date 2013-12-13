@@ -1,5 +1,6 @@
 .DS_Store
 .dropbox
+*.out
 Icon
 dmrlink.cfg
 pub*
