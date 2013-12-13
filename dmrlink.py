@@ -85,6 +85,7 @@ except ImportError:
 #************************************************
 
 NETWORK = {}
+networks = {}
 
 config = ConfigParser.ConfigParser()
 
