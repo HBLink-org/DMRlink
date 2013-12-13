@@ -12,6 +12,7 @@ import ConfigParser
 import sys
 import binascii
 import csv
+import os
 
 from hmac import new as hmac_new
 from binascii import b2a_hex as h
@@ -51,12 +52,13 @@ except ImportError:
 # Import the Alias files for numeric ids. This is split to save
 # time making lookups in one huge dictionary
 #
+curdir= os.path.dirname(__file__)
 subscriber_ids = {}
 peer_ids = {}
 talkgroup_ids = {}
 
 try:
-    with open('./subscriber_ids.csv', 'rU') as subscriber_ids_csv:
+    with open(curdir+'/subscriber_ids.csv', 'rU') as subscriber_ids_csv:
         subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
         for row in subscribers:
             subscriber_ids[int(row[1])] = (row[0])
@@ -64,7 +66,7 @@ except ImportError:
     logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
     
 try:
-    with open('./peer_ids.csv', 'rU') as peer_ids_csv:
+    with open(curdir+'/peer_ids.csv', 'rU') as peer_ids_csv:
         peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
         for row in peers:
             peer_ids[int(row[1])] = (row[0])
@@ -72,7 +74,7 @@ except ImportError:
     logger.warning('peer_ids.csv not found: Peer aliases will not be available')
 
 try:
-    with open('./talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
+    with open(curdir+'/talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
         talkgroups = csv.reader(talkgroup_ids_csv, dialect='excel', delimiter=',')
         for row in talkgroups:
             talkgroup_ids[int(row[1])] = (row[0])
@@ -560,11 +562,12 @@ class IPSC(DatagramProtocol):
         # Right now, without this, we really don't know anything is happening.
         #print_master(self._network)
         #print_peer_list(self._network)
-        logger.debug('(%s) Periodic Connection Maintenance Loop Started', self._network)
+        logger.debug('(%s) Periodic Reporting Loop Started', self._network)
         pass
     
     def maintenance_loop(self):
-        
+        logger.debug('(%s) Periodic Connection Maintenance Loop Started', self._network)
+
         # If the master isn't connected, we have to do that before we can do anything else!
         #
         if not self._master_stat['CONNECTED']:
@@ -638,7 +641,7 @@ class IPSC(DatagramProtocol):
                     # If we have missed too many keep-alives, de-register the peer and start over.
                     if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                         peer['STATUS']['CONNECTED'] = False
-                        del peer   # Becuase once it's out of the dictionary, you can't use it for anything else.
+                        #del peer   # Becuase once it's out of the dictionary, you can't use it for anything else.
                         logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer_id))
                     
                     # Update our stats before moving on...
