@@ -10,12 +10,14 @@ The example below cross-patches TGID 1 on an IPSC network named "IPSC_FOO" with 
 on an IPSC network named "IPSC_BAR".
 
 THIS EXAMPLE WILL NOT WORK AS IT IS - YOU MUST SPECIFY NAMES AND GROUP IDS!!!
+
+NOTE: Timeslot transcoding does not yet work (SRC_TS) and (DST_TS) are ignored
 '''
 
 RULES = {
     'IPSC_FOO': {
         'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x00\x01', 'DST_NET': 'IPSC_BAR', 'DST_GROUP': b'\x00\x00\x02'},
+            {'SRC_GROUP': b'\x00\x00\x01', 'SRC_TS': 1, 'DST_NET': 'IPSC_BAR', 'DST_GROUP': b'\x00\x00\x02', 'DST_TS': 1},
             # Repeat the above line for as many rules for this IPSC network as you want.
         ],
         'PRIVATE_VOICE': [
@@ -27,7 +29,7 @@ RULES = {
     },
     'IPSC_BAR:' {
         'GROUP_VOICE': [
-            {'SRC_GROUP': b'\x00\x00\x02', 'DST_NET': 'IPSC_FOO', 'DST_GROUP': b'\x00\x00\x01'},
+            {'SRC_GROUP': b'\x00\x00\x02', 'SRC_TS': 1, 'DST_NET': 'IPSC_FOO', 'DST_GROUP': b'\x00\x00\x01', 'DST_TS': 1},
             # Repeat the above line for as many rules for this IPSC network as you want.
         ],
         'PRIVATE_VOICE': [
