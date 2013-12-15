@@ -24,18 +24,6 @@ class logIPSC(IPSC):
     #************************************************
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
-
-    def call_mon_origin(self, _network, _data):
-        print('({}) Repeater Call Monitor Origin Packet Received' .format(_network))
-    
-    def call_mon_rpt(self, _network, _data):
-        print('({}) Repeater Call Monitor Repeating Packet Received' .format(_network))
-    
-    def call_mon_nack(self, _network, _data):
-        print('({}) Repeater Call Monitor NACK Packet Received' .format(_network))
-    
-    def xcmp_xnl(self, _network, _data):
-        print('({}) XCMP/XNL Packet Received From: {}' .format(_network, h(_data)))
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
     #    _log = logger.debug
