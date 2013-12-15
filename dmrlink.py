@@ -13,7 +13,9 @@ import sys
 import binascii
 import csv
 import os
+import logging
 
+from logging.config import dictConfig
 from hmac import new as hmac_new
 from binascii import b2a_hex as h
 from hashlib import sha1
@@ -22,85 +24,37 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
 
-
-#************************************************
-#     IMPORTING OTHER FILES - '#include'
-#************************************************
-
-# Import system logger configuration
-#
-
-try:
-    from ipsc.ipsc_logger import logger
-except ImportError:
-    sys.exit('System logger configuration not found or invalid')
-
-# Import IPSC message types and version information
-#
-try:
-    from ipsc.ipsc_message_types import *
-except ImportError:
-    sys.exit('IPSC message types file not found or invalid')
-
-# Import IPSC flag mask values
-#
-try:
-    from ipsc.ipsc_mask import *
-except ImportError:
-    sys.exit('IPSC mask values file not found or invalid')
-
-# Import the Alias files for numeric ids. This is split to save
-# time making lookups in one huge dictionary
-#
-curdir= os.path.dirname(__file__)
-subscriber_ids = {}
-peer_ids = {}
-talkgroup_ids = {}
-
-try:
-    with open(curdir+'/subscriber_ids.csv', 'rU') as subscriber_ids_csv:
-        subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
-        for row in subscribers:
-            subscriber_ids[int(row[1])] = (row[0])
-except ImportError:
-    logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
-    
-try:
-    with open(curdir+'/peer_ids.csv', 'rU') as peer_ids_csv:
-        peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
-        for row in peers:
-            peer_ids[int(row[1])] = (row[0])
-except ImportError:
-    logger.warning('peer_ids.csv not found: Peer aliases will not be available')
-
-try:
-    with open(curdir+'/talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
-        talkgroups = csv.reader(talkgroup_ids_csv, dialect='excel', delimiter=',')
-        for row in talkgroups:
-            talkgroup_ids[int(row[1])] = (row[0])
-except ImportError:
-    logger.warning('talkgroup_ids.csv not found: Talkgroup aliases will not be available')
-
-
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
 
 NETWORK = {}
 networks = {}
-
 config = ConfigParser.ConfigParser()
 
 try:
     config.read('./dmrlink.cfg')
 except:
-    logger.critical('Could not open configuration file, exiting...')
     sys.exit('Could not open configuration file, exiting...')
 
 try:
     for section in config.sections():
         if section == 'GLOBAL':
             pass
+
+        elif section == 'REPORTS':
+            REPORTS = {
+                'REPORT_PEERS': config.getboolean(section, 'REPORT_PEERS'),
+                'PEER_REPORT_INC_MODE': config.getboolean(section, 'PEER_REPORT_INC_MODE'),
+                'PEER_REPORT_INC_FLAGS': config.getboolean(section, 'PEER_REPORT_INC_FLAGS')
+            }
+
+        elif section == 'LOGGER':
+            LOGGER = {
+                'LOG_FILE': config.get(section, 'LOG_FILE'),
+                'LOG_HANDLERS': config.get(section, 'LOG_HANDLERS'),
+                'LOG_LEVEL': config.get(section, 'LOG_LEVEL')
+            }
         else:
             NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': {}}})
             NETWORK[section]['LOCAL'].update({
@@ -155,8 +109,111 @@ try:
             else:
                 NETWORK[section]['LOCAL']['MODE'] = '\x6A'
 except:
-    logger.critical('Could not parse configuration file, exiting...')
     sys.exit('Could not parse configuration file, exiting...')
+
+#************************************************
+#     CONFIGURE THE SYSTEM LOGGER
+#************************************************
+
+dictConfig({
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'timed': {
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'console-timed': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'timed'
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'formatter': 'simple',
+            'filename': LOGGER['LOG_FILE'],
+        },
+        'file-timed': {
+            'class': 'logging.FileHandler',
+            'formatter': 'timed',
+            'filename': LOGGER['LOG_FILE'],
+        },
+        'syslog': {
+            'class': 'logging.handlers.SysLogHandler',
+            'formatter': 'verbose',
+        }
+    },
+    'loggers': {
+        'dmrlink': {
+            'handlers': LOGGER['LOG_HANDLERS'].split(','),
+            'level': LOGGER['LOG_LEVEL'],
+            'propagate': True,
+        }
+    }
+})
+logger = logging.getLogger('dmrlink')
+
+#************************************************
+#     IMPORTING OTHER FILES - '#include'
+#************************************************
+
+# Import IPSC message types and version information
+#
+try:
+    from ipsc.ipsc_message_types import *
+except ImportError:
+    sys.exit('IPSC message types file not found or invalid')
+
+# Import IPSC flag mask values
+#
+try:
+    from ipsc.ipsc_mask import *
+except ImportError:
+    sys.exit('IPSC mask values file not found or invalid')
+
+# Import the Alias files for numeric ids. This is split to save
+# time making lookups in one huge dictionary
+#
+curdir= os.path.dirname(__file__)
+subscriber_ids = {}
+peer_ids = {}
+talkgroup_ids = {}
+
+try:
+    with open(curdir+'/subscriber_ids.csv', 'rU') as subscriber_ids_csv:
+        subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
+        for row in subscribers:
+            subscriber_ids[int(row[1])] = (row[0])
+except ImportError:
+    logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
+    
+try:
+    with open(curdir+'/peer_ids.csv', 'rU') as peer_ids_csv:
+        peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
+        for row in peers:
+            peer_ids[int(row[1])] = (row[0])
+except ImportError:
+    logger.warning('peer_ids.csv not found: Peer aliases will not be available')
+
+try:
+    with open(curdir+'/talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
+        talkgroups = csv.reader(talkgroup_ids_csv, dialect='excel', delimiter=',')
+        for row in talkgroups:
+            talkgroup_ids[int(row[1])] = (row[0])
+except ImportError:
+    logger.warning('talkgroup_ids.csv not found: Talkgroup aliases will not be available')
 
 
 #************************************************
@@ -366,11 +423,11 @@ def print_peer_list(_network):
              
         print('\tRADIO ID: {} {}' .format(int(h(peer), 16), me))
         print('\t\tIP Address: {}:{}' .format(_this_peer['IP'], _this_peer['PORT']))
-        if _this_peer['MODE_DECODE']:
+        if _this_peer['MODE_DECODE'] and REPORTS['PEER_REPORT_INC_MODE']:
             print('\t\tMode Values:')
             for name, value in _this_peer['MODE_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
-        if _this_peer['FLAGS_DECODE']:
+        if _this_peer['FLAGS_DECODE'] and REPORTS['PEER_REPORT_INC_FLAGS']:
             print('\t\tService Flags:')
             for name, value in _this_peer['FLAGS_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
@@ -384,11 +441,11 @@ def print_master(_network):
     _master = NETWORK[_network]['MASTER']
     print('Master for %s' % _network)
     print('\tRADIO ID: {}' .format(int(h(_master['RADIO_ID']), 16)))
-    if _master['MODE_DECODE']:
+    if _master['MODE_DECODE'] and REPORTS['PEER_REPORT_INC_MODE']:
         print('\t\tMode Values:')
         for name, value in _master['MODE_DECODE'].items():
             print('\t\t\t{}: {}' .format(name, value))
-    if _master['FLAGS_DECODE']:
+    if _master['FLAGS_DECODE'] and REPORTS['PEER_REPORT_INC_FLAGS']:
         print('\t\tService Flags:')
         for name, value in _master['FLAGS_DECODE'].items():
             print('\t\t\t{}: {}' .format(name, value))
@@ -560,10 +617,10 @@ class IPSC(DatagramProtocol):
     
     def reporting_loop(self):
         # Right now, without this, we really don't know anything is happening.
-        #print_master(self._network)
-        #print_peer_list(self._network)
         logger.debug('(%s) Periodic Reporting Loop Started', self._network)
-        pass
+        if REPORTS['REPORT_PEERS']:
+            print_master(self._network)
+            print_peer_list(self._network)
     
     def maintenance_loop(self):
         logger.debug('(%s) Periodic Connection Maintenance Loop Started', self._network)
