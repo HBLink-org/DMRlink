@@ -109,7 +109,8 @@ class rcmIPSC(IPSC):
         pass
         
     def xcmp_xnl(self, _network, _data):
-        print('({}) XCMP/XNL Packet Received From: {}' .format(_network, h(_data)))
+        #print('({}) XCMP/XNL Packet Received From: {}' .format(_network, h(_data)))
+        pass
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         pass
