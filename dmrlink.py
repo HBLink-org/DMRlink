@@ -24,6 +24,15 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
 
+__author__ = 'Cortney T. Buffington, N0MJS'
+__copyright__ = 'Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group'
+__credits__ = 'Adam Fast, KC0YLK, Dave K, and he who wishes not to be named'
+__license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
+__version__ = '0.1'
+__maintainer__ = 'Cort Buffington, N0MJS'
+__email__ = 'n0mjs@me.com'
+__status__ = 'Production'
+
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
@@ -40,9 +49,11 @@ except:
 try:
     for section in config.sections():
         if section == 'GLOBAL':
+            # Process GLOBAL items in the configuration
             PATH = config.get(section, 'PATH')
 
         elif section == 'REPORTS':
+            # Process REPORTS items in the configuration
             REPORTS = {
                 'REPORT_PEERS': config.getboolean(section, 'REPORT_PEERS'),
                 'PEER_REPORT_INC_MODE': config.getboolean(section, 'PEER_REPORT_INC_MODE'),
@@ -50,32 +61,49 @@ try:
             }
 
         elif section == 'LOGGER':
+            # Process LOGGER items in the configuration
             LOGGER = {
                 'LOG_FILE': config.get(section, 'LOG_FILE'),
                 'LOG_HANDLERS': config.get(section, 'LOG_HANDLERS'),
                 'LOG_LEVEL': config.get(section, 'LOG_LEVEL')
             }
         else:
+            # All other sections define indiviual IPSC Networks we connect to
+            # Each IPSC network config will contain the following three sections
             NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': {}}})
+            # LOCAL means we need to know this stuff to be a peer in the network
             NETWORK[section]['LOCAL'].update({
+                # In case we want to keep config, but not actually connect to the network
+                'ENABLED':      config.getboolean(section, 'ENABLED'),
+                
+                # These items are used to create the MODE byte
+                'PEER_OPER':    config.getboolean(section, 'PEER_OPER'),
+                'IPSC_MODE':    config.get(section, 'IPSC_MODE'),
+                'TS1_LINK':     config.getboolean(section, 'TS1_LINK'),
+                'TS2_LINK':     config.getboolean(section, 'TS2_LINK'),
                 'MODE': '',
-                'PEER_OPER': True,
-                'PEER_MODE': 'DIGITAL',
-                'FLAGS': '',
-                'MAX_MISSED': 20,
-                'NUM_PEERS': 0,
-                'STATUS': {
-                    'ACTIVE': False
-                    },
-                'ENABLED': config.getboolean(section, 'ENABLED'),
-                'TS1_LINK': config.getboolean(section, 'TS1_LINK'),
-                'TS2_LINK': config.getboolean(section, 'TS2_LINK'),
+                
+                # These items are used to create the multi-byte FLAGS field
                 'AUTH_ENABLED': config.getboolean(section, 'AUTH_ENABLED'),
-                'RADIO_ID': hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
-                'PORT': config.getint(section, 'PORT'),
-                'ALIVE_TIMER': config.getint(section, 'ALIVE_TIMER'),
-                'AUTH_KEY': (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
+                'CSBK_CALL':    config.getboolean(section, 'CSBK_CALL'),
+                'RCM':          config.getboolean(section, 'RCM'),
+                'CON_APP':      config.getboolean(section, 'CON_APP'),
+                'XNL_CALL':     config.getboolean(section, 'XNL_CALL'),
+                'XNL_MASTER':   config.getboolean(section, 'XNL_MASTER'),
+                'DATA_CALL':    config.getboolean(section, 'DATA_CALL'),
+                'VOICE_CALL':   config.getboolean(section, 'VOICE_CALL'),
+                'MASTER_PEER':  config.getboolean(section, 'MASTER_PEER'),
+                'FLAGS': '',
+                
+                # Things we need to know to connect and be a peer in this IPSC
+                'RADIO_ID':     hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
+                'PORT':         config.getint(section, 'PORT'),
+                'ALIVE_TIMER':  config.getint(section, 'ALIVE_TIMER'),
+                'MAX_MISSED':   config.getint(section, 'MAX_MISSED'),
+                'AUTH_KEY':     (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
+                'NUM_PEERS': 0,
                 })
+            # Master means things we need to know about the master peer of the network
             NETWORK[section]['MASTER'].update({
                 'RADIO_ID': '\x00\x00\x00\x00',
                 'MODE': '\x00',
@@ -92,22 +120,51 @@ try:
                 'IP': config.get(section, 'MASTER_IP'),
                 'PORT': config.getint(section, 'MASTER_PORT')
                 })
-        
+            
+            # Temporary locations for building MODE and FLAG data
+            MODE_BYTE = 0
+            FLAG_1 = 0
+            FLAG_2 = 0
+            
+            # Construct and store the MODE field
+            if NETWORK[section]['LOCAL']['PEER_OPER']:
+                MODE_BYTE |= 1 << 6
+            if NETWORK[section]['LOCAL']['IPSC_MODE'] == 'ANALOG':
+                MODE_BYTE |= 1 << 4
+            elif NETWORK[section]['LOCAL']['IPSC_MODE'] == 'DIGITAL':
+                MODE_BYTE |= 1 << 5
+            if NETWORK[section]['LOCAL']['TS1_LINK']:
+                MODE_BYTE |= 1 << 3
+            else:
+                MODE_BYTE |= 1 << 2
+            if NETWORK[section]['LOCAL']['TS2_LINK']:
+                MODE_BYTE |= 1 << 1
+            else:
+                MODE_BYTE |= 1 << 0
+            NETWORK[section]['LOCAL']['MODE'] = chr(MODE_BYTE)
+
+            # Construct and store the FLAGS field
+            if NETWORK[section]['LOCAL']['CSBK_CALL']:
+                FLAG_1 |= 1 << 7  
+            if NETWORK[section]['LOCAL']['RCM']:
+                FLAG_1 |= 1 << 6
+            if NETWORK[section]['LOCAL']['CON_APP']:
+                FLAG_1 |= 1 << 5
+            if NETWORK[section]['LOCAL']['XNL_CALL']:
+                FLAG_2 |= 1 << 7    
+            if NETWORK[section]['LOCAL']['XNL_CALL'] and NETWORK[section]['LOCAL']['XNL_MASTER']:
+                FLAG_2 |= 1 << 6
+            elif NETWORK[section]['LOCAL']['XNL_CALL'] and not NETWORK[section]['LOCAL']['XNL_MASTER']:
+                FLAG_2 |= 1 << 5
             if NETWORK[section]['LOCAL']['AUTH_ENABLED']:
-                #0x60 - 3rd Party App & Repeater Monitoring, 0x1C - Voice and Data calls only, 0xDC - Voice, Data and XCMP/XNL
-                NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x60\x1C'
-                #NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x60\xDC'
-            else:
-                NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00\x60\x0C'
-    
-            if not NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
-                NETWORK[section]['LOCAL']['MODE'] = '\x65'
-            elif NETWORK[section]['LOCAL']['TS1_LINK'] and not NETWORK[section]['LOCAL']['TS2_LINK']:    
-                NETWORK[section]['LOCAL']['MODE'] = '\x66'
-            elif not NETWORK[section]['LOCAL']['TS1_LINK'] and NETWORK[section]['LOCAL']['TS2_LINK']:    
-                NETWORK[section]['LOCAL']['MODE'] = '\x69'
-            else:
-                NETWORK[section]['LOCAL']['MODE'] = '\x6A'
+                FLAG_2 |= 1 << 4
+            if NETWORK[section]['LOCAL']['DATA_CALL']:
+                FLAG_2 |= 1 << 3
+            if NETWORK[section]['LOCAL']['VOICE_CALL']:
+                FLAG_2 |= 1 << 2
+            if NETWORK[section]['LOCAL']['MASTER_PEER']:
+                FLAG_2 |= 1 << 0
+            NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00'+chr(FLAG_1)+chr(FLAG_2)
 except:
     sys.exit('Could not parse configuration file, exiting...')
 
@@ -395,7 +452,7 @@ def process_peer_list(_data, _network):
     for peerid in NETWORK[_network]['PEERS'].keys():
         if peerid not in _temp_peers:
             de_register_peer(_network, peerid)
-            logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, peerid)
+            logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, h(peerid))
 
 
 # Gratuitous print-out of the peer list.. Pretty much debug stuff.
@@ -479,7 +536,6 @@ class IPSC(DatagramProtocol):
             self._config = NETWORK[self._network]
             #
             self._local = self._config['LOCAL']
-            self._local_stat = self._local['STATUS']
             self._local_id = self._local['RADIO_ID']
             #
             self._master = self._config['MASTER']
