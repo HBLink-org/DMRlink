@@ -1,6 +1,4 @@
-***This code actually works.*** 
-
-***THIS CODE CHANGES OFTEN. PLEASE ENSURE YOU ARE UP TO DATE!***
+***OFFICIAL VERSION V0.1 RELEASE***
 
 
 ##PROJECT: Open Source IPSC Client.
