@@ -8,6 +8,11 @@
 # Creative Commons, 444 Castro Street, Suite 900, Mountain View,
 # California, 94041, USA.
 
+#NOTE: This program uses a configuration file specified on the command line
+#      if none is specified, then dmrlink.cfg in the same directory as this
+#      file will be tried. Finally, if that does not exist, this process
+#      will terminate
+
 from __future__ import print_function
 
 import ConfigParser
