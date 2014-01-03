@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
 #
 # This work is licensed under the Creative Commons Attribution-ShareAlike
@@ -20,6 +22,15 @@ import time
 import binascii
 import dmrlink
 from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids, logger
+
+__author__ = 'Cortney T. Buffington, N0MJS'
+__copyright__ = 'Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group'
+__credits__ = 'Adam Fast, KC0YLK, Dave K, and he who wishes not to be named'
+__license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
+__version__ = '0.2a'
+__maintainer__ = 'Cort Buffington, N0MJS'
+__email__ = 'n0mjs@me.com'
+__status__ = 'Production'
 
 # Constants
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
 #
 # This work is licensed under the Creative Commons Attribution-ShareAlike
@@ -9,6 +11,7 @@
 from __future__ import print_function
 
 import ConfigParser
+import argparse
 import sys
 import binascii
 import csv
@@ -28,10 +31,17 @@ __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group'
 __credits__ = 'Adam Fast, KC0YLK, Dave K, and he who wishes not to be named'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__version__ = '0.1'
+__version__ = '0.2a'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
 __status__ = 'Production'
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
+
+cli_args = parser.parse_args()
+
 
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
@@ -41,10 +51,13 @@ NETWORK = {}
 networks = {}
 config = ConfigParser.ConfigParser()
 
+if not cli_args.CFG_FILE:
+    cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
 try:
-    config.read('./dmrlink.cfg')
-except:
-    sys.exit('Could not open configuration file, exiting...')
+    if not config.read(cli_args.CFG_FILE):
+        sys.exit('Configuration file \''+cli_args.CFG_FILE+'\' is not a valid configuration file! Exiting...')        
+except:    
+    sys.exit('Configuration file \''+cli_args.CFG_FILE+'\' is not a valid configuration file! Exiting...')
 
 try:
     for section in config.sections():
