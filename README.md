@@ -2,7 +2,7 @@
 
 
 ##PROJECT: Open Source IPSC Client.
-**PURPOSE:** Troubleshooting IPSC performance issues, and create applications such as logging, bridging, etc..
+**PURPOSE:** Troubleshooting IPSC performance issues, and create applications such as logging, bridging, etc.
 **IMPACT:** Potential concern from Motorla Solutions, as IPSC is a proprietary  
 **METHOD:** Reverse engineering by pattern matching and process of elimination  
   
