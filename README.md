@@ -3,8 +3,10 @@
 
 ##PROJECT: Open Source IPSC Client.
 **PURPOSE:** Troubleshooting IPSC performance issues, and create applications such as logging, bridging, etc.
-**IMPACT:** Potential concern from Motorla Solutions, as IPSC is a proprietary  
-**METHOD:** Reverse engineering by pattern matching and process of elimination  
+
+**IMPACT:** Potential concern from Motorla Solutions, as IPSC is a proprietary protocol.
+
+**METHOD:** Reverse engineering by pattern matching and process of elimination.
   
 **PROPERTY:**  
 This work represents the author's interpretation of the Motorola(tm) MOTOTRBO(tm) IPSC protocol. It is intended for academic purposes and not for commercial gain. It is not guaranteed to work, or be useful in any way, though it is intended to help IPSC users better understand, and thus maintain and operate, IPSC networks. This work is not affiliated with Motorola Solutions(tm), Inc. in any way. Motorola, Motorola Solutions, MOTOTRBO, ISPC and other terms in this document are registered trademarks of Motorola Solutions, Inc. Other registered trademark terms may be used. These are owned and held by their respective owners.  
