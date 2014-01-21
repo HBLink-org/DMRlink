@@ -915,6 +915,7 @@ class IPSC(DatagramProtocol):
                 peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
                 self.transport.write(peer_alive_reply_packet, (host, port))
                 self.reset_keep_alive(_peerid)  # Might as well reset our own counter, we know it's out there...
+                logger.debug('(%s) Keep-Alive reply sent to Peer %s', self._network, int(h(_peerid), 16))
                 return
                                 
             elif _packettype == PEER_REG_REQ:
@@ -926,6 +927,7 @@ class IPSC(DatagramProtocol):
             # Packets we receive...
             elif _packettype == PEER_ALIVE_REPLY:
                 self.reset_keep_alive(_peerid)
+                logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s', self._network, int(h(_peerid), 16))
                 return                
 
             elif _packettype == PEER_REG_REPLY:
@@ -945,12 +947,14 @@ class IPSC(DatagramProtocol):
                 
             if _packettype == MASTER_ALIVE_REPLY:
                 self.reset_keep_alive(_peerid)
+                logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s', self._network, int(h(_peerid), 16))
                 return
             
             elif _packettype == PEER_LIST_REPLY:
                 NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
                 if len(data) > 18:
                     process_peer_list(data, self._network)
+                logger.debug('(%s) Peer List Reply Recieved From Master %s', self._network, int(h(_peerid), 16))
                 return
             return
             
@@ -970,6 +974,7 @@ class IPSC(DatagramProtocol):
             self._master['FLAGS_DECODE'] = _decoded_flags
             self._master_stat['CONNECTED'] = True
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
+            logger.debug('(%s) Registration response (we requested reg) from the Master %s', self._network, int(h(_peerid), 16))
             return
         
         # We know about these types, but absolutely don't take an action
