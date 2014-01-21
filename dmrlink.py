@@ -711,6 +711,7 @@ class IPSC(DatagramProtocol):
             # Send keep-alive to the master
             master_alive_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_PKT)
             self.transport.write(master_alive_packet, self._master_sock)
+            logger.debug('(%s) Keep Alive Sent to the Master', self._network)
             
             # If we had a keep-alive outstanding by the time we send another, mark it missed.
             if (self._master_stat['KEEP_ALIVES_OUTSTANDING']) > 0:
@@ -763,6 +764,7 @@ class IPSC(DatagramProtocol):
                 elif peer['STATUS']['CONNECTED']:
                     peer_alive_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REQ_PKT)
                     self.transport.write(peer_alive_req_packet, (peer['IP'], peer['PORT']))
+                    logger.debug('(%s) Keep-Alive Sent to the Peer %s', self._network, int_id(peer_id))
 
                     # If we have a keep-alive outstanding by the time we send another, mark it missed.
                     if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] > 0:
