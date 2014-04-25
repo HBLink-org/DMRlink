@@ -27,15 +27,10 @@ __email__ = 'n0mjs@me.com'
 __status__ = 'pre-alpha'
 
 
-
-# THESE ARE THE THINGS THAT YOU NEED TO CONFIGURE TO USE THIS PROGRAM!!!
-# TGID TO LISTEN FOR AND REPEAT ON
-TGID = 10
-# TIMESLOT TO LISTEN FOR AND REPEAT ON
-TS = 0
-
-
-
+try:
+    from playback_config import *
+except ImportError:
+    sys.exit('Configuration file not found or invalid')
 
 HEX_TGID = hex_id(TGID)
 
