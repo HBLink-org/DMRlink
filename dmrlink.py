@@ -295,6 +295,11 @@ except ImportError:
 #     UTILITY FUNCTIONS FOR INTERNAL USE
 #************************************************
 
+# Create a 3 byte TGID or UID from an integer
+#
+def hex_id(_int_id):
+    return hex(_int_id)[2:].rjust(6,'0').decode('hex')
+
 # Convert a hex string to an int (radio ID, etc.)
 #
 def int_id(_hex_string):

@@ -15,20 +15,29 @@ from twisted.internet import reactor
 from binascii import b2a_hex as h
 
 import sys, time
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, logger, dmr_nat, int_id, send_to_ipsc
+from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, logger, dmr_nat, int_id, send_to_ipsc, hex_id
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
 __credits__ = 'Adam Fast, KC0YLK; Dave K; and he who wishes not to be named'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__version__ = '0.1a'
+__version__ = '0.1b'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
 __status__ = 'pre-alpha'
 
-# TGID to listen for and repeat on
-TGID = '\x00\x00\x0A'
-TS = 1
+
+
+# THESE ARE THE THINGS THAT YOU NEED TO CONFIGURE TO USE THIS PROGRAM!!!
+# TGID TO LISTEN FOR AND REPEAT ON
+TGID = 10
+# TIMESLOT TO LISTEN FOR AND REPEAT ON
+TS = 0
+
+
+
+
+HEX_TGID = hex_id(TGID)
 
 class playbackIPSC(IPSC):
     
@@ -41,7 +50,7 @@ class playbackIPSC(IPSC):
     #************************************************
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        if TGID == _dst_sub and TS == _ts:
+        if HEX_TGID == _dst_sub and TS == _ts:
             if not _end:
                 if not self.CALL_DATA:
                     logger.info('(%s) Receiving transmission to be played back from subscriber: %s', _network, int_id(_src_sub))
