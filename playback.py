@@ -28,6 +28,7 @@ __status__ = 'pre-alpha'
 
 # TGID to listen for and repeat on
 TGID = '\x00\x00\x0A'
+TS = 1
 
 class playbackIPSC(IPSC):
     
@@ -40,7 +41,7 @@ class playbackIPSC(IPSC):
     #************************************************
     
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        if TGID == _dst_sub:
+        if TGID == _dst_sub and TS == _ts:
             if not _end:
                 if not self.CALL_DATA:
                     logger.info('(%s) Receiving transmission to be played back from subscriber: %s', _network, int_id(_src_sub))
