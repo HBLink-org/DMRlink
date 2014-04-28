@@ -2,7 +2,7 @@
 
 
 ##PROJECT: Open Source IPSC Client.
-**PURPOSE:** Troubleshooting IPSC performance issues, and create applications such as logging, bridging, etc.
+**PURPOSE:** Understanding IPSC, building an open-source IPSC "stack", troubleshooting IPSC performance issues, and as a basis to easily write applications such as logging, bridging, etc.
 
 **IMPACT:** Potential concern from Motorla Solutions, as IPSC is a proprietary protocol.
 
@@ -15,7 +15,24 @@ This work represents the author's interpretation of the Motorola(tm) MOTOTRBO(tm
 This document assumes the reader is familiar with the concepts presented in the Motorola Solutions(tm), Inc. MOTOTRBO(tm) Systems Planner.  
   
 **CONVENTIONS USED:**  
-When communications exchanges are described, the symbols "->" and "<-" are used to denote the *direction* of the communcation. For example, "PEER -> MASTER" indicates communcation from the peer to the master. For each exchange outlined, the initiator of the particular communication will be on the left for the duration of the particular item being illustrated.  
+When communications exchanges are described, the symbols "->" and "<-" are used to denote the *direction* of the communcation. For example, "PEER -> MASTER" indicates communcation from the peer to the master. For each exchange outlined, the initiator of the particular communication will be on the left for the duration of the particular item being illustrated.
+
+**HOW TO USE THIS SOFTWARE:**  
+The primary objective is the IPSC "stack" itself, and is represended in dmrlink.py. It gets the majority of work, and the applicaitons are more examples to show how dmrlink.py can be used. As such, dmrlink.py, dmrlink.cfg and the ipsc directory are pre-requisites for eveyrthing here. dmrlink.py does very little on it's own, but you should ALWAYS make sure it runs directly, as nothing else will work if it does not.
+
+dmrlink, optionally, uses three additional files to map dmr identifiers to understandable names. These are the .csv files for subscribers, peers (other repeaters, 3rd party console applications, etc.) and one for common talkgroups. These files are really only meaningful for logging and reporting.
+
+The remainging files are sample applicaitons that use dmrlink as their basis. Since dmrlink takes a default action on each packet type, overriding the class methods for particular packet types are how the examples are presented. For example, bridge.py only needs access to group voice packets, so the group_voice class method is overridden to perform the bridging function. In this particlar example, several other class methods are also overridden, but only to set them to do nothing.
+
+**FILES:**  
++ ***dmrlink.py, dmrlink.cfg, ipsc (directory):*** Core files for dmrlink to work
++ ***talkgroup_ids.csv, subscriber_ids.csv, peer_ids.csv:*** DMR numeric ID to name mapping files (optional)
++ ***bridge.py, log.py, rcm.py, playback.py:*** Sample applications to demonstrate dmrlink's abilities
++ ***files with SAMPLE in the name:*** Configuration files for certain apps - remove "_SAMPLE" and customize to your needs to use.
+
+**CONFIGURATION:**
+
+The configuration file for dmrlink is in "ini" format, and is self-documented. A warning not in the self-documentation: Don't enable features you do not undertand, it can break dmrlink or the target IPSC badly. There are options avaialble because IPSC appears to make them available, but dmrlink doesn't yet understand them. For exmaple, dmrlink does not process XNL/XCMP. If you enable it, and other peers expect interaction with it, the results may be unpredictable.
   
 ###CONNECTION ESTABLISHMENT AND MAINTENANCE
 
