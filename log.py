@@ -15,7 +15,7 @@ from twisted.internet import reactor
 from binascii import b2a_hex as h
 
 import time
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids, logger
+from dmrlink import IPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids, logger
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -82,29 +82,11 @@ class logIPSC(IPSC):
         _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         print('({}) Private Data Packet Received From: {} To: {}' .format(_network, _src_sub, _dst_sub))
 
-class logUnauthIPSC(logIPSC):
-    
-    # There isn't a hash to build, so just return the data
-    #
-    def hashed_packet(self, _key, _data):
-        return _data   
-    
-    # Remove the hash from a packet and return the payload... except don't
-    #
-    def strip_hash(self, _data):
-        return _data
-    
-    # Everything is validated, so just return True
-    #
-    def validate_auth(self, _key, _data):
-        return True
+
 if __name__ == '__main__':
-    logger.info('DMRlink \'log.py\' (c) 2013 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    logger.info('DMRlink \'log.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
     for ipsc_network in NETWORK:
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
-            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED']:
-                networks[ipsc_network] = logIPSC(ipsc_network)
-            else:
-                networks[ipsc_network] = logUnauthIPSC(ipsc_network)
+            networks[ipsc_network] = logIPSC(ipsc_network)
             reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
     reactor.run()

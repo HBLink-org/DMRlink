@@ -15,7 +15,7 @@ from twisted.internet import reactor
 from binascii import b2a_hex as h
 
 import sys, time
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, logger, dmr_nat, int_id, send_to_ipsc, hex_id
+from dmrlink import IPSC, NETWORK, networks, logger, dmr_nat, int_id, send_to_ipsc, hex_id
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -65,31 +65,11 @@ class playbackIPSC(IPSC):
                     time.sleep(0.06)
                 self.CALL_DATA = []
         
-
-class playbackUnauthIPSC(playbackIPSC):
-    
-    # There isn't a hash to build, so just return the data
-    #
-    def hashed_packet(self, _key, _data):
-        return _data   
-    
-    # Remove the hash from a packet and return the payload... except don't
-    #
-    def strip_hash(self, _data):
-        return _data
-    
-    # Everything is validated, so just return True
-    #
-    def validate_auth(self, _key, _data):
-        return True
         
 if __name__ == '__main__':
-    logger.info('DMRlink \'playback.py\' (c) 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    logger.info('DMRlink \'playback.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
     for ipsc_network in NETWORK:
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
-            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED']:
-                networks[ipsc_network] = playbackIPSC(ipsc_network)
-            else:
-                networks[ipsc_network] = playbackUnauthIPSC(ipsc_network)
+            networks[ipsc_network] = playbackIPSC(ipsc_network)
             reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
     reactor.run()

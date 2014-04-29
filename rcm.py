@@ -21,7 +21,7 @@ from binascii import b2a_hex as h
 import time
 import binascii
 import dmrlink
-from dmrlink import IPSC, UnauthIPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids, logger
+from dmrlink import IPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids, logger
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -141,29 +141,11 @@ class rcmIPSC(IPSC):
         _source_name = get_info(_source_dec, peer_ids)
         print('({}) Repeater Wake-Up Packet Received: {} ({})' .format(_network, _source_name, _source_dec))
 
-class rcmUnauthIPSC(rcmIPSC):
-    
-    # There isn't a hash to build, so just return the data
-    #
-    def hashed_packet(self, _key, _data):
-        return _data   
-    
-    # Remove the hash from a packet and return the payload... except don't
-    #
-    def strip_hash(self, _data):
-        return _data
-    
-    # Everything is validated, so just return True
-    #
-    def validate_auth(self, _key, _data):
-        return True
+
 if __name__ == '__main__':
-    logger.info('DMRlink \'rcm.py\' (c) 2013 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    logger.info('DMRlink \'rcm.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
     for ipsc_network in NETWORK:
-        if (NETWORK[ipsc_network]['LOCAL']['ENABLED']):
-            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED'] == True:
-                networks[ipsc_network] = rcmIPSC(ipsc_network)
-            else:
-                networks[ipsc_network] = rcmUnauthIPSC(ipsc_network)
+        if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
+            networks[ipsc_network] = rcmIPSC(ipsc_network)
             reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
     reactor.run()

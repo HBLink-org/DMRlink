@@ -591,6 +591,16 @@ class IPSC(DatagramProtocol):
             #
             logger.error('(%s) IPSC Instance Could Not be Created... Exiting', self._network)
             sys.exit()
+        
+        # Choose which set of fucntions to use - authenticated or not
+        if self._local['AUTH_ENABLED']:
+            self.hashed_packet = self.auth_hashed_packet
+            self.strip_hash = self.auth_strip_hash
+            self.validate_auth = self.auth_validate_auth
+        else:
+            self.hashed_packet = self.unauth_hashed_packet
+            self.strip_hash = self.unauth_strip_hash
+            self.validate_auth = self.unauth_validate_auth
 
 
     # This is called by REACTOR when it starts, We use it to set up the timed
@@ -666,20 +676,24 @@ class IPSC(DatagramProtocol):
         if _peerid == self._master['RADIO_ID']:
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
 
+    #
+    # NEXT THREE FUNCITONS ARE FOR AUTHENTICATED PACKETS
+    #
+
     # Take a packet to be SENT, calculate auth hash and return the whole thing
     #
-    def hashed_packet(self, _key, _data):
+    def auth_hashed_packet(self, _key, _data):
         _hash = binascii.a2b_hex((hmac_new(_key,_data,sha1)).hexdigest()[:20])
         return _data + _hash
     
     # Remove the hash from a packet and return the payload
     #
-    def strip_hash(self, _data):
+    def auth_strip_hash(self, _data):
         return _data[:-10]
     
     # Take a RECEIVED packet, calculate the auth hash and verify authenticity
     #
-    def validate_auth(self, _key, _data):
+    def auth_validate_auth(self, _key, _data):
         _payload = self.strip_hash(_data)
         _hash = _data[-10:]
         _chk_hash = binascii.a2b_hex((hmac_new(_key,_payload,sha1)).hexdigest()[:20])   
@@ -688,6 +702,25 @@ class IPSC(DatagramProtocol):
             return True
         else:
             return False
+    
+    #
+    # NEXT THREE FUNCITONS ARE FOR UN-AUTHENTICATED PACKETS
+    #
+    
+    # There isn't a hash to build, so just return the data
+    #
+    def unauth_hashed_packet(self, _key, _data):
+        return _data
+    
+    # Remove the hash from a packet and return the payload... except don't
+    #
+    def unauth_strip_hash(self, _data):
+        return _data
+    
+    # Everything is validated, so just return True
+    #
+    def unauth_validate_auth(self, _key, _data):
+        return True
 
 
 #************************************************
@@ -993,29 +1026,6 @@ class IPSC(DatagramProtocol):
             self.unknown_message(self._network, _packettype, _peerid, data)
             return
 
-
-#************************************************
-#     Derived Class
-#       used in the rare event of an
-#       unauthenticated IPSC network.
-#************************************************
-
-class UnauthIPSC(IPSC):
-    
-    # There isn't a hash to build, so just return the data
-    #
-    def hashed_packet(self, _key, _data):
-        return _data
-    
-    # Remove the hash from a packet and return the payload... except don't
-    #
-    def strip_hash(self, _data):
-        return _data
-    
-    # Everything is validated, so just return True
-    #
-    def validate_auth(self, _key, _data):
-        return True
     
 
 #************************************************
@@ -1023,13 +1033,10 @@ class UnauthIPSC(IPSC):
 #************************************************
 
 if __name__ == '__main__':
-    logger.info('DMRlink \'dmrlink.py\' (c) 2013 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    logger.info('DMRlink \'dmrlink.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
     networks = {}
     for ipsc_network in NETWORK:
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
-            if NETWORK[ipsc_network]['LOCAL']['AUTH_ENABLED']:
-                networks[ipsc_network] = IPSC(ipsc_network)
-            else:
-                networks[ipsc_network] = UnauthIPSC(ipsc_network)
+            networks[ipsc_network] = IPSC(ipsc_network)
             reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
     reactor.run()
