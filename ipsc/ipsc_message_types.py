@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
+# Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
 #
 # This work is licensed under the Creative Commons Attribution-ShareAlike
 # 3.0 Unported License.To view a copy of this license, visit
