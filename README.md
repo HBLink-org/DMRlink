@@ -1,4 +1,4 @@
-***OFFICIAL VERSION V0.1 RELEASE***
+***OFFICIAL VERSION V0.1.something RELEASE***
 
 
 ##PROJECT: Open Source IPSC Client.
@@ -18,21 +18,21 @@ This document assumes the reader is familiar with the concepts presented in the 
 When communications exchanges are described, the symbols "->" and "<-" are used to denote the *direction* of the communcation. For example, "PEER -> MASTER" indicates communcation from the peer to the master. For each exchange outlined, the initiator of the particular communication will be on the left for the duration of the particular item being illustrated.
 
 **HOW TO USE THIS SOFTWARE:**  
-The primary objective is the IPSC "stack" itself, and is represended in dmrlink.py. It gets the majority of work, and the applicaitons are more examples to show how dmrlink.py can be used. As such, dmrlink.py, dmrlink.cfg and the ipsc directory are pre-requisites for eveyrthing here. dmrlink.py does very little on it's own, but you should ALWAYS make sure it runs directly, as nothing else will work if it does not.
+The primary objective is the IPSC "stack" itself, and is represended in dmrlink.py. It gets the majority of work, and the applicaitons are examples to show how dmrlink.py can be used. As such, dmrlink.py, dmrlink.cfg and the ipsc directory are pre-requisites for eveyrthing here. dmrlink.py does very little on it's own, but you should ALWAYS make sure it runs directly, as nothing else will work if it does not. Turn on the logging options, set the logger to DEBUG and watch to make sure everything works right **BEFORE** working with the application files.
 
 dmrlink, optionally, uses three additional files to map dmr identifiers to understandable names. These are the .csv files for subscribers, peers (other repeaters, 3rd party console applications, etc.) and one for common talkgroups. These files are really only meaningful for logging and reporting.
 
-The remainging files are sample applicaitons that use dmrlink as their basis. Since dmrlink takes a default action on each packet type, overriding the class methods for particular packet types are how the examples are presented. For example, bridge.py only needs access to group voice packets, so the group_voice class method is overridden to perform the bridging function. In this particlar example, several other class methods are also overridden, but only to set them to do nothing.
+The remaining files are sample applicaitons that sub-class dmrlink. Since dmrlink takes a default action on each packet type, overriding the class methods for particular packet types are how the examples are presented. For example, bridge.py only needs access to group voice packets, so the group_voice class method is overridden to perform the bridging function. In this particlar example, several other class methods are also overridden, but only to set them to do nothing.
 
 **FILES:**  
 + ***dmrlink.py, dmrlink.cfg, ipsc (directory):*** Core files for dmrlink to work
 + ***talkgroup_ids.csv, subscriber_ids.csv, peer_ids.csv:*** DMR numeric ID to name mapping files (optional)
 + ***bridge.py, log.py, rcm.py, playback.py:*** Sample applications to demonstrate dmrlink's abilities
-+ ***files with SAMPLE in the name:*** Configuration files for certain apps - remove "_SAMPLE" and customize to your needs to use.
++ ***files with SAMPLE in the name:*** Configuration files for certain apps - remove "_SAMPLE" and customize to your needs to use. for example, "dmrlink_SAMPLE.cfg" becomes "dmrlink.cfg"
 
 **CONFIGURATION:**
 
-The configuration file for dmrlink is in "ini" format, and is self-documented. A warning not in the self-documentation: Don't enable features you do not undertand, it can break dmrlink or the target IPSC badly. There are options avaialble because IPSC appears to make them available, but dmrlink doesn't yet understand them. For exmaple, dmrlink does not process XNL/XCMP. If you enable it, and other peers expect interaction with it, the results may be unpredictable.
+The configuration file for dmrlink is in ".ini" format, and is self-documented. A warning not in the self-documentation: Don't enable features you do not undertand, it can break dmrlink or the target IPSC (nothing turning off dmrlink shouldn't fix). There are options avaialble because the IPSC protocol appears to make them available, but dmrlink doesn't yet understand them. For exmaple, dmrlink does not process XNL/XCMP. If you enable it, and other peers expect interaction with it, the results may be unpredictable. Chances are, you'll confuse applications like RDAC that require it.
   
 ###CONNECTION ESTABLISHMENT AND MAINTENANCE
 
@@ -247,14 +247,11 @@ Number of peers can be derived from PEER_LIST_LENGTH, as each peer entry is 11 b
 
 **NOTE:**
 
-This is important: If you e-mail me asking about dmrlink and don't use the phrase "here I am, rock you like a hurricane" (at least initially), I will probably delete your e-mail without reading it. I need to be very clear. This software is NOT intended to be an out-of-box replacement for c-Bridge, SmartPTT, GenWatch, RDAC, etc. Please do not contact me with the express intent of wanting to know how to configure it to do the same thing as any of these fine products, because it doesn't do what they do, and will likely never be something you can "just run" and peform those functions with. This is free software, shared with the world so that others can learn from or do useful things with it. The price of open source is that I didn't sell you a product, and there is no support or warranty, or even responsiblity on my part for your use of it. If you want something that is a c-Bridge or SmartPTT, then please go buy one of those products -- they work great, I own both. Using dmrlink will require you to get your hands dirty. Using dmrlink requires basic understanding of Python. If you have read this README.md, have looked for comments or other direction within the files themsleves, and understand I owe you nothing, then please e-mail me, and I'll try to help.
-
-Yes, this note probably sounds heavy handed. I have received a great deal of e-mail from a great deal of folks since posting this project. They have ranged from folks helping with development by fixing problems for me or offering the right way to do something where I clearly did it wrong (which I GREATLY APPRECIATE), all the way down to a growing number of people who seem to want to know things such as, "how do you expect me to use this in place of a c-Bridge?". The answer is, I don't. And I need to minimize those e-mails so that I have time to concentrate on making dmrlink a better piece of software.
+This is important: If you e-mail me asking about dmrlink and don't use the phrase "here I am, rock you like a hurricane" (at least initially), I will probably delete your e-mail without reading it. I need to be very clear. This software is NOT intended to be an out-of-box replacement for c-Bridge, SmartPTT, GenWatch, RDAC, etc. Please do not contact me with the express intent of wanting to know how to configure it to do the same thing as any of these fine products, because it doesn't do what they do, and will likely never be something you can "just run" and peform those functions with. This is free software, shared with the world so that others can learn from or do useful things with it. The price of open source is that I didn't sell you a product, and there is no support or warranty, or even responsiblity on my part for your use of it. If you want something that is a c-Bridge or SmartPTT, then please go buy one of those products -- they work great, I own both. Using dmrlink will require you to get your hands dirty. Using dmrlink requires basic understanding of Python. If you have read this README.md, have looked for comments or other direction within the files themsleves, and understand I owe you nothing, then please e-mail me, and I'll try to help if I can.
 
 ***73 DE N0MJS***
 
-
-Copyright (c) 2013 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
+Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
 
 This work is licensed under the Creative Commons Attribution-ShareAlike
 3.0 Unported License.To view a copy of this license, visit
