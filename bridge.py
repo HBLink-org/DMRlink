@@ -51,7 +51,7 @@ class bridgeIPSC(IPSC):
     #************************************************
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
-    
+    #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _ts not in self.ACTIVE_CALLS:
             self.ACTIVE_CALLS.append(_ts)
@@ -80,28 +80,6 @@ class bridgeIPSC(IPSC):
                     _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 send_to_ipsc(_target, _tmp_data)
-
-    def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data): 
-        pass
-    
-    def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        pass
-    
-    def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        pass
-        
-    def call_mon_origin(self, _network, _data):
-        pass
-    
-    def call_mon_rpt(self, _network, _data):
-        pass
-    
-    def call_mon_nack(self, _network, _data):
-        pass
-    
-    def xcmp_xnl(self, _network, _data):
-        pass
-
 
 if __name__ == '__main__':
     logger.info('DMRlink \'bridge.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')

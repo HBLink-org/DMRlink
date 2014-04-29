@@ -45,7 +45,7 @@ class rcmIPSC(IPSC):
     #************************************************
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
-
+    #
     def call_mon_origin(self, _network, _data):
         _source = _data[1:5]
         _ipsc_src = _data[5:9]
@@ -73,30 +73,6 @@ class rcmIPSC(IPSC):
         print('Source Sub:  ', _rf_src)
         print('Target Sub:  ', _rf_tgt)
         print()
-    
-    def call_mon_rpt(self, _network, _data):
-        #print('({}) Repeater Call Monitor Repeating Packet: {}' .format(_network, h(_data)))
-        pass
-        
-    def call_mon_nack(self, _network, _data):
-        #print('({}) Repeater Call Monitor NACK Packet: {}' .format(_network, h(_data)))
-        pass
-        
-    def xcmp_xnl(self, _network, _data):
-        #print('({}) XCMP/XNL Packet Received From: {}' .format(_network, h(_data)))
-        pass
-    
-    def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        pass
-        
-    def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        pass
-        
-    def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        pass
-    
-    def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        pass
         
     def repeater_wake_up(self, _network, _data):
         _source = _data[1:5]
