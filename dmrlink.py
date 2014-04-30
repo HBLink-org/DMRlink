@@ -313,7 +313,7 @@ def dmr_nat(_data, _src_id, _nat_id):
 #
 def get_info(_id, _dict):
     if _id in _dict:
-            return _dict[_id]
+        return _dict[_id]
     return _id
 
 # Determine if the provided peer ID is valid for the provided network 
@@ -571,7 +571,6 @@ class IPSC(DatagramProtocol):
             #
             args = ()
             
-            
             # Packet 'constructors' - builds the necessary control packets for this IPSC instance.
             # This isn't really necessary for anything other than readability (reduction of code golf)
             #
@@ -609,7 +608,6 @@ class IPSC(DatagramProtocol):
         #   IPSC connection establishment and maintenance
         #   Reporting/Housekeeping
         #
-        #
         self._maintenance = task.LoopingCall(self.maintenance_loop)
         self._maintenance_loop = self._maintenance.start(self._local['ALIVE_TIMER'])
         #
@@ -637,32 +635,19 @@ class IPSC(DatagramProtocol):
         logger.debug('(%s) Repeater Wake-Up Packet Received: %s', _network, h(_data))
         
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
-        _peerid     = get_info(int_id(_peerid), peer_ids)
-        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
     
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        _dst_sub    = get_info(int_id(_dst_sub), subscriber_ids)
-        _peerid     = get_info(int_id(_peerid), peer_ids)
-        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         logger.debug('(%s) Private Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
     
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
-        _peerid     = get_info(int_id(_peerid), peer_ids)
-        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
     
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        _dst_sub    = get_info(int_id(_dst_sub), subscriber_ids)
-        _peerid     = get_info(int_id(_peerid), peer_ids)
-        _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
         logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
         _packettype = h(_packettype)
-        _peerid = get_info(int_id(_peerid), peer_ids)
         logger.error('(%s) Unknown message type encountered\n\tPacket Type: %s\n\tFrom: %s\n\tPacket: %s', _network, _packettype, _peerid, h(_data))
 
     # Reset the outstanding keep-alive counter for _peerid...
