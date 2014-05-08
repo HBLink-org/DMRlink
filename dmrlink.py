@@ -432,7 +432,7 @@ def process_peer_list(_data, _network):
     _peer_list_length = int(h(_data[5:7]), 16)
     # Record the number of peers in the data structure... we'll use it later (11 bytes per peer entry)
     NETWORK[_network]['LOCAL']['NUM_PEERS'] = _peer_list_length/11
-    logger.info('(%s) Peer List Received from Master: %s peers in this IPSC', _network, _peer_list_length/11)
+    logger.info('(%s) Peer List Received from Master: %s peers in this IPSC', _network, NETWORK[_network]['LOCAL']['NUM_PEERS'])
     
     # Iterate each peer entry in the peer list. Skip the header, then pull the next peer, the next, etc.
     for i in range(7, _peer_list_length +7, 11):
