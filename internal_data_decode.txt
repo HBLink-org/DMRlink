@@ -1,3 +1,5 @@
+This is the internal structure used to hold master, peer and local information for each IPSC. the actual numbers are bogus, and the encoded FLAGS and MODE bytes don't match the binary decoding. This is to illustrate and document the struture in a "pretty print" type format only.
+
 {
 'MASTER': {
     'STATUS': {
@@ -23,12 +25,12 @@
         'XNL_MASTER': False,
         'AUTH': True },
     'IP': '10.10.10.1',
-    'RADIO_ID': '\x00\xc0\x20',
-    'FLAGS': '\x00\x00\xe0=',
-    'MODE': 'j',
+    'RADIO_ID': '\x00\x00\x00\x01',
+    'FLAGS': '\x00\x00\xe0\x3d',
+    'MODE': '\x6a',
     'PORT': 50001 },
 'PEERS': {
-    '\x00\x00\x09\x03': {
+    '\x00\x00\x01\x03': {
         'STATUS': {
             'KEEP_ALIVES_OUTSTANDING': 1,
             'KEEP_ALIVES_MISSED': 0,
@@ -51,10 +53,10 @@
             'XNL_MASTER': False,
             'AUTH': True },
         'IP': '10.10.20.1',
-        'FLAGS': '\x00\x00 \x1c',
-        'MODE': 'j',
+        'FLAGS': '\x00\x00\x00\x1c',
+        'MODE': '\x6a',
         'PORT': 51990 },
-    '\x00\x00\x85\x84': {
+    '\x00\x00\x05\x80': {
         'STATUS': {
             'KEEP_ALIVES_OUTSTANDING': 1,
             'KEEP_ALIVES_MISSED': 0,
@@ -77,10 +79,10 @@
             'XNL_MASTER': False,
             'AUTH': True },
         'IP': '10.10.20.2',
-        'FLAGS': '\x00\x00 \x1c',
-        'MODE': 'j',
+        'FLAGS': '\x00\x00\x00\x01',
+        'MODE': '\x6a',
         'PORT': 50900 },
-    '\x00\x04\x02\x17': {
+    '\x00\x04\xa2\x37': {
         'STATUS': {
             'KEEP_ALIVES_OUTSTANDING': 1,
             'KEEP_ALIVES_MISSED': 0,
@@ -103,12 +105,12 @@
             'XNL_MASTER': True,
             'AUTH': True },
         'IP': '10.10.20.3',
-        'FLAGS': '\x00\x00\x80\\',
-        'MODE': 'j',
+        'FLAGS': '\x00\x00\x00\x01',
+        'MODE': '\x6a',
         'PORT': 50000 },
 'LOCAL': {
     'TS2_LINK': True,
-    'AUTH_KEY': '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xde\xad\xbe\xef',
+    'AUTH_KEY': '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xab\xcd\xef\xf0',
     'CON_APP': True,
     'RADIO_ID': '\x00\x67\x03',
     'ENABLED': True,
@@ -125,7 +127,7 @@
     'CSBK_CALL': True,
     'XNL_CALL': True,
     'XNL_MASTER': True,
-    'MODE': 'j',
+    'MODE': '\x6a',
     'MAX_MISSED': 20,
     'FLAGS': '\x00\x00\xe0\xdc',
     'PEER_OPER': True }
