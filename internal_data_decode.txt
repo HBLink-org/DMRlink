@@ -1,4 +1,4 @@
-This is the internal structure used to hold master, peer and local information for each IPSC. the actual numbers are bogus, and the encoded FLAGS and MODE bytes don't match the binary decoding. This is to illustrate and document the struture in a "pretty print" type format only.
+This is the internal structure dmrlink uses to hold master, peer and local information for each IPSC. the actual numbers are bogus, and the encoded FLAGS and MODE bytes don't match the binary decoding. This example is only to illustrate and document the struture in a "pretty print" type format only. Yeah, you could just pretty print it, but this is a little cleaner and you don't have to go in and take the extra 5 mintues this way.
 
 {
 'MASTER': {
