@@ -341,7 +341,8 @@ def send_to_ipsc(_target, _packet):
     _peers = _network['PEERS']
     
     # Send to the Master
-    _network_instance.transport.write(_packet, (_network['MASTER']['IP'], _network['MASTER']['PORT']))
+    if _network['MASTER']['STATUS']['CONNECTED']:
+        _network_instance.transport.write(_packet, (_network['MASTER']['IP'], _network['MASTER']['PORT']))
     # Send to each connected Peer
     for peer in _peers.keys():
         if _peers[peer]['STATUS']['CONNECTED']:
@@ -516,18 +517,21 @@ def print_peer_list(_network):
 # Gratuitous print-out of Master info.. Pretty much debug stuff.
 #
 def print_master(_network):
-    _master = NETWORK[_network]['MASTER']
-    print('Master for %s' % _network)
-    print('\tRADIO ID: {}' .format(int(h(_master['RADIO_ID']), 16)))
-    if _master['MODE_DECODE'] and REPORTS['PEER_REPORT_INC_MODE']:
-        print('\t\tMode Values:')
-        for name, value in _master['MODE_DECODE'].items():
-            print('\t\t\t{}: {}' .format(name, value))
-    if _master['FLAGS_DECODE'] and REPORTS['PEER_REPORT_INC_FLAGS']:
-        print('\t\tService Flags:')
-        for name, value in _master['FLAGS_DECODE'].items():
-            print('\t\t\t{}: {}' .format(name, value))
-    print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
+    if NETWORK[_network]['LOCAL']['MASTER_PEER']:
+        print('DMRlink is the Master for %s' % _network)
+    else:
+        _master = NETWORK[_network]['MASTER']
+        print('Master for %s' % _network)
+        print('\tRADIO ID: {}' .format(int(h(_master['RADIO_ID']), 16)))
+        if _master['MODE_DECODE'] and REPORTS['PEER_REPORT_INC_MODE']:
+            print('\t\tMode Values:')
+            for name, value in _master['MODE_DECODE'].items():
+                print('\t\t\t{}: {}' .format(name, value))
+        if _master['FLAGS_DECODE'] and REPORTS['PEER_REPORT_INC_FLAGS']:
+            print('\t\tService Flags:')
+            for name, value in _master['FLAGS_DECODE'].items():
+                print('\t\t\t{}: {}' .format(name, value))
+        print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
 
 
 #************************************************
