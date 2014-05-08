@@ -608,8 +608,9 @@ class IPSC(DatagramProtocol):
         #   IPSC connection establishment and maintenance
         #   Reporting/Housekeeping
         #
-        self._maintenance = task.LoopingCall(self.maintenance_loop)
-        self._maintenance_loop = self._maintenance.start(self._local['ALIVE_TIMER'])
+        if not self._local['MASTER_PEER']:
+            self._maintenance = task.LoopingCall(self.maintenance_loop)
+            self._maintenance_loop = self._maintenance.start(self._local['ALIVE_TIMER'])
         #
         self._reporting = task.LoopingCall(self.reporting_loop)
         self._reporting_loop = self._reporting.start(10)
@@ -834,7 +835,7 @@ class IPSC(DatagramProtocol):
         
         # Authenticate the packet
         if not self.validate_auth(self._local['AUTH_KEY'], data):
-            logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer ID: %s', self._network, h(_packettype), int(h(_peerid), 16))
+            logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer ID: %s', self._network, h(_packettype), int_id(_peerid))
             return
             
         # Strip the hash, we won't need it anymore
@@ -843,7 +844,7 @@ class IPSC(DatagramProtocol):
         # Packets types that must be originated from a peer (including master peer)
         if _packettype in ANY_PEER_REQUIRED:
             if not(valid_master(self._network, _peerid) == False or valid_peer(self._peers.keys(), _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, int(h(_peerid), 16))
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, int_id(_peerid))
                 return
                 
             # User, as in "subscriber" generated packets - a.k.a someone transmitted
@@ -859,25 +860,25 @@ class IPSC(DatagramProtocol):
                 if _packettype == GROUP_VOICE:
                     self.reset_keep_alive(_peerid)
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'group_voice', {'peer_id': int(h(_peerid), 16)})
+                    self._notify_event(self._network, 'group_voice', {'peer_id': int_id(_peerid)})
                     return
             
                 elif _packettype == PVT_VOICE:
                     self.reset_keep_alive(_peerid)
                     self.private_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
+                    self._notify_event(self._network, 'private_voice', {'peer_id': int_id(_peerid)})
                     return
                     
                 elif _packettype == GROUP_DATA:
                     self.reset_keep_alive(_peerid)
                     self.group_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'group_data', {'peer_id': int(h(_peerid), 16)})
+                    self._notify_event(self._network, 'group_data', {'peer_id': int_id(_peerid)})
                     return
                     
                 elif _packettype == PVT_DATA:
                     self.reset_keep_alive(_peerid)
                     self.private_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'private_voice', {'peer_id': int(h(_peerid), 16)})
+                    self._notify_event(self._network, 'private_voice', {'peer_id': int_id(_peerid)})
                     return
                 return
                 
@@ -901,16 +902,16 @@ class IPSC(DatagramProtocol):
             # Connection maintenance packets that fall into this category
             elif _packettype == DE_REG_REQ:
                 de_register_peer(self._network, _peerid)
-                logger.warning('(%s) Peer De-Registration Request From: %s', self._network, int(h(_peerid), 16))
+                logger.warning('(%s) Peer De-Registration Request From: %s', self._network, int_id(_peerid))
                 return
             
             elif _packettype == DE_REG_REPLY:
-                logger.warning('(%s) Peer De-Registration Reply From: %s', self._network, int(h(_peerid), 16))
+                logger.warning('(%s) Peer De-Registration Reply From: %s', self._network, int_id(_peerid))
                 return
                 
             elif _packettype == RPT_WAKE_UP:
                 self.repeater_wake_up(self._network, data)
-                logger.debug('(%s) Repeater Wake-Up Packet From: %s', self._network, int(h(_peerid), 16))
+                logger.debug('(%s) Repeater Wake-Up Packet From: %s', self._network, int_id(_peerid))
                 return
             return
 
@@ -918,7 +919,7 @@ class IPSC(DatagramProtocol):
         # Packets types that must be originated from a peer
         if _packettype in PEER_REQUIRED:
             if not valid_peer(self._peers.keys(), _peerid):
-                logger.warning('(%s) PeerError: Peer %s not in peer-list', self._network, int(h(_peerid), 16))
+                logger.warning('(%s) PeerError: Peer %s not in peer-list', self._network, int_id(_peerid))
                 return
             
             # Packets we send...
@@ -936,25 +937,25 @@ class IPSC(DatagramProtocol):
                 peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
                 self.transport.write(peer_alive_reply_packet, (host, port))
                 self.reset_keep_alive(_peerid)  # Might as well reset our own counter, we know it's out there...
-                logger.debug('(%s) Keep-Alive reply sent to Peer %s', self._network, int(h(_peerid), 16))
+                logger.debug('(%s) Keep-Alive reply sent to Peer %s', self._network, int_id(_peerid))
                 return
                                 
             elif _packettype == PEER_REG_REQ:
                 peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
                 self.transport.write(peer_reg_reply_packet, (host, port))
-                logger.info('(%s) Peer Registration Request From: %s', self._network, int(h(_peerid), 16))
+                logger.info('(%s) Peer Registration Request From: %s', self._network, int_id(_peerid))
                 return
                 
             # Packets we receive...
             elif _packettype == PEER_ALIVE_REPLY:
                 self.reset_keep_alive(_peerid)
-                logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s', self._network, int(h(_peerid), 16))
+                logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s', self._network, int_id(_peerid))
                 return                
 
             elif _packettype == PEER_REG_REPLY:
                 if _peerid in self._peers.keys():
                     self._peers[_peerid]['STATUS']['CONNECTED'] = True
-                    logger.info('(%s) Registration Reply From: %s', self._network, int(h(_peerid), 16))
+                    logger.info('(%s) Registration Reply From: %s', self._network, int_id(_peerid))
                 return
             return
         
@@ -963,19 +964,19 @@ class IPSC(DatagramProtocol):
         # Packets we receive...
         if _packettype in MASTER_REQUIRED:
             if not valid_master(self._network, _peerid):
-                logger.warning('(%s) MasterError: %s is not the master peer', self._network, int(h(_peerid), 16))
+                logger.warning('(%s) MasterError: %s is not the master peer', self._network, int_id(_peerid))
                 return
                 
             if _packettype == MASTER_ALIVE_REPLY:
                 self.reset_keep_alive(_peerid)
-                logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s', self._network, int(h(_peerid), 16))
+                logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s', self._network, int_id(_peerid))
                 return
             
             elif _packettype == PEER_LIST_REPLY:
                 NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
                 if len(data) > 18:
                     process_peer_list(data, self._network)
-                logger.debug('(%s) Peer List Reply Recieved From Master %s', self._network, int(h(_peerid), 16))
+                logger.debug('(%s) Peer List Reply Recieved From Master %s', self._network, int_id(_peerid))
                 return
             return
             
@@ -995,13 +996,12 @@ class IPSC(DatagramProtocol):
             self._master['FLAGS_DECODE'] = _decoded_flags
             self._master_stat['CONNECTED'] = True
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
-            logger.debug('(%s) Registration response (we requested reg) from the Master %s', self._network, int(h(_peerid), 16))
+            logger.debug('(%s) Registration response (we requested reg) from the Master %s', self._network, int_id(_peerid))
             return
         
-        # We know about these types, but absolutely don't take an action
+        # This is if we operate as a master... work in progress
         elif _packettype == MASTER_REG_REQ:
-            # We can't operate as a master as of now, so we should never receive one of these.
-            logger.debug('(%s) Master Registration Packet Received - WE ARE NOT A MASTER!', self._network)
+            logger.debug('(%s) Master Registration Packet Received from peer %s', self._network, int_id(_peerid))
             return 
             
         # If there's a packet type we don't know about, it should be logged so we can figure it out and take an appropriate action!
