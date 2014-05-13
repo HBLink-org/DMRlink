@@ -578,14 +578,23 @@ class IPSC(DatagramProtocol):
             # Packet 'constructors' - builds the necessary control packets for this IPSC instance.
             # This isn't really necessary for anything other than readability (reduction of code golf)
             #
-            self.TS_FLAGS             = (self._local['MODE'] + self._local['FLAGS'])
-            self.MASTER_REG_REQ_PKT   = (MASTER_REG_REQ + self._local_id + self.TS_FLAGS + IPSC_VER)
-            self.MASTER_ALIVE_PKT     = (MASTER_ALIVE_REQ + self._local_id + self.TS_FLAGS + IPSC_VER)
-            self.PEER_LIST_REQ_PKT    = (PEER_LIST_REQ + self._local_id)
-            self.PEER_REG_REQ_PKT     = (PEER_REG_REQ + self._local_id + IPSC_VER)
-            self.PEER_REG_REPLY_PKT   = (PEER_REG_REPLY + self._local_id + IPSC_VER)
-            self.PEER_ALIVE_REQ_PKT   = (PEER_ALIVE_REQ + self._local_id + self.TS_FLAGS)
-            self.PEER_ALIVE_REPLY_PKT = (PEER_ALIVE_REPLY + self._local_id + self.TS_FLAGS)
+            # General Items
+            self.TS_FLAGS               = (self._local['MODE'] + self._local['FLAGS'])
+            #
+            # Peer Link Maintenance Packets 
+            self.MASTER_REG_REQ_PKT     = (MASTER_REG_REQ + self._local_id + self.TS_FLAGS + IPSC_VER)
+            self.MASTER_ALIVE_PKT       = (MASTER_ALIVE_REQ + self._local_id + self.TS_FLAGS + IPSC_VER)
+            self.PEER_LIST_REQ_PKT      = (PEER_LIST_REQ + self._local_id)
+            self.PEER_REG_REQ_PKT       = (PEER_REG_REQ + self._local_id + IPSC_VER)
+            self.PEER_REG_REPLY_PKT     = (PEER_REG_REPLY + self._local_id + IPSC_VER)
+            self.PEER_ALIVE_REQ_PKT     = (PEER_ALIVE_REQ + self._local_id + self.TS_FLAGS)
+            self.PEER_ALIVE_REPLY_PKT   = (PEER_ALIVE_REPLY + self._local_id + self.TS_FLAGS)
+            #
+            # Master Link Maintenance Packets
+            self.MASTER_REG_REPLY_PKT   = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + str(self._local['NUM_PEERS']) + IPSC_VER)
+            self.MASTER_ALIVE_REPLY_PKT = (MASTER_ALIVE_REPLY + self._local_id + self.TS_FLAGS + IPSC_VER)
+            self.PEER_LIST_REPLY_PKT    = (PEER_LIST_REPLY + self._local_id)
+            #
             logger.info('(%s) IPSC Instance Created', self._network)
         else:
             # If we didn't get called correctly, log it!
@@ -1005,8 +1014,38 @@ class IPSC(DatagramProtocol):
         
         # This is if we operate as a master... work in progress
         elif _packettype == MASTER_REG_REQ:
+            
+            _hex_mode      = (data[5])
+            _hex_flags     = (data[6:10])
+            _decoded_mode  = process_mode_byte(_hex_mode)
+            _decoded_flags = process_flags_bytes(_hex_flags)
+            
+            ''' BELOW STOLEN FROM MASTER_REG_REPLY - MUST PARSE TO SEE IF THE PEER EXISTS AND IF NOT, THEN
+                WE NEED TO ADD IT TO THE PEER LIST WE KEEP IN OUR DATA STRUCTURE... WORK STARTS HERE
+                 
+            self._master['RADIO_ID'] = _peerid
+            self._master['MODE'] = _hex_mode
+            self._master['MODE_DECODE'] = _decoded_mode
+            self._master['FLAGS'] = _hex_flags
+            self._master['FLAGS_DECODE'] = _decoded_flags
+            self._master_stat['CONNECTED'] = True
+            self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
+            '''
+            
+            master_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REPLY_PKT)
+            self.transport.write(master_reg_reply_packet, (host, port))
             logger.debug('(%s) Master Registration Packet Received from peer %s', self._network, int_id(_peerid))
-            return 
+            return
+            
+        elif _packettype == MASTER_ALIVE_REQ:
+            master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
+            self.transport.write(master_alive_reply_packet, (host, port))
+            logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
+            return
+            
+        elif _packettype == PEER_LIST_REQ:
+            logger.debug('(%s) Peer List Received from peer %s', self._network, int_id(_peerid))
+            return
             
         # If there's a packet type we don't know about, it should be logged so we can figure it out and take an appropriate action!
         else:
