@@ -997,11 +997,13 @@ class IPSC(DatagramProtocol):
         # When we hear from the master, record it's ID, flag that we're connected, and reset the dead counter.
         elif _packettype == MASTER_REG_REPLY:
             
-            _hex_mode      = (data[5])
-            _hex_flags     = (data[6:10])
+            _hex_mode      = data[5]
+            _hex_flags     = data[6:10]
+            _num_peers     = data[10:12]
             _decoded_mode  = process_mode_byte(_hex_mode)
             _decoded_flags = process_flags_bytes(_hex_flags)
-                
+            
+            self._local['NUM_PEERS'] = int(h(_num_peers), 16)
             self._master['RADIO_ID'] = _peerid
             self._master['MODE'] = _hex_mode
             self._master['MODE_DECODE'] = _decoded_mode
@@ -1009,14 +1011,14 @@ class IPSC(DatagramProtocol):
             self._master['FLAGS_DECODE'] = _decoded_flags
             self._master_stat['CONNECTED'] = True
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
-            logger.debug('(%s) Registration response (we requested reg) from the Master %s', self._network, int_id(_peerid))
+            logger.warning('(%s) Registration response (we requested reg) from the Master %s (%s peers)', self._network, int_id(_peerid), self._local['NUM_PEERS'])
             return
         
         # This is if we operate as a master... work in progress
         elif _packettype == MASTER_REG_REQ:
             
-            _hex_mode      = (data[5])
-            _hex_flags     = (data[6:10])
+            _hex_mode      = data[5]
+            _hex_flags     = data[6:10]
             _decoded_mode  = process_mode_byte(_hex_mode)
             _decoded_flags = process_flags_bytes(_hex_flags)
             
