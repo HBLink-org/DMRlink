@@ -184,6 +184,7 @@ try:
 except:
     sys.exit('Could not parse configuration file, exiting...')
 
+
 #************************************************
 #     CONFIGURE THE SYSTEM LOGGER
 #************************************************
@@ -237,6 +238,7 @@ dictConfig({
     }
 })
 logger = logging.getLogger('dmrlink')
+
 
 #************************************************
 #     IMPORTING OTHER FILES - '#include'
