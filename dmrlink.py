@@ -1113,9 +1113,23 @@ class IPSC(DatagramProtocol):
             
         # REQUEST FOR A PEER LIST
         elif _packettype == PEER_LIST_REQ:
-            logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
-            for peer in self._peers:
-                print(self._peers[peer])
+            if _peerid in self._peers.keys():
+                logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
+                encoded_peer_list = ''
+                for peer in self._peers:
+                    hex_ip = IPHexStr(self._peers[peer]['IP'])
+                    hex_port = hex_str_2(self._peers[peer]['PORT'])
+                    mode = self._peers[peer]['MODE']
+                    
+                    encoded_peer_list += peer + hex_ip + hex_port + mode
+                
+                peer_list_length = hex_str_2(len(encoded_peer_list))
+                peer_list_packet = self.PEER_LIST_REPLY_PKT + peer_list_length + encoded_peer_list
+                peer_list_packet = self.hashed_packet(self._local['AUTH_KEY'], peer_list_packet)
+                self.transport.write(peer_list_packet, (host, port))
+            else:
+                logger.warning('(%s) Peer List Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
+            
             return
             
         
