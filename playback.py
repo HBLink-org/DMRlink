@@ -13,7 +13,7 @@ from twisted.internet import reactor
 from binascii import b2a_hex as h
 
 import sys, time
-from dmrlink import IPSC, NETWORK, networks, logger, dmr_nat, int_id, send_to_ipsc, hex_id
+from dmrlink import IPSC, NETWORK, networks, logger, dmr_nat, int_id, send_to_ipsc, hex_str_3
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -30,7 +30,7 @@ try:
 except ImportError:
     sys.exit('Configuration file not found or invalid')
 
-HEX_TGID = hex_id(TGID)
+HEX_TGID = hex_str_3(TGID)
 
 class playbackIPSC(IPSC):
     

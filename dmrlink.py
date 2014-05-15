@@ -26,6 +26,7 @@ from hmac import new as hmac_new
 from binascii import b2a_hex as h
 from hashlib import sha1
 from socket import inet_ntoa as IPAddr
+from socket import inet_aton as IPHexStr
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
@@ -295,10 +296,29 @@ except ImportError:
 #     UTILITY FUNCTIONS FOR INTERNAL USE
 #************************************************
 
-# Create a 3 byte TGID or UID from an integer
+# Create a 2 byte hex string from an integer
 #
-def hex_id(_int_id):
-    return hex(_int_id)[2:].rjust(6,'0').decode('hex')
+def hex_str_2(_int_id):
+    try:
+        return hex(_int_id)[2:].rjust(4,'0').decode('hex')
+    except TypeError:
+        logger.error('hex_str_2: invalid integer length')
+     
+# Create a 3 byte hex string from an integer
+#
+def hex_str_3(_int_id):
+    try:
+        return hex(_int_id)[2:].rjust(6,'0').decode('hex')
+    except TypeError:
+        logger.error('hex_str_3: invalid integer length')
+
+# Create a 4 byte hex string from an integer
+#
+def hex_str_4(_int_id):
+    try:
+        return hex(_int_id)[2:].rjust(8,'0').decode('hex')
+    except TypeError:
+        logger.error('hex_str_4: invalid integer length')
 
 # Convert a hex string to an int (radio ID, etc.)
 #
@@ -1082,15 +1102,20 @@ class IPSC(DatagramProtocol):
           
         # REQUEST FOR A KEEP-ALIVE REPLY (WE KNOW THE PEER IS STILL ALIVE TOO) 
         elif _packettype == MASTER_ALIVE_REQ:
-            self._peers[_peerid]['STATUS']['KEEP_ALIVES_SENT'] += 1
-            master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
-            self.transport.write(master_alive_reply_packet, (host, port))
-            logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
+            if _peerid in self._peers.keys():
+                self._peers[_peerid]['STATUS']['KEEP_ALIVES_SENT'] += 1
+                master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
+                self.transport.write(master_alive_reply_packet, (host, port))
+                logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
+            else:
+                logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
             return
             
         # REQUEST FOR A PEER LIST
         elif _packettype == PEER_LIST_REQ:
             logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
+            for peer in self._peers:
+                print(self._peers[peer])
             return
             
         
