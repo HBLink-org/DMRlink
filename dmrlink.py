@@ -1076,8 +1076,8 @@ class IPSC(DatagramProtocol):
                         'KEEP_ALIVES_OUTSTANDING': 0
                         }
                     }
-            self._local['NUM_PEERS'] = len(self.peers)       
-            logger.debug('(%s) Peer Added To Peer List: %s (IPSC now has %s Peers)', _network, self._peers[_peerid], self._local['NUM_PEERS'])            
+            self._local['NUM_PEERS'] = len(self._peers)       
+            logger.debug('(%s) Peer Added To Peer List: %s (IPSC now has %s Peers)', self._network, self._peers[_peerid], self._local['NUM_PEERS'])            
             return
           
         # REQUEST FOR A KEEP-ALIVE REPLY (WE KNOW THE PEER IS STILL ALIVE TOO) 
@@ -1090,7 +1090,7 @@ class IPSC(DatagramProtocol):
             
         # REQUEST FOR A PEER LIST
         elif _packettype == PEER_LIST_REQ:
-            logger.debug('(%s) Peer List Received from peer %s', self._network, int_id(_peerid))
+            logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
             return
             
         
