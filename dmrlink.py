@@ -1129,7 +1129,6 @@ class IPSC(DatagramProtocol):
                 self.transport.write(peer_list_packet, (host, port))
             else:
                 logger.warning('(%s) Peer List Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
-            
             return
             
         
