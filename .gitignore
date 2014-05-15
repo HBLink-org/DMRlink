@@ -7,3 +7,5 @@ pub*
 bridge_rules.py
 playback_config.py
 *.pyc
+*.bak
+*.lcl
