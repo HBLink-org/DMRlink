@@ -134,8 +134,13 @@ try:
                     'KEEP_ALIVES_MISSED': 0,
                     'KEEP_ALIVES_OUTSTANDING': 0 
                     },
-                'IP': config.get(section, 'MASTER_IP'),
-                'PORT': config.getint(section, 'MASTER_PORT')
+                'IP': '',
+                'PORT': ''
+                })
+            if not NETWORK[section]['LOCAL']['MASTER_PEER']:
+                NETWORK[section]['MASTER'].update({
+                    'IP': config.get(section, 'MASTER_IP'),
+                    'PORT': config.getint(section, 'MASTER_PORT')
                 })
             
             # Temporary locations for building MODE and FLAG data
@@ -659,20 +664,20 @@ class IPSC(DatagramProtocol):
         logger.debug('(%s) Repeater Wake-Up Packet Received: %s', _network, h(_data))
         
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
+        logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, h(_src_sub), h(_peerid), h(_dst_sub))
     
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        logger.debug('(%s) Private Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
+        logger.debug('(%s) Private Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, h(_src_sub), h(_peerid), h(_dst_sub))
     
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
+        logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, h(_src_sub), h(_peerid), h(_dst_sub))
     
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, _src_sub, _peerid, _dst_sub)
+        logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, h(_src_sub), h(_peerid), h(_dst_sub))
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
         _packettype = h(_packettype)
-        logger.error('(%s) Unknown message type encountered\n\tPacket Type: %s\n\tFrom: %s\n\tPacket: %s', _network, _packettype, _peerid, h(_data))
+        logger.error('(%s) Unknown message type encountered\n\tPacket Type: %s\n\tFrom: %s\n\tPacket: %s', _network, h(_packettype), h(_peerid), h(_data))
 
 
     #************************************************
@@ -747,8 +752,12 @@ class IPSC(DatagramProtocol):
         #   Reporting/Housekeeping
         #
         if not self._local['MASTER_PEER']:
-            self._maintenance = task.LoopingCall(self.maintenance_loop)
-            self._maintenance_loop = self._maintenance.start(self._local['ALIVE_TIMER'])
+            self._peer_maintenance = task.LoopingCall(self.peer_maintenance_loop)
+            self._peer_maintenance_loop = self._peer_maintenance.start(self._local['ALIVE_TIMER'])
+        #
+        if self._local['MASTER_PEER']:
+            self._master_maintenance = task.LoopingCall(self.master_maintenance_loop)
+            self._master_maintenance_loop = self._master_maintenance.start(self._local['ALIVE_TIMER'])
         #
         self._reporting = task.LoopingCall(self.reporting_loop)
         self._reporting_loop = self._reporting.start(10)
@@ -762,11 +771,16 @@ class IPSC(DatagramProtocol):
         if REPORTS['REPORT_PEERS']:
             print_master(self._network)
             print_peer_list(self._network)
-            
-    # Timed loop used for IPSC connection Maintenance if we are a PEER
+    
+    # Timed loop used for IPSC connection Maintenance when we are the MASTER
+    #    
+    def master_maintenance_loop(self):
+        logger.debug('(%s) MASTER Connection Maintenance Loop Started *NOT YET IMPLEMENTED*', self._network)
+    
+    # Timed loop used for IPSC connection Maintenance when we are a PEER
     #
-    def maintenance_loop(self):
-        logger.debug('(%s) Periodic Connection Maintenance Loop Started', self._network)
+    def peer_maintenance_loop(self):
+        logger.debug('(%s) PEER Connection Maintenance Loop Started', self._network)
 
         # If the master isn't connected, we have to do that before we can do anything else!
         #
