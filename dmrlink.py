@@ -503,10 +503,10 @@ def process_peer_list(_data, _network):
     
     # Finally, check to see if there's a peer already in our list that was not in this peer list
     # and if so, delete it.
-    for peerid in NETWORK[_network]['PEERS'].keys():
-        if peerid not in _temp_peers:
-            de_register_peer(_network, peerid)
-            logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, h(peerid))
+    for peer in NETWORK[_network]['PEERS'].keys():
+        if peer not in _temp_peers:
+            de_register_peer(_network, peer)
+            logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, h(peer))
 
 
 # Gratuitous print-out of the peer list.. Pretty much debug stuff.
@@ -696,6 +696,7 @@ class IPSC(DatagramProtocol):
     def reset_keep_alive(self, _peerid):
         if _peerid in self._peers.keys():
             self._peers[_peerid]['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
+            self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
         if _peerid == self._master['RADIO_ID']:
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
 
@@ -784,14 +785,13 @@ class IPSC(DatagramProtocol):
         logger.debug('(%s) MASTER Connection Maintenance Loop Started', self._network)
         update_time = int(time.time())
         
-        for peer_id in self._peers.keys():
-            peer = self._peers[peer_id]
-            keep_alive_delta = update_time - peer['STATUS']['KEEP_ALIVE_RX_TIME']
-            logger.debug('(%s) Time Since Last KeepAlive Request from Peer %s: %s seconds', self._network, h(peer_id), keep_alive_delta)
+        for peer in self._peers.keys():
+            keep_alive_delta = update_time - self._peers[peer]['STATUS']['KEEP_ALIVE_RX_TIME']
+            logger.debug('(%s) Time Since Last KeepAlive Request from Peer %s: %s seconds', self._network, h(peer), keep_alive_delta)
           
             if keep_alive_delta > 120:
-                de_register_peer(self._network, peer_id)
-                logger.warning('(%s) Timeout Exceeded for Peer %s, De-registering', self._network, h(peer_id))
+                de_register_peer(self._network, peer)
+                logger.warning('(%s) Timeout Exceeded for Peer %s, De-registering', self._network, h(peer))
     
     
     # Timed loop used for IPSC connection Maintenance when we are a PEER
@@ -851,39 +851,38 @@ class IPSC(DatagramProtocol):
         #
         if self._master_stat['PEER_LIST']:
             # Iterate the list of peers... so we do this for each one.
-            for peer_id in self._peers.keys():
-                peer = self._peers[peer_id]
+            for peer in self._peers.keys():
 
                 # We will show up in the peer list, but shouldn't try to talk to ourselves.
-                if peer_id == self._local_id:
+                if peer == self._local_id:
                     continue
 
                 # If we haven't registered to a peer, send a registration
-                if not peer['STATUS']['CONNECTED']:
+                if not self._peers[peer]['STATUS']['CONNECTED']:
                     peer_reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REQ_PKT)
-                    self.transport.write(peer_reg_packet, (peer['IP'], peer['PORT']))
-                    logger.info('(%s) Registering with Peer %s', self._network, int_id(peer_id))
+                    self.transport.write(peer_reg_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
+                    logger.info('(%s) Registering with Peer %s', self._network, int_id(peer))
 
                 # If we have registered with the peer, then send a keep-alive
-                elif peer['STATUS']['CONNECTED']:
+                elif self._peers[peer]['STATUS']['CONNECTED']:
                     peer_alive_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REQ_PKT)
-                    self.transport.write(peer_alive_req_packet, (peer['IP'], peer['PORT']))
-                    logger.debug('(%s) Keep-Alive Sent to the Peer %s', self._network, int_id(peer_id))
+                    self.transport.write(peer_alive_req_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
+                    logger.debug('(%s) Keep-Alive Sent to the Peer %s', self._network, int_id(peer))
 
                     # If we have a keep-alive outstanding by the time we send another, mark it missed.
-                    if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] > 0:
-                        peer['STATUS']['KEEP_ALIVES_MISSED'] += 1
-                        logger.info('(%s) Peer Keep-Alive Missed for %s', self._network, int_id(peer_id))
+                    if self._peers[peer]['STATUS']['KEEP_ALIVES_OUTSTANDING'] > 0:
+                        self._peers[peer]['STATUS']['KEEP_ALIVES_MISSED'] += 1
+                        logger.info('(%s) Peer Keep-Alive Missed for %s', self._network, int_id(peer))
 
                     # If we have missed too many keep-alives, de-register the peer and start over.
-                    if peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
-                        peer['STATUS']['CONNECTED'] = False
+                    if self._peers[peer]['STATUS']['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
+                        self._peers[peer]['STATUS']['CONNECTED'] = False
                         #del peer   # Becuase once it's out of the dictionary, you can't use it for anything else.
-                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer_id))
+                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer))
                     
                     # Update our stats before moving on...
-                    peer['STATUS']['KEEP_ALIVES_SENT'] += 1
-                    peer['STATUS']['KEEP_ALIVES_OUTSTANDING'] += 1
+                    self._peers[peer]['STATUS']['KEEP_ALIVES_SENT'] += 1
+                    self._peers[peer]['STATUS']['KEEP_ALIVES_OUTSTANDING'] += 1
     
     
     # For public display of information, etc. - anything not part of internal logging/diagnostics
@@ -895,7 +894,7 @@ class IPSC(DatagramProtocol):
                 network: string, network name to look up in config
                 event:   string, basic description
                 info:    dict, in the interest of accomplishing as much as possible without code changes.
-                         The dict will typically contain a peer_id so the origin of the event is known.
+                         The dict will typically contain the ID of a peer so the origin of the event is known.
         """
         pass
     
@@ -945,25 +944,25 @@ class IPSC(DatagramProtocol):
                 if _packettype == GROUP_VOICE:
                     self.reset_keep_alive(_peerid)
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'group_voice', {'peer_id': int_id(_peerid)})
+                    self._notify_event(self._network, 'group_voice', {'peer': int_id(_peerid)})
                     return
             
                 elif _packettype == PVT_VOICE:
                     self.reset_keep_alive(_peerid)
                     self.private_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'private_voice', {'peer_id': int_id(_peerid)})
+                    self._notify_event(self._network, 'private_voice', {'peer': int_id(_peerid)})
                     return
                     
                 elif _packettype == GROUP_DATA:
                     self.reset_keep_alive(_peerid)
                     self.group_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'group_data', {'peer_id': int_id(_peerid)})
+                    self._notify_event(self._network, 'group_data', {'peer': int_id(_peerid)})
                     return
                     
                 elif _packettype == PVT_DATA:
                     self.reset_keep_alive(_peerid)
                     self.private_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'private_voice', {'peer_id': int_id(_peerid)})
+                    self._notify_event(self._network, 'private_voice', {'peer': int_id(_peerid)})
                     return
                 return
                 
@@ -1140,8 +1139,6 @@ class IPSC(DatagramProtocol):
         # REQUEST FOR A KEEP-ALIVE REPLY (WE KNOW THE PEER IS STILL ALIVE TOO) 
         elif _packettype == MASTER_ALIVE_REQ:
             if _peerid in self._peers.keys():
-                
-                self._peers[_peerid]['STATUS']['KEEP_ALIVES_SENT'] += 1
                 self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
                 self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
                 
