@@ -20,6 +20,7 @@ import binascii
 import csv
 import os
 import logging
+import time
 
 from logging.config import dictConfig
 from hmac import new as hmac_new
@@ -128,11 +129,13 @@ try:
                 'FLAGS': '\x00\x00\x00\x00',
                 'FLAGS_DECODE': '',
                 'STATUS': {
-                    'CONNECTED': False,
-                    'PEER_LIST': False,
-                    'KEEP_ALIVES_SENT': 0,
-                    'KEEP_ALIVES_MISSED': 0,
-                    'KEEP_ALIVES_OUTSTANDING': 0 
+                    'CONNECTED':               False,
+                    'PEER_LIST':               False,
+                    'KEEP_ALIVES_SENT':        0,
+                    'KEEP_ALIVES_MISSED':      0,
+                    'KEEP_ALIVES_OUTSTANDING': 0,
+                    'KEEP_ALIVES_RECEIVED':    0,
+                    'KEEP_ALIVE_RX_TIME':      0
                     },
                 'IP': '',
                 'PORT': ''
@@ -491,7 +494,9 @@ def process_peer_list(_data, _network):
                     'CONNECTED':               False,
                     'KEEP_ALIVES_SENT':        0,
                     'KEEP_ALIVES_MISSED':      0,
-                    'KEEP_ALIVES_OUTSTANDING': 0
+                    'KEEP_ALIVES_OUTSTANDING': 0,
+                    'KEEP_ALIVES_RECEIVED':    0,
+                    'KEEP_ALIVE_RX_TIME':      0
                     }
                 }
         logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
@@ -538,7 +543,8 @@ def print_peer_list(_network):
             for name, value in _this_peer['FLAGS_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_this_peer_stat['CONNECTED'], _this_peer_stat['KEEP_ALIVES_SENT'], _this_peer_stat['KEEP_ALIVES_OUTSTANDING'], _this_peer_stat['KEEP_ALIVES_MISSED']))
-
+        print('\t\t                KeepAlives Received: {},  Last KeepAlive Received at: {}' .format(_this_peer_stat['KEEP_ALIVES_RECEIVED'], _this_peer_stat['KEEP_ALIVE_RX_TIME']))
+        
     print('')
  
 # Gratuitous print-out of Master info.. Pretty much debug stuff.
@@ -559,7 +565,7 @@ def print_master(_network):
             for name, value in _master['FLAGS_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
-
+        print('\t\t                KeepAlives Received: {},  Last KeepAlive Received at: {}' .format(_master['STATUS']['KEEP_ALIVES_RECEIVED'], _master['STATUS']['KEEP_ALIVE_RX_TIME']))
 
 #************************************************
 #********                             ***********
@@ -775,7 +781,17 @@ class IPSC(DatagramProtocol):
     # Timed loop used for IPSC connection Maintenance when we are the MASTER
     #    
     def master_maintenance_loop(self):
-        logger.debug('(%s) MASTER Connection Maintenance Loop Started *NOT YET IMPLEMENTED*', self._network)
+        logger.debug('(%s) MASTER Connection Maintenance Loop Started', self._network)
+        update_time = int(time.time())
+        
+        for peer in self._peers.keys():
+            peer_id = self._peers[peer]
+            keep_alive_delta = update_time - peer_id['STATUS']['KEEP_ALIVE_RX_TIME']
+            logger.debug('(%s) Time Since Last KeepAlive Request from Peer s: %s seconds', self._network, keep_alive_delta)
+            
+            if update_time < (peer['STATUS']['KEEP_ALIVE_RX_TIME'] + 30):
+                de_register_peer(self._network, peer_id)
+                logger.info('(%s) Timeout Exceeded for Peer (%s), De-registering', self._network, peer_id)
     
     # Timed loop used for IPSC connection Maintenance when we are a PEER
     #
@@ -1021,6 +1037,8 @@ class IPSC(DatagramProtocol):
             # ANSWERS FROM REQUESTS WE SENT TO PEERS: WE DO NOT REPLY
             elif _packettype == PEER_ALIVE_REPLY:
                 self.reset_keep_alive(_peerid)
+                self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
+                self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
                 logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s', self._network, int_id(_peerid))
                 return                
 
@@ -1043,6 +1061,8 @@ class IPSC(DatagramProtocol):
             # ANSWERS FROM REQUESTS WE SENT TO THE MASTER: WE DO NOT REPLY    
             if _packettype == MASTER_ALIVE_REPLY:
                 self.reset_keep_alive(_peerid)
+                self._master['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
+                self._master['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
                 logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s', self._network, int_id(_peerid))
                 return
             
@@ -1107,7 +1127,9 @@ class IPSC(DatagramProtocol):
                         'CONNECTED':               True,
                         'KEEP_ALIVES_SENT':        0,
                         'KEEP_ALIVES_MISSED':      0,
-                        'KEEP_ALIVES_OUTSTANDING': 0
+                        'KEEP_ALIVES_OUTSTANDING': 0,
+                        'KEEP_ALIVES_RECEIVED':    0,
+                        'KEEP_ALIVE_RX_TIME':      0
                         }
                     }
             self._local['NUM_PEERS'] = len(self._peers)       
@@ -1117,9 +1139,14 @@ class IPSC(DatagramProtocol):
         # REQUEST FOR A KEEP-ALIVE REPLY (WE KNOW THE PEER IS STILL ALIVE TOO) 
         elif _packettype == MASTER_ALIVE_REQ:
             if _peerid in self._peers.keys():
+                
                 self._peers[_peerid]['STATUS']['KEEP_ALIVES_SENT'] += 1
+                self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
+                self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
+                
                 master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
                 self.transport.write(master_alive_reply_packet, (host, port))
+                
                 logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
             else:
                 logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
