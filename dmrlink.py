@@ -784,14 +784,15 @@ class IPSC(DatagramProtocol):
         logger.debug('(%s) MASTER Connection Maintenance Loop Started', self._network)
         update_time = int(time.time())
         
-        for peer in self._peers.keys():
-            peer_id = self._peers[peer]
-            keep_alive_delta = update_time - peer_id['STATUS']['KEEP_ALIVE_RX_TIME']
-            logger.debug('(%s) Time Since Last KeepAlive Request from Peer s: %s seconds', self._network, keep_alive_delta)
-            
-            if update_time < (peer['STATUS']['KEEP_ALIVE_RX_TIME'] + 30):
+        for peer_id in self._peers.keys():
+            peer = self._peers[peer_id]
+            keep_alive_delta = update_time - peer['STATUS']['KEEP_ALIVE_RX_TIME']
+            logger.debug('(%s) Time Since Last KeepAlive Request from Peer %s: %s seconds', self._network, h(peer_id), keep_alive_delta)
+          
+            if keep_alive_delta > 120:
                 de_register_peer(self._network, peer_id)
-                logger.info('(%s) Timeout Exceeded for Peer (%s), De-registering', self._network, peer_id)
+                logger.warning('(%s) Timeout Exceeded for Peer %s, De-registering', self._network, h(peer_id))
+    
     
     # Timed loop used for IPSC connection Maintenance when we are a PEER
     #
@@ -1129,7 +1130,7 @@ class IPSC(DatagramProtocol):
                         'KEEP_ALIVES_MISSED':      0,
                         'KEEP_ALIVES_OUTSTANDING': 0,
                         'KEEP_ALIVES_RECEIVED':    0,
-                        'KEEP_ALIVE_RX_TIME':      0
+                        'KEEP_ALIVE_RX_TIME':      int(time.time())
                         }
                     }
             self._local['NUM_PEERS'] = len(self._peers)       
