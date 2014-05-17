@@ -508,6 +508,18 @@ def process_peer_list(_data, _network):
             de_register_peer(_network, peer)
             logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, h(peer))
 
+# Build a peer list - used when a peer registers, re-regiseters or times out
+#
+def build_peer_list(_peers):
+    concatenated_peers = ''
+    for peer in _peers:
+        hex_ip = IPHexStr(_peers[peer]['IP'])
+        hex_port = hex_str_2(_peers[peer]['PORT'])
+        mode = _peers[peer]['MODE']        
+        concatenated_peers += peer + hex_ip + hex_port + mode
+    
+    peer_list = hex_str_2(len(concatenated_peers)) + concatenated_peers
+    return peer_list
 
 # Gratuitous print-out of the peer list.. Pretty much debug stuff.
 #
@@ -1152,20 +1164,12 @@ class IPSC(DatagramProtocol):
             
         # REQUEST FOR A PEER LIST
         elif _packettype == PEER_LIST_REQ:
+            
             if _peerid in self._peers.keys():
                 logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
-                encoded_peer_list = ''
-                for peer in self._peers:
-                    hex_ip = IPHexStr(self._peers[peer]['IP'])
-                    hex_port = hex_str_2(self._peers[peer]['PORT'])
-                    mode = self._peers[peer]['MODE']
-                    
-                    encoded_peer_list += peer + hex_ip + hex_port + mode
-                
-                peer_list_length = hex_str_2(len(encoded_peer_list))
-                peer_list_packet = self.PEER_LIST_REPLY_PKT + peer_list_length + encoded_peer_list
+                peer_list_packet = self.PEER_LIST_REPLY_PKT + build_peer_list(self._peers)
                 peer_list_packet = self.hashed_packet(self._local['AUTH_KEY'], peer_list_packet)
-                self.transport.write(peer_list_packet, (host, port))
+                send_to_ipsc(self._network, peer_list_packet)
             else:
                 logger.warning('(%s) Peer List Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
             return
