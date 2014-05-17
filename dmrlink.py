@@ -803,6 +803,9 @@ class IPSC(DatagramProtocol):
           
             if keep_alive_delta > 120:
                 de_register_peer(self._network, peer)
+                peer_list_packet = self.PEER_LIST_REPLY_PKT + build_peer_list(self._peers)
+                peer_list_packet = self.hashed_packet(self._local['AUTH_KEY'], peer_list_packet)
+                send_to_ipsc(self._network, peer_list_packet)
                 logger.warning('(%s) Timeout Exceeded for Peer %s, De-registering', self._network, h(peer))
     
     
