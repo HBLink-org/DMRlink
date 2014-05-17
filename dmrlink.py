@@ -21,6 +21,7 @@ import csv
 import os
 import logging
 import time
+import signal
 
 from logging.config import dictConfig
 from hmac import new as hmac_new
@@ -451,7 +452,7 @@ def process_flags_bytes(_hex_flags):
         'VOICE': _voice,
         'MASTER': _master
         } 
-   
+        
         
 # Take a received peer list and the network it belongs to, process and populate the
 # data structure in my_ipsc_config with the results, and return a simple list of peers.
@@ -579,6 +580,19 @@ def print_master(_network):
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
         print('\t\t                KeepAlives Received: {},  Last KeepAlive Received at: {}' .format(_master['STATUS']['KEEP_ALIVES_RECEIVED'], _master['STATUS']['KEEP_ALIVE_RX_TIME']))
 
+# Shut ourselves down gracefully with the IPSC peers.
+#
+def handler(_signal, _frame):
+    logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
+    
+    for network in networks:
+        this_ipsc = networks[network]
+        logger.info('De-Registering from IPSC %s', network)
+        de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+        send_to_ipsc(network, de_reg_req_pkt)
+    
+    reactor.stop()
+
 #************************************************
 #********                             ***********
 #********    IPSC Network 'Engine'    ***********
@@ -643,6 +657,10 @@ class IPSC(DatagramProtocol):
             self.MASTER_REG_REPLY_PKT   = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + str(self._local['NUM_PEERS']) + IPSC_VER)
             self.MASTER_ALIVE_REPLY_PKT = (MASTER_ALIVE_REPLY + self._local_id + self.TS_FLAGS + IPSC_VER)
             self.PEER_LIST_REPLY_PKT    = (PEER_LIST_REPLY + self._local_id)
+            #
+            # General Link Maintenance Packets
+            self.DE_REG_REQ_PKT         = (DE_REG_REQ + self._local_id)
+            self.DE_REG_REPLY_PKT       = (DE_REG_REPLY + self._local_id)
             #
             logger.info('(%s) IPSC Instance Created', self._network)
         else:
@@ -1193,6 +1211,11 @@ class IPSC(DatagramProtocol):
 
 if __name__ == '__main__':
     logger.info('DMRlink \'dmrlink.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    
+    # Set signal handers so that we can gracefully exit if need be
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+        signal.signal(sig, handler)
+    
     networks = {}
     for ipsc_network in NETWORK:
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
