@@ -110,7 +110,7 @@ class rcmIPSC(IPSC):
         print('TIME:        ', datetime.datetime.now())
         print('DATA SOURCE: ', _source)
         try:
-            print('NACK Cause:  ', REPEAT[_nack])
+            print('NACK Cause:  ', NACK[_nack])
         except KeyError:
             print('NACK Cause (unknown): ', h(_nack))
         print()
