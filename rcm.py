@@ -106,7 +106,7 @@ class rcmIPSC(IPSC):
         
         _source = get_info(int_id(_source), peer_ids)
         
-        print(' Call Monitor - Transmission NACK')
+        print('Call Monitor - Transmission NACK')
         print('TIME:        ', datetime.datetime.now())
         print('DATA SOURCE: ', _source)
         try:
