@@ -66,7 +66,7 @@ class rcmIPSC(IPSC):
         else:
             _rf_tgt = get_info(int_id(_rf_tgt), subscriber_ids)
         
-        prubt('Call Monitor - Traffic Origin')
+        print('Call Monitor - Traffic Origin')
         print('TIME:        ', datetime.datetime.now())
         print('DATA SOURCE: ', _source)
         print('IPSC:        ', _network)
