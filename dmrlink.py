@@ -684,7 +684,7 @@ class IPSC(DatagramProtocol):
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
 
-    def call_mon_origin(self, _network, _data):
+    def call_mon_status(self, _network, _data):
         logger.debug('(%s) Repeater Call Monitor Origin Packet Received: %s',_network, h(_data))
     
     def call_mon_rpt(self, _network, _data):

@@ -45,7 +45,7 @@ class rcmIPSC(IPSC):
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
     #
-    def call_mon_origin(self, _network, _data):
+    def call_mon_status(self, _network, _data):
         _source =   _data[1:5]
         _ipsc_src = _data[5:9]
         _seq_num =  _data[9:13]
