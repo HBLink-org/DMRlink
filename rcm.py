@@ -85,18 +85,27 @@ class rcmIPSC(IPSC):
         print()
     
     def call_mon_rpt(self, _network, _data):
-        _source = _data[1:5]
-        _state =  _data[6]
+        _source    = _data[1:5]
+        _ts1_state = _data[5]
+        _ts2_state = _data[6]
         
         _source = get_info(int_id(_source), peer_ids)
         
         print('Call Monitor - Repeater State')
         print('TIME:         ', datetime.datetime.now())
         print('DATA SOURCE:  ', _source)
+     
+        
+        # 1,2 = TS 1 start, 2,2 = TS 1 end
+        # 2,1 = TS 1 start, 2,2 = TS 2 end
         try:
-            print('Repeat State: ', REPEAT[_state])
+            print('TS1 State:    ', REPEAT[_ts1_state])
         except KeyError:
-            print('RPT State (unknown): ', h(_state))
+            print('TS1 State (unknown): ', h(_ts1_state))
+        try:
+            print('TS2 State:    ', REPEAT[_ts2_state])
+        except KeyError:
+            print('TS2 State (unknown): ', h(_ts2_state))
         print()
             
     
