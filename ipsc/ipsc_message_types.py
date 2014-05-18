@@ -94,9 +94,18 @@ STATUS = {
     '\x01': 'Active',
     '\x02': 'End',
     '\x05': 'TS In Use',
+    '\x08': 'RPT Disabled',
+    '\x09': 'RF Interference',
     '\x0A': 'BSID ON',
     '\x0B': 'Timeout',
     '\x0C': 'TX Interrupt'
+}
+
+REPEAT = {
+    '\x01': 'Repeating',
+    '\x02': 'Idle',
+    '\x03': 'TS Disabled',
+    '\x04': 'TS Enabled'
 }
 
 

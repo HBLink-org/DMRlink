@@ -17,6 +17,7 @@ from twisted.internet import task
 from binascii import b2a_hex as h
 
 import time
+import datetime
 import binascii
 import dmrlink
 from dmrlink import IPSC, NETWORK, networks, get_info, int_id, subscriber_ids, peer_ids, talkgroup_ids, logger
@@ -45,16 +46,18 @@ class rcmIPSC(IPSC):
     #************************************************
     #
     def call_mon_origin(self, _network, _data):
-        _source = _data[1:5]
+        _source =   _data[1:5]
         _ipsc_src = _data[5:9]
-        _rf_src = _data[16:19]
-        _rf_tgt = _data[19:22]
+        _seq_num =  _data[9:13]
+        _ts =       _data[13]
+        _status =   _data[15] # suspect [14:16] but nothing in leading byte?
+        _rf_src =   _data[16:19]
+        _rf_tgt =   _data[19:22]
+        _type =     _data[22]
+        _prio =     _data[23]
+        _sec =      _data[24]
         
-        _ts = _data[13]
-        _status = _data[15]
-        _type = _data[22]
-        _sec = _data[24]
-        
+        _source = get_info(int_id(_source), peer_ids)
         _ipsc_src = get_info(int_id(_ipsc_src), peer_ids)
         _rf_src = get_info(int_id(_rf_src), subscriber_ids)
         
@@ -63,20 +66,60 @@ class rcmIPSC(IPSC):
         else:
             _rf_tgt = get_info(int_id(_rf_tgt), subscriber_ids)
         
+        prubt('Call Monitor - Traffic Origin')
+        print('TIME:        ', datetime.datetime.now())
+        print('DATA SOURCE: ', _source)
         print('IPSC:        ', _network)
         print('IPSC Source: ', _ipsc_src)
         print('Timeslot:    ', TS[_ts])
-        print('Status:      ', STATUS[_status])
-        print('Type:        ', TYPE[_type])
+        try:
+            print('Status:      ', STATUS[_status])
+        except KeyError:
+            print('Status (unknown): ', h(status))
+        try:
+            print('Type:        ', TYPE[_type])
+        except KeyError:
+            print('Type (unknown): ', h(_type))
         print('Source Sub:  ', _rf_src)
         print('Target Sub:  ', _rf_tgt)
         print()
+    
+    def call_mon_rpt(self, _network, _data):
+        _source = _data[1:5]
+        _state =  _data[6]
         
+        _source = get_info(int_id(_source), peer_ids)
+        
+        print('Call Monitor - Repeater State')
+        print('TIME:         ', datetime.datetime.now())
+        print('DATA SOURCE:  ', _source)
+        try:
+            print('Repeat State: ', REPEAT[_state])
+        except KeyError:
+            print('RPT State (unknown): ', h(_state))
+        print()
+            
+    
+    def call_mon_nack(self, _network, _data):
+        _source = _data[1:5]
+        _nack =   _data[5]
+        
+        _source = get_info(int_id(_source), peer_ids)
+        
+        print(' Call Monitor - Transmission NACK')
+        print('TIME:        ', datetime.datetime.now())
+        print('DATA SOURCE: ', _source)
+        try:
+            print('NACK Cause:  ', REPEAT[_nack])
+        except KeyError:
+            print('NACK Cause (unknown): ', h(_nack))
+        print()
+    
     def repeater_wake_up(self, _network, _data):
         _source = _data[1:5]
         _source_dec = int_id(_source)
         _source_name = get_info(_source_dec, peer_ids)
-        print('({}) Repeater Wake-Up Packet Received: {} ({})' .format(_network, _source_name, _source_dec))
+        #print('({}) Repeater Wake-Up Packet Received: {} ({})' .format(_network, _source_name, _source_dec))
 
 
 if __name__ == '__main__':
