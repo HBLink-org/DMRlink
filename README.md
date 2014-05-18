@@ -1,4 +1,4 @@
-***OFFICIAL VERSION V0.1.something RELEASE***
+***OFFICIAL VERSION V0.2 RELEASE***
 
 
 ##PROJECT: Open Source IPSC Client.
