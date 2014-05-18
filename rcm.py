@@ -16,7 +16,6 @@ from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as h
 
-import time
 import datetime
 import binascii
 import dmrlink
@@ -95,9 +94,6 @@ class rcmIPSC(IPSC):
         print('TIME:         ', datetime.datetime.now())
         print('DATA SOURCE:  ', _source)
      
-        
-        # 1,2 = TS 1 start, 2,2 = TS 1 end
-        # 2,1 = TS 1 start, 2,2 = TS 2 end
         try:
             print('TS1 State:    ', REPEAT[_ts1_state])
         except KeyError:
@@ -108,7 +104,6 @@ class rcmIPSC(IPSC):
             print('TS2 State (unknown): ', h(_ts2_state))
         print()
             
-    
     def call_mon_nack(self, _network, _data):
         _source = _data[1:5]
         _nack =   _data[5]
