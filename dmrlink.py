@@ -1005,8 +1005,8 @@ class IPSC(DatagramProtocol):
                 return
             
             # ORIGINATED BY PEERS, NOT IPSC MAINTENANCE: Call monitoring is all we've found here so far 
-            elif _packettype == CALL_MON_ORIGIN:
-                self.call_mon_origin(self._network, data)
+            elif _packettype == CALL_MON_STATUS:
+                self.call_mon_status(self._network, data)
                 return
                 
             elif _packettype == CALL_MON_RPT:

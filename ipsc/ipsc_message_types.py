@@ -8,7 +8,7 @@
 
 # Known IPSC Message Types
 CALL_CONFIRMATION     = '\x05' # Confirmation FROM the recipient of a confirmed call.
-CALL_MON_ORIGIN       = '\x61' #  |
+CALL_MON_STATUS       = '\x61' #  |
 CALL_MON_RPT          = '\x62' #  | Exact meaning unknown
 CALL_MON_NACK         = '\x63' #  |
 XCMP_XNL              = '\x70' # XCMP/XNL control message
