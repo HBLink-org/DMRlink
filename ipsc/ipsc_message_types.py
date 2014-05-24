@@ -44,7 +44,7 @@ IPSC_VER_22           = '\x04'
 LINK_TYPE_IPSC        = '\x04'
 
 # IPSC Version and Link Type are Used for a 4-byte version field in registration packets
-IPSC_VER              = LINK_TYPE_IPSC + IPSC_VER_19 + LINK_TYPE_IPSC + IPSC_VER_17
+IPSC_VER              = LINK_TYPE_IPSC + IPSC_VER_17 + LINK_TYPE_IPSC + IPSC_VER_16
 
 # Packets that must originate from a peer (or master peer)
 ANY_PEER_REQUIRED = [GROUP_VOICE, PVT_VOICE, GROUP_DATA, PVT_DATA, CALL_MON_STATUS, CALL_MON_RPT, CALL_MON_NACK, XCMP_XNL, RPT_WAKE_UP, DE_REG_REQ]
