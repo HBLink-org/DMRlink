@@ -1143,7 +1143,7 @@ class IPSC(DatagramProtocol):
             _decoded_mode  = process_mode_byte(_hex_mode)
             _decoded_flags = process_flags_bytes(_hex_flags)
             
-            self.MASTER_REG_REPLY_PKT = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + hex_str_2(self._local['NUM_PEERS']) + IPSC_VER
+            self.MASTER_REG_REPLY_PKT = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + hex_str_2(self._local['NUM_PEERS']) + IPSC_VER)
             
             master_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REPLY_PKT)
             self.transport.write(master_reg_reply_packet, (host, port))
