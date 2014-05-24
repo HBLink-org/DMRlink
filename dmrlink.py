@@ -654,7 +654,7 @@ class IPSC(DatagramProtocol):
             self.PEER_ALIVE_REPLY_PKT   = (PEER_ALIVE_REPLY + self._local_id + self.TS_FLAGS)
             #
             # Master Link Maintenance Packets
-            self.MASTER_REG_REPLY_PKT   = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + str(self._local['NUM_PEERS']) + IPSC_VER)
+            # self.MASTER_REG_REPLY_PKT   is not static and must be generated when it is sent
             self.MASTER_ALIVE_REPLY_PKT = (MASTER_ALIVE_REPLY + self._local_id + self.TS_FLAGS + IPSC_VER)
             self.PEER_LIST_REPLY_PKT    = (PEER_LIST_REPLY + self._local_id)
             #
@@ -1142,6 +1142,8 @@ class IPSC(DatagramProtocol):
             _hex_flags     = data[6:10]
             _decoded_mode  = process_mode_byte(_hex_mode)
             _decoded_flags = process_flags_bytes(_hex_flags)
+            
+            self.MASTER_REG_REPLY_PKT = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + hex_str_2(self._local['NUM_PEERS']) + IPSC_VER
             
             master_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REPLY_PKT)
             self.transport.write(master_reg_reply_packet, (host, port))
