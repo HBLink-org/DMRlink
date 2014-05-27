@@ -35,6 +35,10 @@ try:
 except ImportError:
     sys.exit('IPSC message types file not found or invalid')
 
+status = True
+rpt = False
+nack = False
+
 class rcmIPSC(IPSC):
     
     def __init__(self, *args, **kwargs):
@@ -45,6 +49,8 @@ class rcmIPSC(IPSC):
     #************************************************
     #
     def call_mon_status(self, _network, _data):
+        if not status:
+            return
         _source =   _data[1:5]
         _ipsc_src = _data[5:9]
         _seq_num =  _data[9:13]
@@ -66,7 +72,7 @@ class rcmIPSC(IPSC):
             _rf_tgt = get_info(int_id(_rf_tgt), subscriber_ids)
         
         print('Call Monitor - Call Status')
-        print('TIME:        ', datetime.datetime.now())
+        print('TIME:        ', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         print('DATA SOURCE: ', _source)
         print('IPSC:        ', _network)
         print('IPSC Source: ', _ipsc_src)
@@ -84,6 +90,8 @@ class rcmIPSC(IPSC):
         print()
     
     def call_mon_rpt(self, _network, _data):
+        if not rpt:
+            return
         _source    = _data[1:5]
         _ts1_state = _data[5]
         _ts2_state = _data[6]
@@ -91,7 +99,7 @@ class rcmIPSC(IPSC):
         _source = get_info(int_id(_source), peer_ids)
         
         print('Call Monitor - Repeater State')
-        print('TIME:         ', datetime.datetime.now())
+        print('TIME:         ', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         print('DATA SOURCE:  ', _source)
      
         try:
@@ -105,13 +113,15 @@ class rcmIPSC(IPSC):
         print()
             
     def call_mon_nack(self, _network, _data):
+        if not nack:
+            return
         _source = _data[1:5]
         _nack =   _data[5]
         
         _source = get_info(int_id(_source), peer_ids)
         
         print('Call Monitor - Transmission NACK')
-        print('TIME:        ', datetime.datetime.now())
+        print('TIME:        ', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         print('DATA SOURCE: ', _source)
         try:
             print('NACK Cause:  ', NACK[_nack])
