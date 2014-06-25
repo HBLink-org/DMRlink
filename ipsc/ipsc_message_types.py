@@ -81,7 +81,8 @@ TYPE = {
     '\x50': 'Private Voice',
     '\x51': 'Group Data',
     '\x52': 'Private Data',
-    '\x53': 'All Call'
+    '\x53': 'All Call',
+    '\x84': 'ARS/GPS?' # Not yet clear, seen by a user running ARS & GPS
 }
 
 SEC = {
