@@ -31,6 +31,7 @@ except ImportError:
     sys.exit('Configuration file not found or invalid')
 
 HEX_SUB = hex_str_3(SUB)
+BOGUS_SUB = '\xFF\xFF\xFF'
 
 class playbackIPSC(IPSC):
     
@@ -47,23 +48,27 @@ class playbackIPSC(IPSC):
         if HEX_SUB == _dst_sub and TS == _ts:
             if not _end:
                 if not self.CALL_DATA:
-                    logger.info('(%s) Receiving transmission to be played back from subscriber: %s', _network, int_id(_src_sub))
+                    logger.info('(%s) Receiving transmission to be played back from subscriber: %s, to subscriber: %s', _network, int_id(_src_sub), int_id(_dst_sub))
                 _tmp_data = _data
                 #_tmp_data = dmr_nat(_data, _src_sub, NETWORK[_network]['LOCAL']['RADIO_ID'])
                 self.CALL_DATA.append(_tmp_data)
             if _end:
                 self.CALL_DATA.append(_data)
-                time.sleep(2)
-                logger.info('(%s) Playing back transmission from subscriber: %s', _network, int_id(_src_sub))
+                time.sleep(5)
+                logger.info('(%s) Playing back transmission from subscriber: %s, to subscriber %s', _network, int_id(_src_sub), int_id(_dst_sub))
+                _orig_src = _src_sub
+                _orig_dst = _dst_sub
                 for i in self.CALL_DATA:
                     _tmp_data = i
+                    #print(h(_tmp_data))
                     _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
-                    _tmp_data = _tmp_data.replace(_src_sub, '\x00\x04\xd2')
-                    _tmp_data = _tmp_data.replace(_dst_sub, _src_sub)
+                    _tmp_data = _tmp_data.replace(_dst_sub, BOGUS_SUB)
+                    _tmp_data = _tmp_data.replace(_src_sub, _orig_dst)
+                    _tmp_data = _tmp_data.replace(BOGUS_SUB, _orig_src)
                     _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
                     # Send the packet to all peers in the target IPSC
-                    print(h(_src_sub))
-                    print(h(_tmp_data))
+                    #print(h(_tmp_data))
+                    #print('')
                     send_to_ipsc(_network, _tmp_data)
                     time.sleep(0.06)
                 self.CALL_DATA = []
