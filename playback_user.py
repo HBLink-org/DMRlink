@@ -54,7 +54,7 @@ class playbackIPSC(IPSC):
                 self.CALL_DATA.append(_tmp_data)
             if _end:
                 self.CALL_DATA.append(_data)
-                time.sleep(5)
+                time.sleep(1)
                 logger.info('(%s) Playing back transmission from subscriber: %s, to subscriber %s', _network, int_id(_src_sub), int_id(_dst_sub))
                 _orig_src = _src_sub
                 _orig_dst = _dst_sub
