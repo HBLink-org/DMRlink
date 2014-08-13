@@ -949,6 +949,7 @@ class IPSC(DatagramProtocol):
     def datagramReceived(self, data, (host, port)):
         _packettype = data[0:1]
         _peerid     = data[1:5]
+        _ipsc_seq   = data[5:6]
         
         # AUTHENTICATE THE PACKET
         if not self.validate_auth(self._local['AUTH_KEY'], data):
@@ -966,12 +967,25 @@ class IPSC(DatagramProtocol):
                 
             # ORIGINATED BY SUBSCRIBER UNITS - a.k.a someone transmitted
             if _packettype in USER_PACKETS:
-                # Extract commonly used items from the packet header
+                # Extract IPSC header not already extracted
                 _src_sub    = data[6:9]
                 _dst_sub    = data[9:12]
-                _call       = int_id(data[17:18])
-                _ts         = bool(_call & TS_CALL_MSK)
-                _end        = bool(_call & END_MSK)
+                _call_type  = data[12:13]
+                _unknown_1  = data[13:17]
+                _call_info  = int_id(data[17:18])                
+                _ts         = bool(_call_info & TS_CALL_MSK)
+                _end        = bool(_call_info & END_MSK)
+                
+                # Extract RTP header fields
+                '''
+                Coming soon kids!!!
+                Looks like version, padding, extention, CSIC, payload type and SSID never change.
+                The things we might care about are below.
+                _rtp_byte_1 = int_id(data[18:19])
+                _rtp_byte_2 = int_id(data[19:20])
+                _rtp_seq    = int_id(data[20:22])
+                _rtp_tmstmp = int_id(data[22:26])
+                '''
 
                 # User Voice and Data Call Types:
                 if _packettype == GROUP_VOICE:

@@ -6,6 +6,11 @@
 # Creative Commons, 444 Castro Street, Suite 900, Mountain View,
 # California, 94041, USA.
 
+# MASKS FOR IPSC, RTP AND THE RTP PAYLOAD (DMR FRAME + FRIENDS) ARE LOCATED
+# IN THIS FILE IN THIS ORDER: IPSC, RTP, PAYLOAD
+
+# IPSC MASK VALUES
+#
 # LINKING STATUS:
 #	Byte 1 - BIT FLAGS:
 #	      xx.. .... = Peer Operational (01 only known valid value)
@@ -53,7 +58,6 @@ VOICE_CALL_MSK     = 0b00000100
 MSTR_PEER_MSK      = 0b00000001
 
 # TIMESLOT CALL & STATUS BYTE
-
 #   Byte 17 of Group and Private Voice/Data Packets
 #       ..x.. ....TS Value (0=TS1, 1=TS2)
 #       .x... ....TS In Progress/End (0=In Progress, 1=End)
@@ -61,3 +65,26 @@ MSTR_PEER_MSK      = 0b00000001
 #   MASK VALUE:
 END_MSK             = 0b01000000
 TS_CALL_MSK         = 0b00100000
+
+
+
+# RTP MASK VALUES
+# Bytes 1 and 2 of the RTP header are bit-fields, the rest
+# are at least one byte long, and do not need masked
+#   Byte 1
+RTP_VER_MSK         = 0b11000000
+RTP_PAD_MSK         = 0b00100000
+RTP_EXT_MSK         = 0b00010000
+RTP_CSIC_MSK        = 0b00001111
+#   Byte 2
+RTP_MRKR_MSK        = 0b10000000
+RTP_PAY_TYPE_MSK    = 0b01111111
+
+
+
+# RTP PAYLOAD (DMR FRAME + FRIENDS) MASK VALUES
+# This one is tricky. The DMR Frame contents are here
+# and re-ordered from their position in the original DMR
+# frame format. There are also some other friends in here
+# that Motorla added.
+# 
