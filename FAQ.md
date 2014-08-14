@@ -1,6 +1,3 @@
-***OFFICIAL VERSION V0.2 RELEASE***
-
-
 ##DMRlink FAQ
 **PURPOSE:** Since DMRlink was published, a number of similar questions have come in regarding it's use. This FAQ will attempt to address common questions or concerns.
 
@@ -16,11 +13,3 @@
  
 
 ***73 DE N0MJS***
-
-Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group. n0mjs@me.com
-
-This work is licensed under the Creative Commons Attribution-ShareAlike
-3.0 Unported License.To view a copy of this license, visit
-http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to
-Creative Commons, 444 Castro Street, Suite 900, Mountain View,
-California, 94041, USA.
