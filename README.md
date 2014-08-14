@@ -27,7 +27,7 @@ The remaining files are sample applicaitons that sub-class dmrlink. Since dmrlin
 **FILES:**  
 + ***dmrlink.py, dmrlink.cfg, ipsc (directory):*** Core files for dmrlink to work
 + ***talkgroup_ids.csv, subscriber_ids.csv, peer_ids.csv:*** DMR numeric ID to name mapping files (optional)
-+ ***bridge.py, log.py, rcm.py, playback.py:*** Sample applications to demonstrate dmrlink's abilities
++ ***bridge.py, log.py, rcm.py, playback.py, playback_user.py:*** Sample applications to demonstrate dmrlink's abilities
 + ***files with SAMPLE in the name:*** Configuration files for certain apps - remove "_SAMPLE" and customize to your needs to use. for example, "dmrlink_SAMPLE.cfg" becomes "dmrlink.cfg"
 
 **CONFIGURATION:**
