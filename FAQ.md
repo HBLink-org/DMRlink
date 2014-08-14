@@ -9,6 +9,8 @@
 
 **Was DMRlink created by hacking the c-Bridge and/or SmartPTT?** Absolutely not! DMRlink was created using wireshark to capture packets between IPSC speaking endpoints on an IPSC network and pattern-matching. For example, when we know the transmisison was from radio ID 12345, we assume that when we find 12345 in the data stream, that's the source radio ID... we then further match patterns to validate what we find. This is why DMRlink will likely never include all features in IPSC, like XNL/XCMP for example, which uses encryption that makes pattern matching virutally impossible.
 
+**Why can't DMRlink talk to my c-Bridge over a CC-CC connection??** The c-Bridge CC-CC connection is a proprietary system written by Ravennet Systems. It is not part of IPSC, and is used only between c-Bridge, TL-NET and other Ravennet-based RoIP systems. The DMRlink project only deals with IPSC. As such it doesn't communicate with SmartPTT radioserver-to-radioserver links either.
+
 **Will you help me get it working?** DMRlink is not commercial software, and nobody is getting paid to write it. The work here represnets HUNDREDS of hours of volunteer effort. We will help as we can, but you must be familiar with IP data networking, very basic programming (preferably python) and IPSC or you will likely have a very hard time getting it to work to your satisfaction.
  
 
