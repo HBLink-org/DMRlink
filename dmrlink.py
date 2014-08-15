@@ -237,7 +237,7 @@ dictConfig({
         },
         'syslog': {
             'class': 'logging.handlers.SysLogHandler',
-            'formatter': 'verbose',
+            'formatter': 'simple',
         }
     },
     'loggers': {
