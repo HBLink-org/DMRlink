@@ -75,6 +75,7 @@ try:
             # Process REPORTS items in the configuration
             REPORTS = {
                 'REPORT_PEERS': config.getboolean(section, 'REPORT_PEERS'),
+                'REPORT_INTERVAL': config.getint(section, 'REPORT_INTERVAL'),
                 'PEER_REPORT_INC_MODE': config.getboolean(section, 'PEER_REPORT_INC_MODE'),
                 'PEER_REPORT_INC_FLAGS': config.getboolean(section, 'PEER_REPORT_INC_FLAGS')
             }
@@ -797,7 +798,7 @@ class IPSC(DatagramProtocol):
             self._master_maintenance_loop = self._master_maintenance.start(self._local['ALIVE_TIMER'])
         #
         self._reporting = task.LoopingCall(self.reporting_loop)
-        self._reporting_loop = self._reporting.start(10)
+        self._reporting_loop = self._reporting.start(REPORTS['REPORT_INTERVAL'])
     
     
     # Timed loop used for reporting IPSC status
