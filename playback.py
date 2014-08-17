@@ -45,6 +45,7 @@ class playbackIPSC(IPSC):
     #************************************************
     #
     if GROUP_REPEAT:
+	logger.info('DEFINING GROUP REPEAT FUNCTION')
         def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
             if HEX_TGID == _dst_sub and _ts in GROUP_TS:
                 if not _end:
@@ -55,7 +56,7 @@ class playbackIPSC(IPSC):
                         self.CALL_DATA.append(_tmp_data)
                         if _end:
                             self.CALL_DATA.append(_data)
-                            time.sleep(2)
+                            time.sleep(1)
                             logger.info('(%s) Playing back transmission from subscriber: %s', _network, int_id(_src_sub))
                             for i in self.CALL_DATA:
                                 _tmp_data = i
@@ -67,6 +68,7 @@ class playbackIPSC(IPSC):
                                 self.CALL_DATA = []
                 
     if PRIVATE_REPEAT:
+	logger.info('DEFINING PRIVATE REPEAT FUNCTION')
         def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
             if HEX_SUB == _dst_sub and _ts in PRIVATE_TS:
                 if not _end:
@@ -91,7 +93,6 @@ class playbackIPSC(IPSC):
                         send_to_ipsc(_network, _tmp_data)
                         time.sleep(0.06)
                     self.CALL_DATA = []
-        
         
 if __name__ == '__main__':
     logger.info('DMRlink \'playback.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
