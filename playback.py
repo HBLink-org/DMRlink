@@ -45,7 +45,7 @@ class playbackIPSC(IPSC):
     #************************************************
     #
     if GROUP_REPEAT:
-	logger.info('DEFINING GROUP REPEAT FUNCTION')
+	logger.info('Playback: DEFINING GROUP REPEAT FUNCTION')
         def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
             if HEX_TGID == _dst_sub and _ts in GROUP_TS:
                 if not _end:
@@ -68,7 +68,7 @@ class playbackIPSC(IPSC):
                                 self.CALL_DATA = []
                 
     if PRIVATE_REPEAT:
-	logger.info('DEFINING PRIVATE REPEAT FUNCTION')
+	logger.info('Playback: DEFINING PRIVATE REPEAT FUNCTION')
         def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
             if HEX_SUB == _dst_sub and _ts in PRIVATE_TS:
                 if not _end:
