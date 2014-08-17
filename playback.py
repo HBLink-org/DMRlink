@@ -51,21 +51,21 @@ class playbackIPSC(IPSC):
                 if not _end:
                     if not self.CALL_DATA:
                         logger.info('(%s) Receiving transmission to be played back from subscriber: %s', _network, int_id(_src_sub))
-                        _tmp_data = _data
-                        #_tmp_data = dmr_nat(_data, _src_sub, NETWORK[_network]['LOCAL']['RADIO_ID'])
-                        self.CALL_DATA.append(_tmp_data)
-                        if _end:
-                            self.CALL_DATA.append(_data)
-                            time.sleep(1)
-                            logger.info('(%s) Playing back transmission from subscriber: %s', _network, int_id(_src_sub))
-                            for i in self.CALL_DATA:
-                                _tmp_data = i
-                                _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
-                                _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
-                                # Send the packet to all peers in the target IPSC
-                                send_to_ipsc(_network, _tmp_data)
-                                time.sleep(0.06)
-                                self.CALL_DATA = []
+                    _tmp_data = _data
+                    #_tmp_data = dmr_nat(_data, _src_sub, NETWORK[_network]['LOCAL']['RADIO_ID'])
+                    self.CALL_DATA.append(_tmp_data)
+                if _end:
+                    self.CALL_DATA.append(_data)
+                    time.sleep(2)
+                    logger.info('(%s) Playing back transmission from subscriber: %s', _network, int_id(_src_sub))
+                    for i in self.CALL_DATA:
+                        _tmp_data = i
+                        _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
+                        _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
+                        # Send the packet to all peers in the target IPSC
+                        send_to_ipsc(_network, _tmp_data)
+                        time.sleep(0.06)
+                    self.CALL_DATA = []
                 
     if PRIVATE_REPEAT:
 	logger.info('Playback: DEFINING PRIVATE REPEAT FUNCTION')
