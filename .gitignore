@@ -9,3 +9,4 @@ playback_config.py
 *.pyc
 *.bak
 *.lcl
+*.conf
