@@ -216,7 +216,7 @@ dictConfig({
             'format': '%(levelname)s %(message)s'
         },
         'syslog': {
-            'format': '%(name)s (%(proccess)d): %(levelname)s %(message)s'
+            'format': '%(name)s (%(process)d): %(levelname)s %(message)s'
         }
     },
     'handlers': {
