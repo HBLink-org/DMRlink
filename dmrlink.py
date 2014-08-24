@@ -215,6 +215,9 @@ dictConfig({
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
+        'syslog': {
+            'format': '%(processName)s: %(levelname)s %(message)s'
+        }
     },
     'handlers': {
         'console': {
@@ -237,7 +240,7 @@ dictConfig({
         },
         'syslog': {
             'class': 'logging.handlers.SysLogHandler',
-            'formatter': 'simple',
+            'formatter': 'syslog',
         }
     },
     'loggers': {
