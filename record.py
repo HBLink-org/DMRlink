@@ -29,28 +29,28 @@ __status__ = 'pre-alpha'
 print('This program will record the first matching voice call and exit.\n')
 
 while True:
-    _my_tx_type = raw_input('Group (g) or Private voice (p)? ')
-    if _my_tx_type == 'g' or _my_tx_type == 'p':
+    tx_type = raw_input('Group (g) or Private voice (p)? ')
+    if tx_type == 'g' or tx_type == 'p':
         break
     print('...input must be either \'g\' or \'p\'')
 
 while True:
-    _my_ts = raw_input('Which timeslot (1, 2 or \'both\')? ')
-    if _my_ts == '1' or _my_ts == '2' or _my_ts =='both':
-        if _my_ts == '1':
-            _my_ts = (0,)
-        if _my_ts == '2':
-            _my_ts = (1,)
-        if _my_ts == 'both':
-            _my_ts = (0,1)
+    ts = raw_input('Which timeslot (1, 2 or \'both\')? ')
+    if ts == '1' or ts == '2' or ts =='both':
+        if ts == '1':
+            ts = (0,)
+        if ts == '2':
+            ts = (1,)
+        if ts == 'both':
+            ts = (0,1)
         break
     print('...input must be \'1\', \'2\' or \'both\'')
 
-_my_id = raw_input('Which Group or Subscriber ID to record? ')
-_my_id = int(_my_id)
-_my_id = hex_str_3(_my_id)
+id = raw_input('Which Group or Subscriber ID to record? ')
+id = int(id)
+id = hex_str_3(id)
 
-_my_filename = raw_input('Filename to use for this recording? ')
+filename = raw_input('Filename to use for this recording? ')
 
 class recordIPSC(IPSC):
     
@@ -62,33 +62,33 @@ class recordIPSC(IPSC):
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
     #
-    if _my_tx_type == 'g':
+    if tx_type == 'g':
 	print('Initializing to record GROUP VOICE transmission')
         def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-            if _my_id == _dst_sub and _ts in _my_ts:
+            if id == _dst_sub and _ts in ts:
                 if not _end:
                     if not self.CALL_DATA:
                         print('({}) Recording transmission from subscriber: {}' .format(_network, int_id(_src_sub)))
                     self.CALL_DATA.append(_data)
                 if _end:
                     self.CALL_DATA.append(_data)
-                    print('({}) Transmission ended, writing to disk: {}' .format(_network, _my_filename))
-                    pickle.dump(self.CALL_DATA, open(_my_filename, 'wb'))
+                    print('({}) Transmission ended, writing to disk: {}' .format(_network, filename))
+                    pickle.dump(self.CALL_DATA, open(filename, 'wb'))
                     reactor.stop()
                     print('Recording created, program terminating')
                 
-    if _my_tx_type == 'p':
+    if tx_type == 'p':
 	print('Initializing ro record PRIVATE VOICE transmission')
         def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-            if _my_id == _dst_sub and _ts in _my_ts:
+            if id == _dst_sub and _ts in ts:
                 if not _end:
                     if not self.CALL_DATA:
                         print('({}) Recording transmission from subscriber: {}' .format(_network, int_id(_src_sub)))
                     self.CALL_DATA.append(_data)
                 if _end:
                     self.CALL_DATA.append(_data)
-                    print('({}) Transmission ended, writing to disk: {}' .format(_network, _my_filename))
-                    pickle.dump(self.CALL_DATA, open(_my_filename, 'wb'))
+                    print('({}) Transmission ended, writing to disk: {}' .format(_network, filename))
+                    pickle.dump(self.CALL_DATA, open(filename, 'wb'))
                     reactor.stop()
                     print('Recording created, program terminating')
 
