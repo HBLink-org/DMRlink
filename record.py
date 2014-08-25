@@ -14,6 +14,7 @@ from twisted.internet import reactor
 from binascii import b2a_hex as h
 
 import sys
+import cPickle as pickle
 from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3
 
 __author__ = 'Cortney T. Buffington, N0MJS'
@@ -51,8 +52,6 @@ _my_id = hex_str_3(_my_id)
 
 _my_filename = raw_input('Filename to use for this recording? ')
 
-record_file = open(_my_filename, 'w')
-
 class recordIPSC(IPSC):
     
     def __init__(self, *args, **kwargs):
@@ -74,9 +73,7 @@ class recordIPSC(IPSC):
                 if _end:
                     self.CALL_DATA.append(_data)
                     print('({}) Transmission ended, writing to disk: {}' .format(_network, _my_filename))
-                    for i in self.CALL_DATA:
-                        record_file.write(i)
-                    record_file.close                       
+                    pickle.dump(self.CALL_DATA, open(_my_filename, 'wb'))
                     reactor.stop()
                     print('Recording created, program terminating')
                 
@@ -91,9 +88,7 @@ class recordIPSC(IPSC):
                 if _end:
                     self.CALL_DATA.append(_data)
                     print('({}) Transmission ended, writing to disk: {}' .format(_network, _my_filename))
-                    for i in self.CALL_DATA:
-                        record_file.write(i)
-                    record_file.close
+                    pickle.dump(self.CALL_DATA, open(_my_filename, 'wb'))
                     reactor.stop()
                     print('Recording created, program terminating')
 
