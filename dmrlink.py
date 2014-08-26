@@ -272,6 +272,14 @@ try:
 except ImportError:
     sys.exit('IPSC mask values file not found or invalid')
 
+try:
+    from known_bridges import BRIDGES
+except ImportError:
+    logger.info('no \'known_bridges\' file, we will not flag known bridges')
+      
+if not 'BRIDGES' in locals():
+    BRIDGES = [0]
+
 # Import the Alias files for numeric ids. This is split to save
 # time making lookups in one huge dictionary
 #
@@ -486,6 +494,17 @@ def process_peer_list(_data, _network):
         # This is done elsewhere for the master too, so we use a separate function
         _decoded_mode = process_mode_byte(_hex_mode)
 
+        # If this entry WAS already in our list, update everything except the stats
+        # in case this was a re-registration with a different mode, flags, etc.
+        if _hex_radio_id in NETWORK[_network]['PEERS'].keys():
+            NETWORK[_network]['PEERS'][_hex_radio_id]['IP'] = _ip_address
+            NETWORK[_network]['PEERS'][_hex_radio_id]['PORT'] = _port
+            NETWORK[_network]['PEERS'][_hex_radio_id]['MODE'] = _hex_mode
+            NETWORK[_network]['PEERS'][_hex_radio_id]['MODE_DECODE'] = _decoded_mode
+            NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS'] = ''
+            NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS_DECODE'] = ''
+            logger.info('(%s) Peer Updated: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+
         # If this entry was NOT already in our list, add it.
         if _hex_radio_id not in NETWORK[_network]['PEERS'].keys():
             NETWORK[_network]['PEERS'][_hex_radio_id] = {
@@ -504,7 +523,7 @@ def process_peer_list(_data, _network):
                     'KEEP_ALIVE_RX_TIME':      0
                     }
                 }
-        logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+            logger.info('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
     
     # Finally, check to see if there's a peer already in our list that was not in this peer list
     # and if so, delete it.
