@@ -503,7 +503,7 @@ def process_peer_list(_data, _network):
             NETWORK[_network]['PEERS'][_hex_radio_id]['MODE_DECODE'] = _decoded_mode
             NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS'] = ''
             NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS_DECODE'] = ''
-            logger.info('(%s) Peer Updated: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+            logger.debug('(%s) Peer Updated: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
 
         # If this entry was NOT already in our list, add it.
         if _hex_radio_id not in NETWORK[_network]['PEERS'].keys():
@@ -523,7 +523,7 @@ def process_peer_list(_data, _network):
                     'KEEP_ALIVE_RX_TIME':      0
                     }
                 }
-            logger.info('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+            logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
     
     # Finally, check to see if there's a peer already in our list that was not in this peer list
     # and if so, delete it.
