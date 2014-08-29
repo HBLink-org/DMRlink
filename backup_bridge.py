@@ -15,7 +15,7 @@ from binascii import b2a_hex as h
 import pprint
 
 import sys
-from dmrlink import IPSC, NETWORK, networks, send_to_ipsc, dmr_nat, logger, hex_str_4
+from dmrlink import IPSC, NETWORK, networks, send_to_ipsc, dmr_nat, logger, hex_str_4, int_id
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -60,11 +60,22 @@ class bridgeIPSC(IPSC):
         self._bridge_presence_loop = self._bridge_presence.start(self._local['ALIVE_TIMER'])
     
     def bridge_presence_loop(self):
-        print('Bridging status is: ', self.BRIDGE)
+        _temp_bridge = True
         for peer in BRIDGES:
             _peer = hex_str_4(peer)
-            if _peer in self._peers or (self._master['STATUS']['CONNECTED']) and (self._master['RADIO_ID'] == _peer):
-                print(h(_peer))
+            
+            if _peer in self._peers.keys() and (self._peers[_peer]['MODE_DECODE']['TS_1'] or self._peers[_peer]['MODE_DECODE']['TS_2']):
+                _temp_bridge = False
+                logger.info('Peer %s is an active bridge', int_id(_peer))
+            
+            if _peer == self._master['RADIO_ID'] \
+                and self._master['STATUS']['CONNECTED'] \
+                and (self._master['MODE_DECODE']['TS_1'] or self._master['MODE_DECODE']['TS_2']):
+                _temp_bridge = False
+                logger.info('Master %s is an active bridge', int_id(_peer))
+            
+        self.BRIDGE = _temp_bridge
+        logger.info('Bridging status is currently: %s', self.BRIDGE )
             
 
     #************************************************
