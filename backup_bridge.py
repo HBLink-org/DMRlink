@@ -33,6 +33,7 @@ __status__ = 'Production'
 #
 try:
     from bridge_rules import RULES
+    logger.info('Bridge rules file found and rules imported')
 except ImportError:
     sys.exit('Bridging rules file not found or invalid')
 
@@ -42,8 +43,10 @@ except ImportError:
 #
 try:
     from known_bridges import BRIDGES
+    logger.info('Known bridges file found and bridge ID list imported ')
 except ImportError:
-    sys.exit('Bridge list file not found or invalid')
+    logger.critical('(backup_bridge.py) NO BRIDGES FILE FOUND, INITIALIZING NULL')
+    BRIDGES = []
 
 
 class bridgeIPSC(IPSC):
@@ -66,17 +69,16 @@ class bridgeIPSC(IPSC):
             
             if _peer in self._peers.keys() and (self._peers[_peer]['MODE_DECODE']['TS_1'] or self._peers[_peer]['MODE_DECODE']['TS_2']):
                 _temp_bridge = False
-                logger.info('Peer %s is an active bridge', int_id(_peer))
+                logger.info('(%s) Peer %s is an active bridge', self._network, int_id(_peer))
             
             if _peer == self._master['RADIO_ID'] \
                 and self._master['STATUS']['CONNECTED'] \
                 and (self._master['MODE_DECODE']['TS_1'] or self._master['MODE_DECODE']['TS_2']):
                 _temp_bridge = False
-                logger.info('Master %s is an active bridge', int_id(_peer))
+                logger.info(')%s) Master %s is an active bridge',self._network, int_id(_peer))
             
         self.BRIDGE = _temp_bridge
-        logger.info('Bridging status is currently: %s', self.BRIDGE )
-        #print(networks['C-BRIDGE'].BRIDGE)
+        logger.info('(%s) Bridging status is currently: %s', self._network, self.BRIDGE )
             
 
     #************************************************
@@ -95,7 +97,7 @@ class bridgeIPSC(IPSC):
         for rule in RULES[_network]['GROUP_VOICE']:
             _target = rule['DST_NET']
             # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
-            if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and self.BRIDGE == True and networks[_target].BRIDGE == True:
+            if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and (self.BRIDGE == True or networks[_target].BRIDGE == True):
                 _tmp_data = _data
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
