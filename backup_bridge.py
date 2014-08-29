@@ -76,6 +76,7 @@ class bridgeIPSC(IPSC):
             
         self.BRIDGE = _temp_bridge
         logger.info('Bridging status is currently: %s', self.BRIDGE )
+        #print(networks['C-BRIDGE'].BRIDGE)
             
 
     #************************************************
@@ -92,10 +93,10 @@ class bridgeIPSC(IPSC):
             # timer = time()
             
         for rule in RULES[_network]['GROUP_VOICE']:
+            _target = rule['DST_NET']
             # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
-            if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
+            if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and self.BRIDGE == True and networks[_target].BRIDGE == TRUE:
                 _tmp_data = _data
-                _target = rule['DST_NET']
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                 # Re-Write the destination Group ID
