@@ -6,6 +6,7 @@ dmrlink.cfg
 pub*
 bridge_rules.py
 playback_config.py
+known_bridges.py
 *.pyc
 *.bak
 *.lcl

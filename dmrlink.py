@@ -272,14 +272,6 @@ try:
 except ImportError:
     sys.exit('IPSC mask values file not found or invalid')
 
-try:
-    from known_bridges import BRIDGES
-except ImportError:
-    logger.info('no \'known_bridges\' file, we will not flag known bridges')
-      
-if not 'BRIDGES' in locals():
-    BRIDGES = [0]
-
 # Import the Alias files for numeric ids. This is split to save
 # time making lookups in one huge dictionary
 #
