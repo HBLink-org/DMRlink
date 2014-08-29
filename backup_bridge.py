@@ -75,7 +75,7 @@ class bridgeIPSC(IPSC):
                 and self._master['STATUS']['CONNECTED'] \
                 and (self._master['MODE_DECODE']['TS_1'] or self._master['MODE_DECODE']['TS_2']):
                 _temp_bridge = False
-                logger.info(')%s) Master %s is an active bridge',self._network, int_id(_peer))
+                logger.info('(%s) Master %s is an active bridge',self._network, int_id(_peer))
             
         self.BRIDGE = _temp_bridge
         logger.info('(%s) Bridging status is currently: %s', self._network, self.BRIDGE )
