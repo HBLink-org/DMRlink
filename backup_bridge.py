@@ -78,7 +78,7 @@ class bridgeIPSC(IPSC):
                 logger.debug('(%s) Master %s is an active bridge',self._network, int_id(_peer))
             
         if self.BRIDGE != _temp_bridge:
-            logger.info('(%s) Changing bridge status to: %s', self._network, self.BRIDGE )
+            logger.info('(%s) Changing bridge status to: %s', self._network, _temp_bridge )
         self.BRIDGE = _temp_bridge
         
             
