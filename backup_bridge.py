@@ -54,6 +54,7 @@ class bridgeIPSC(IPSC):
         IPSC.__init__(self, *args, **kwargs)
         self.BRIDGE = False
         self.ACTIVE_CALLS = []
+        logger.info('(%s) Initializing bridge status as: %s', self._network, self.BRIDGE)
     
     def startProtocol(self):
         IPSC.startProtocol(self)
@@ -68,16 +69,18 @@ class bridgeIPSC(IPSC):
             
             if _peer in self._peers.keys() and (self._peers[_peer]['MODE_DECODE']['TS_1'] or self._peers[_peer]['MODE_DECODE']['TS_2']):
                 _temp_bridge = False
-                logger.info('(%s) Peer %s is an active bridge', self._network, int_id(_peer))
+                logger.debug('(%s) Peer %s is an active bridge', self._network, int_id(_peer))
             
             if _peer == self._master['RADIO_ID'] \
                 and self._master['STATUS']['CONNECTED'] \
                 and (self._master['MODE_DECODE']['TS_1'] or self._master['MODE_DECODE']['TS_2']):
                 _temp_bridge = False
-                logger.info('(%s) Master %s is an active bridge',self._network, int_id(_peer))
+                logger.debug('(%s) Master %s is an active bridge',self._network, int_id(_peer))
             
+        if self.BRIDGE != _temp_bridge:
+            logger.info('(%s) Changing bridge status to: %s', self._network, self.BRIDGE )
         self.BRIDGE = _temp_bridge
-        logger.info('(%s) Bridging status is currently: %s', self._network, self.BRIDGE )
+        
             
 
     #************************************************
