@@ -17,6 +17,7 @@ PVT_VOICE             = '\x81'
 GROUP_DATA            = '\x83'
 PVT_DATA              = '\x84'
 RPT_WAKE_UP           = '\x85' # Similar to OTA DMR "wake up"
+UNKNOWN_COLLISION     = '\x86' # Seen when two dmrlinks try to transmit at once
 MASTER_REG_REQ        = '\x90' # FROM peer TO master
 MASTER_REG_REPLY      = '\x91' # FROM master TO peer
 PEER_LIST_REQ         = '\x92' # From peer TO master
