@@ -150,7 +150,7 @@ if BRIDGES:
                 if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and (self.BRIDGE == True or networks[_target].BRIDGE == True):
                     _tmp_data = _data
                     # Re-Write the IPSC SRC to match the target network's ID
-                    _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
+                    #_tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                     # Re-Write the destination Group ID
                     _tmp_data = _tmp_data.replace(_dst_group, rule['DST_GROUP'])
                 
@@ -188,7 +188,7 @@ else:
                     _tmp_data = _data
                     _target = rule['DST_NET']
                     # Re-Write the IPSC SRC to match the target network's ID
-                    _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
+                    #_tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                     # Re-Write the destination Group ID
                     _tmp_data = _tmp_data.replace(_dst_group, rule['DST_GROUP'])
                 
