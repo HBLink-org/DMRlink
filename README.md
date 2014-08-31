@@ -1,4 +1,4 @@
-***OFFICIAL VERSION V0.2 RELEASE***
+***VERSION V0.27b RELEASE***
 
 
 ##PROJECT: Open Source IPSC Client.
@@ -27,8 +27,23 @@ The remaining files are sample applicaitons that sub-class dmrlink. Since dmrlin
 **FILES:**  
 + ***dmrlink.py, dmrlink.cfg, ipsc (directory):*** Core files for dmrlink to work
 + ***talkgroup_ids.csv, subscriber_ids.csv, peer_ids.csv:*** DMR numeric ID to name mapping files (optional)
-+ ***bridge.py, log.py, rcm.py, playback.py, playback_user.py:*** Sample applications to demonstrate dmrlink's abilities
++ ***bridge.py, log.py, rcm.py, playback.py, playback.py, play_group.py, record.py:*** Sample applications to demonstrate dmrlink's abilities
 + ***files with SAMPLE in the name:*** Configuration files for certain apps - remove "_SAMPLE" and customize to your needs to use. for example, "dmrlink_SAMPLE.cfg" becomes "dmrlink.cfg"
+
+**SAMPLE APPLICATIONS:**
+
+***bridge.py:*** This applicaiton allows DMRlink to function as an IPSC bridge. Bridging means connecting multiple IPSC networks together, and allowing only certain timeslot/group IDs, etc. to pass between them. Sometimes re-writing the talkgroup ID, etc. bridge.py does not have nearly the wealth of features that commercial IPSC brides do, but works very, very well. One unique feature here is that bridge.py can be told the radio ID of other bridges and can operate in multiple bridge active/standby/standby... configurations -- which is to say, you may have TWO bridges configured in the same IPSC, set to bridge the same talkgroups, but only one will be active at a time, offering multiple-bridge redundancy to minimize service outages.
+
+***log.py:*** This is a logging application based on gathering data from the actual call packet stream. It doesn't do a whole awful lot, but it is an example of the IPSC side of building a back-end data gathering applicaiton without screen-scraping or tcpdumping a c-Bridge, etc. As a sample app, it just logs to the screen, or a file, etc. but it would be trivial to have it log to a database for web presentation, a central syslog server, etc.
+
+***rcm.py:*** Very similar to log.py, but this one uses a feature called "Repeater Call Monitor" to get nearly identical data, but puts a MUCH smaller load on the IPSC network, since user call datastreams aren't forwarded to DMRlink running as (and properly configured as) an RCM. All of the logging, almost none of the overhead. Again, beats the pants off of screen-scraping, tcpdumping, etc.
+
+***playback.py:*** As of this writing, a large multi-national ham radio group has deployed this on TGID 9998 and dubbed it the "parrot". This application can listen to group and/or private voice transmissions and if you trasmit to the group and/or private IDs it's programmed to use, it will record the digital packet stream and then re-play it back. Handy for listening to your audio to see what you actually sound like on the air.
+
+***play_group.py:*** NOT YET STABLE. This applicaiton is for playing back pre-recorded audio messages based on particlar events. Events could be IPSC-based (like a keyup on a particular TS/TGID combination, time of day, etc.). It works, but requires quite a bit of under-the-hood mucking about as of now.
+
+***record.py:*** Companion applicaiton to play_group.py. This will never be "fancy", since it's intended as a utility for network operators to use to capture voice call packet streams to be played back later. It will be improved beyond where it is at now, but not a high priority.
+
 
 **CONFIGURATION:**
 
