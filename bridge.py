@@ -41,10 +41,10 @@ __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
 __credits__ = 'Adam Fast, KC0YLK, Dave K, and he who wishes not to be named'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__version__ = '0.2b'
+__version__ = '0.27b'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
-__status__ = 'Beta'
+__status__ = 'beta'
 
 
 # Notes and pieces of next steps...

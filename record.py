@@ -22,6 +22,7 @@ __copyright__ = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY G
 __credits__ = 'Adam Fast, KC0YLK; Dave K; and he who wishes not to be named'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
 __maintainer__ = 'Cort Buffington, N0MJS'
+__version__ = '0.1a'
 __email__ = 'n0mjs@me.com'
 __status__ = 'pre-alpha'
 

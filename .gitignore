@@ -11,3 +11,4 @@ known_bridges.py
 *.bak
 *.lcl
 *.conf
+*.config
