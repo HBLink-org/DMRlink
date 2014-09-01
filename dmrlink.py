@@ -251,7 +251,7 @@ dictConfig({
         }
     }
 })
-logger = logging.getLogger('dmrlink')
+logger = logging.getLogger(__name__)
 
 
 #************************************************
