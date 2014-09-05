@@ -495,7 +495,7 @@ def process_peer_list(_data, _network):
             NETWORK[_network]['PEERS'][_hex_radio_id]['MODE_DECODE'] = _decoded_mode
             NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS'] = ''
             NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS_DECODE'] = ''
-            logger.debug('(%s) Peer Updated: %s', _network, int_id(NETWORK[_network]['PEERS'][_hex_radio_id]))
+            logger.debug('(%s) Peer Updated: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
 
         # If this entry was NOT already in our list, add it.
         if _hex_radio_id not in NETWORK[_network]['PEERS'].keys():
