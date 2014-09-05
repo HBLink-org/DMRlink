@@ -732,7 +732,7 @@ class IPSC(DatagramProtocol):
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
         _packettype = h(_packettype)
-        logger.error('(%s) Unknown message type encountered\n\tPacket Type: %s\n\tFrom: %s\n\tPacket: %s', _network, h(_packettype), int_id(_peerid), h(_data))
+        logger.error('(%s) Unknown Message - Type: %s From: %s Packet: %s', _network, h(_packettype), int_id(_peerid), h(_data))
 
 
     #************************************************
