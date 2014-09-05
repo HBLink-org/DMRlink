@@ -136,6 +136,7 @@ if BRIDGES:
         #************************************************
         #
         def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
+            logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
             if _ts not in self.ACTIVE_CALLS:
                 self.ACTIVE_CALLS.append(_ts)
                 # send repeater wake up, but send them when a repeater is likely not TXing check time since end (see below)
