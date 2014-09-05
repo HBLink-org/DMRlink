@@ -48,7 +48,6 @@ parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/fu
 
 cli_args = parser.parse_args()
 
-
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
@@ -608,6 +607,10 @@ def handler(_signal, _frame):
         send_to_ipsc(network, de_reg_req_pkt)
     
     reactor.stop()
+
+# Set signal handers so that we can gracefully exit if need be
+for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+    signal.signal(sig, handler)
 
 #************************************************
 #********                             ***********
@@ -1243,10 +1246,6 @@ class IPSC(DatagramProtocol):
 
 if __name__ == '__main__':
     logger.info('DMRlink \'dmrlink.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
-    
-    # Set signal handers so that we can gracefully exit if need be
-    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
-        signal.signal(sig, handler)
     
     networks = {}
     for ipsc_network in NETWORK:
