@@ -738,7 +738,128 @@ class IPSC(DatagramProtocol):
     #************************************************
     #     IPSC SPECIFIC MAINTENANCE FUNCTIONS
     #************************************************
+    
+    
+    # FUNTIONS FOR IPSC MAINTENANCE ACTIVITIES WE RESPOND TO
+    #
+    def peer_alive_req(self, _data, _peerid, _host, _port):
+        _hex_mode      = (_data[5])
+        _hex_flags     = (_data[6:10])
+        _decoded_mode  = process_mode_byte(_hex_mode)
+        _decoded_flags = process_flags_bytes(_hex_flags)
+    
+        self._peers[_peerid]['MODE'] = _hex_mode
+        self._peers[_peerid]['MODE_DECODE'] = _decoded_mode
+        self._peers[_peerid]['FLAGS'] = _hex_flags
+        self._peers[_peerid]['FLAGS_DECODE'] = _decoded_flags
+        # Generate a hashed packet from our template and send it.
+        peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
+        self.transport.write(peer_alive_reply_packet, (_host, _port))
+        self.reset_keep_alive(_peerid)  # Might as well reset our own counter, we know it's out there...
+        logger.debug('(%s) Keep-Alive reply sent to Peer %s', self._network, int_id(_peerid))
 
+    def peer_reg_req(self, _peerid, _host, _port):
+        peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
+        self.transport.write(peer_reg_reply_packet, (_host, _port))
+        logger.info('(%s) Peer Registration Request From: %s', self._network, int_id(_peerid))
+
+    def peer_alive_reply(self, _peerid):
+        self.reset_keep_alive(_peerid)
+        self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
+        self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
+        logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s', self._network, int_id(_peerid))
+    
+    def peer_reg_reply(self, _peerid):
+        if _peerid in self._peers.keys():
+            self._peers[_peerid]['STATUS']['CONNECTED'] = True
+            logger.info('(%s) Registration Reply From: %s', self._network, int_id(_peerid))
+    
+    def master_alive_reply(self, _peerid):
+        self.reset_keep_alive(_peerid)
+        self._master['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
+        self._master['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
+        logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s', self._network, int_id(_peerid))
+    
+    def peer_list_reply(self, _data, _peerid):
+        NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
+        if len(_data) > 18:
+            process_peer_list(_data, self._network)
+        logger.debug('(%s) Peer List Reply Recieved From Master %s', self._network, int_id(_peerid))
+    
+    def master_reg_reply(self, _data, _peerid):
+        _hex_mode      = _data[5]
+        _hex_flags     = _data[6:10]
+        _num_peers     = _data[10:12]
+        _decoded_mode  = process_mode_byte(_hex_mode)
+        _decoded_flags = process_flags_bytes(_hex_flags)
+        
+        self._local['NUM_PEERS'] = int(h(_num_peers), 16)
+        self._master['RADIO_ID'] = _peerid
+        self._master['MODE'] = _hex_mode
+        self._master['MODE_DECODE'] = _decoded_mode
+        self._master['FLAGS'] = _hex_flags
+        self._master['FLAGS_DECODE'] = _decoded_flags
+        self._master_stat['CONNECTED'] = True
+        self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
+        logger.warning('(%s) Registration response (we requested reg) from the Master %s (%s peers)', self._network, int_id(_peerid), self._local['NUM_PEERS'])
+    
+    def master_reg_req(self, _data, _peerid, _host, _port):
+        _ip_address    = _host
+        _port          = _port
+        _hex_mode      = _data[5]
+        _hex_flags     = _data[6:10]
+        _decoded_mode  = process_mode_byte(_hex_mode)
+        _decoded_flags = process_flags_bytes(_hex_flags)
+        
+        self.MASTER_REG_REPLY_PKT = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + hex_str_2(self._local['NUM_PEERS']) + IPSC_VER)
+        
+        master_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REPLY_PKT)
+        self.transport.write(master_reg_reply_packet, (_host, _port))
+        logger.debug('(%s) Master Registration Packet Received from peer %s', self._network, int_id(_peerid))
+
+        # If this entry was NOT already in our list, add it.
+        if _peerid not in self._peers.keys():
+            self._peers[_peerid] = {
+                'IP':          _ip_address, 
+                'PORT':        _port, 
+                'MODE':        _hex_mode,            
+                'MODE_DECODE': _decoded_mode,
+                'FLAGS':       _hex_flags,
+                'FLAGS_DECODE': _decoded_flags,
+                'STATUS': {
+                    'CONNECTED':               True,
+                    'KEEP_ALIVES_SENT':        0,
+                    'KEEP_ALIVES_MISSED':      0,
+                    'KEEP_ALIVES_OUTSTANDING': 0,
+                    'KEEP_ALIVES_RECEIVED':    0,
+                    'KEEP_ALIVE_RX_TIME':      int(time.time())
+                    }
+                }
+        self._local['NUM_PEERS'] = len(self._peers)       
+        logger.debug('(%s) Peer Added To Peer List: %s (IPSC now has %s Peers)', self._network, self._peers[_peerid], self._local['NUM_PEERS'])
+    
+    def master_alive_req(self, _peerid, _host, _port):
+        if _peerid in self._peers.keys():
+            self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
+            self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
+            
+            master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
+            self.transport.write(master_alive_reply_packet, (host, port))
+            
+            logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
+        else:
+            logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
+    
+    def peer_list_req(self, _peerid):
+        if _peerid in self._peers.keys():
+            logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
+            peer_list_packet = self.PEER_LIST_REPLY_PKT + build_peer_list(self._peers)
+            peer_list_packet = self.hashed_packet(self._local['AUTH_KEY'], peer_list_packet)
+            send_to_ipsc(self._network, peer_list_packet)
+        else:
+            logger.warning('(%s) Peer List Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
+
+    
     # Reset the outstanding keep-alive counter for _peerid...
     # Used when receiving acks OR when we see traffic from a repeater, since they ignore keep-alives when transmitting
     #
@@ -1078,40 +1199,20 @@ class IPSC(DatagramProtocol):
             
             # REQUESTS FROM PEERS: WE MUST REPLY IMMEDIATELY FOR IPSC MAINTENANCE
             if _packettype == PEER_ALIVE_REQ:
-                _hex_mode      = (data[5])
-                _hex_flags     = (data[6:10])
-                _decoded_mode  = process_mode_byte(_hex_mode)
-                _decoded_flags = process_flags_bytes(_hex_flags)
-                
-                self._peers[_peerid]['MODE'] = _hex_mode
-                self._peers[_peerid]['MODE_DECODE'] = _decoded_mode
-                self._peers[_peerid]['FLAGS'] = _hex_flags
-                self._peers[_peerid]['FLAGS_DECODE'] = _decoded_flags
-                # Generate a hashed packet from our template and send it.
-                peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
-                self.transport.write(peer_alive_reply_packet, (host, port))
-                self.reset_keep_alive(_peerid)  # Might as well reset our own counter, we know it's out there...
-                logger.debug('(%s) Keep-Alive reply sent to Peer %s', self._network, int_id(_peerid))
+                self.peer_alive_req(data, _peerid, host, port)
                 return
                                 
             elif _packettype == PEER_REG_REQ:
-                peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
-                self.transport.write(peer_reg_reply_packet, (host, port))
-                logger.info('(%s) Peer Registration Request From: %s', self._network, int_id(_peerid))
+                self.peer_reg_req(_peerid, host, port)
                 return
                 
             # ANSWERS FROM REQUESTS WE SENT TO PEERS: WE DO NOT REPLY
             elif _packettype == PEER_ALIVE_REPLY:
-                self.reset_keep_alive(_peerid)
-                self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
-                self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
-                logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s', self._network, int_id(_peerid))
+                self.peer_alive_reply(_peerid)
                 return                
 
             elif _packettype == PEER_REG_REPLY:
-                if _peerid in self._peers.keys():
-                    self._peers[_peerid]['STATUS']['CONNECTED'] = True
-                    logger.info('(%s) Registration Reply From: %s', self._network, int_id(_peerid))
+                self.peer_reg_reply(_peerid)
                 return
             return
             
@@ -1126,39 +1227,18 @@ class IPSC(DatagramProtocol):
             
             # ANSWERS FROM REQUESTS WE SENT TO THE MASTER: WE DO NOT REPLY    
             if _packettype == MASTER_ALIVE_REPLY:
-                self.reset_keep_alive(_peerid)
-                self._master['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
-                self._master['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
-                logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s', self._network, int_id(_peerid))
+                self.master_alive_reply(_peerid)
                 return
             
             elif _packettype == PEER_LIST_REPLY:
-                NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
-                if len(data) > 18:
-                    process_peer_list(data, self._network)
-                logger.debug('(%s) Peer List Reply Recieved From Master %s', self._network, int_id(_peerid))
+                self.peer_list_reply(data, _peerid)
                 return
             return
             
         
         # THIS MEANS WE HAVE SUCCESSFULLY REGISTERED TO OUR MASTER - RECORD MASTER INFORMATION
         elif _packettype == MASTER_REG_REPLY:
-            
-            _hex_mode      = data[5]
-            _hex_flags     = data[6:10]
-            _num_peers     = data[10:12]
-            _decoded_mode  = process_mode_byte(_hex_mode)
-            _decoded_flags = process_flags_bytes(_hex_flags)
-            
-            self._local['NUM_PEERS'] = int(h(_num_peers), 16)
-            self._master['RADIO_ID'] = _peerid
-            self._master['MODE'] = _hex_mode
-            self._master['MODE_DECODE'] = _decoded_mode
-            self._master['FLAGS'] = _hex_flags
-            self._master['FLAGS_DECODE'] = _decoded_flags
-            self._master_stat['CONNECTED'] = True
-            self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
-            logger.warning('(%s) Registration response (we requested reg) from the Master %s (%s peers)', self._network, int_id(_peerid), self._local['NUM_PEERS'])
+            self.master_reg_reply(data, _peerid)
             return
         
 
@@ -1168,70 +1248,20 @@ class IPSC(DatagramProtocol):
         
         # REQUEST TO REGISTER TO THE IPSC
         elif _packettype == MASTER_REG_REQ:
-            
-            _ip_address    = host
-            _port          = port
-            _hex_mode      = data[5]
-            _hex_flags     = data[6:10]
-            _decoded_mode  = process_mode_byte(_hex_mode)
-            _decoded_flags = process_flags_bytes(_hex_flags)
-            
-            self.MASTER_REG_REPLY_PKT = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + hex_str_2(self._local['NUM_PEERS']) + IPSC_VER)
-            
-            master_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REPLY_PKT)
-            self.transport.write(master_reg_reply_packet, (host, port))
-            logger.debug('(%s) Master Registration Packet Received from peer %s', self._network, int_id(_peerid))
-
-            # If this entry was NOT already in our list, add it.
-            if _peerid not in self._peers.keys():
-                self._peers[_peerid] = {
-                    'IP':          _ip_address, 
-                    'PORT':        _port, 
-                    'MODE':        _hex_mode,            
-                    'MODE_DECODE': _decoded_mode,
-                    'FLAGS':       _hex_flags,
-                    'FLAGS_DECODE': _decoded_flags,
-                    'STATUS': {
-                        'CONNECTED':               True,
-                        'KEEP_ALIVES_SENT':        0,
-                        'KEEP_ALIVES_MISSED':      0,
-                        'KEEP_ALIVES_OUTSTANDING': 0,
-                        'KEEP_ALIVES_RECEIVED':    0,
-                        'KEEP_ALIVE_RX_TIME':      int(time.time())
-                        }
-                    }
-            self._local['NUM_PEERS'] = len(self._peers)       
-            logger.debug('(%s) Peer Added To Peer List: %s (IPSC now has %s Peers)', self._network, self._peers[_peerid], self._local['NUM_PEERS'])            
+            master_reg_req(data, peerid, host, port)           
             return
           
         # REQUEST FOR A KEEP-ALIVE REPLY (WE KNOW THE PEER IS STILL ALIVE TOO) 
         elif _packettype == MASTER_ALIVE_REQ:
-            if _peerid in self._peers.keys():
-                self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
-                self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
-                
-                master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
-                self.transport.write(master_alive_reply_packet, (host, port))
-                
-                logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
-            else:
-                logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
+            master_alive_req(_peerid, host, port)
             return
             
         # REQUEST FOR A PEER LIST
         elif _packettype == PEER_LIST_REQ:
-            
-            if _peerid in self._peers.keys():
-                logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
-                peer_list_packet = self.PEER_LIST_REPLY_PKT + build_peer_list(self._peers)
-                peer_list_packet = self.hashed_packet(self._local['AUTH_KEY'], peer_list_packet)
-                send_to_ipsc(self._network, peer_list_packet)
-            else:
-                logger.warning('(%s) Peer List Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
+            peer_list_req(_peerid)
             return
             
-        
-        
+             
         
         # PACKET IS OF AN UNKNOWN TYPE. LOG IT AND IDENTTIFY IT!
         else:
