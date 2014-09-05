@@ -1248,7 +1248,7 @@ class IPSC(DatagramProtocol):
         
         # REQUEST TO REGISTER TO THE IPSC
         elif _packettype == MASTER_REG_REQ:
-            self.master_reg_req(data, peerid, host, port)           
+            self.master_reg_req(data, _peerid, host, port)           
             return
           
         # REQUEST FOR A KEEP-ALIVE REPLY (WE KNOW THE PEER IS STILL ALIVE TOO) 
