@@ -844,7 +844,7 @@ class IPSC(DatagramProtocol):
             self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
             
             master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
-            self.transport.write(master_alive_reply_packet, (host, port))
+            self.transport.write(master_alive_reply_packet, (_host, _port))
             
             logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
         else:
