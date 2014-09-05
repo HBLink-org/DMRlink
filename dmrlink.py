@@ -390,10 +390,10 @@ def de_register_peer(_network, _peerid):
     # Iterate for the peer in our data
     if _peerid in NETWORK[_network]['PEERS'].keys():
         del NETWORK[_network]['PEERS'][_peerid]
-        logger.info('(%s) Peer De-Registration Requested for: %s', _network, h(_peerid))
+        logger.info('(%s) Peer De-Registration Requested for: %s', _network, int_id(_peerid))
         return
     else:
-        logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', _network, h(_peerid))
+        logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', _network, int_id(_peerid))
         pass
 
 
