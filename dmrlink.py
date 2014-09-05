@@ -495,7 +495,7 @@ def process_peer_list(_data, _network):
             NETWORK[_network]['PEERS'][_hex_radio_id]['MODE_DECODE'] = _decoded_mode
             NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS'] = ''
             NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS_DECODE'] = ''
-            logger.debug('(%s) Peer Updated: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+            logger.debug('(%s) Peer Updated: %s', _network, int_id(NETWORK[_network]['PEERS'][_hex_radio_id]))
 
         # If this entry was NOT already in our list, add it.
         if _hex_radio_id not in NETWORK[_network]['PEERS'].keys():
@@ -719,20 +719,20 @@ class IPSC(DatagramProtocol):
         logger.debug('(%s) Repeater Wake-Up Packet Received: %s', _network, h(_data))
         
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, h(_src_sub), h(_peerid), h(_dst_sub))
+        logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
     
     def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
-        logger.debug('(%s) Private Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, h(_src_sub), h(_peerid), h(_dst_sub))
+        logger.debug('(%s) Private Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
     
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, h(_src_sub), h(_peerid), h(_dst_sub))
+        logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
     
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, h(_src_sub), h(_peerid), h(_dst_sub))
+        logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
         _packettype = h(_packettype)
-        logger.error('(%s) Unknown message type encountered\n\tPacket Type: %s\n\tFrom: %s\n\tPacket: %s', _network, h(_packettype), h(_peerid), h(_data))
+        logger.error('(%s) Unknown message type encountered\n\tPacket Type: %s\n\tFrom: %s\n\tPacket: %s', _network, h(_packettype), int_id(_peerid), h(_data))
 
 
     #************************************************
