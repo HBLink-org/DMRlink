@@ -522,7 +522,7 @@ def process_peer_list(_data, _network):
     for peer in NETWORK[_network]['PEERS'].keys():
         if peer not in _temp_peers:
             de_register_peer(_network, peer)
-            logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, h(peer))
+            logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, int_id(peer))
 
 # Build a peer list - used when a peer registers, re-regiseters or times out
 #
@@ -560,7 +560,7 @@ def print_peer_list(_network):
         else:
             me = ''
              
-        print('\tRADIO ID: {} {}' .format(int(h(peer), 16), me))
+        print('\tRADIO ID: {} {}' .format(int_id(peer), me))
         print('\t\tIP Address: {}:{}' .format(_this_peer['IP'], _this_peer['PORT']))
         if _this_peer['MODE_DECODE'] and REPORTS['PEER_REPORT_INC_MODE']:
             print('\t\tMode Values:')
@@ -836,14 +836,14 @@ class IPSC(DatagramProtocol):
         
         for peer in self._peers.keys():
             keep_alive_delta = update_time - self._peers[peer]['STATUS']['KEEP_ALIVE_RX_TIME']
-            logger.debug('(%s) Time Since Last KeepAlive Request from Peer %s: %s seconds', self._network, h(peer), keep_alive_delta)
+            logger.debug('(%s) Time Since Last KeepAlive Request from Peer %s: %s seconds', self._network, int_id(peer), keep_alive_delta)
           
             if keep_alive_delta > 120:
                 de_register_peer(self._network, peer)
                 peer_list_packet = self.PEER_LIST_REPLY_PKT + build_peer_list(self._peers)
                 peer_list_packet = self.hashed_packet(self._local['AUTH_KEY'], peer_list_packet)
                 send_to_ipsc(self._network, peer_list_packet)
-                logger.warning('(%s) Timeout Exceeded for Peer %s, De-registering', self._network, h(peer))
+                logger.warning('(%s) Timeout Exceeded for Peer %s, De-registering', self._network, int_id(peer))
     
     
     # Timed loop used for IPSC connection Maintenance when we are a PEER
