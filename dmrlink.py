@@ -85,7 +85,8 @@ try:
             LOGGER = {
                 'LOG_FILE': config.get(section, 'LOG_FILE'),
                 'LOG_HANDLERS': config.get(section, 'LOG_HANDLERS'),
-                'LOG_LEVEL': config.get(section, 'LOG_LEVEL')
+                'LOG_LEVEL': config.get(section, 'LOG_LEVEL'),
+                'LOG_NAME': config.get(section, 'LOG_NAME')
             }
         else:
             # All other sections define indiviual IPSC Networks we connect to
@@ -244,14 +245,14 @@ dictConfig({
         }
     },
     'loggers': {
-        'dmrlink': {
+        LOGGER['LOG_NAME']: {
             'handlers': LOGGER['LOG_HANDLERS'].split(','),
             'level': LOGGER['LOG_LEVEL'],
             'propagate': True,
         }
     }
 })
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(LOGGER['LOG_NAME'])
 
 
 #************************************************
