@@ -741,7 +741,8 @@ class IPSC(DatagramProtocol):
     
     
     # FUNTIONS FOR IPSC MAINTENANCE ACTIVITIES WE RESPOND TO
-    #
+    
+    # SOMEONE HAS SENT US A KEEP ALIVE - WE MUST ANSWER IT
     def peer_alive_req(self, _data, _peerid, _host, _port):
         _hex_mode      = (_data[5])
         _hex_flags     = (_data[6:10])
@@ -758,34 +759,41 @@ class IPSC(DatagramProtocol):
         self.reset_keep_alive(_peerid)  # Might as well reset our own counter, we know it's out there...
         logger.debug('(%s) Keep-Alive reply sent to Peer %s', self._network, int_id(_peerid))
 
+    # SOMEONE WANTS TO REGISTER WITH US - WE'RE COOL WITH THAT
     def peer_reg_req(self, _peerid, _host, _port):
         peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
         self.transport.write(peer_reg_reply_packet, (_host, _port))
         logger.info('(%s) Peer Registration Request From: %s', self._network, int_id(_peerid))
 
+
+    # SOMEONE HAS ANSWERED OUR KEEP-ALIVE REQUEST - KEEP TRACK OF IT
     def peer_alive_reply(self, _peerid):
         self.reset_keep_alive(_peerid)
         self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
         self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
         logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s', self._network, int_id(_peerid))
     
+    # SOMEONE HAS ANSWERED OUR REQEST TO REGISTER WITH THEM - KEEP TRACK OF IT
     def peer_reg_reply(self, _peerid):
         if _peerid in self._peers.keys():
             self._peers[_peerid]['STATUS']['CONNECTED'] = True
             logger.info('(%s) Registration Reply From: %s', self._network, int_id(_peerid))
     
+    # OUR MASTER HAS ANSWERED OUR KEEP-ALIVE REQUEST - KEEP TRACK OF IT
     def master_alive_reply(self, _peerid):
         self.reset_keep_alive(_peerid)
         self._master['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
         self._master['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
         logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s', self._network, int_id(_peerid))
     
+    # OUR MASTER HAS SENT US A PEER LIST - PROCESS IT
     def peer_list_reply(self, _data, _peerid):
         NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
         if len(_data) > 18:
             process_peer_list(_data, self._network)
         logger.debug('(%s) Peer List Reply Recieved From Master %s', self._network, int_id(_peerid))
     
+    # OUR MASTER HAS ANSWERED OUR REQUEST TO REGISTER - LOTS OF INFORMATION TO TRACK
     def master_reg_reply(self, _data, _peerid):
         _hex_mode      = _data[5]
         _hex_flags     = _data[6:10]
@@ -803,6 +811,7 @@ class IPSC(DatagramProtocol):
         self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
         logger.warning('(%s) Registration response (we requested reg) from the Master %s (%s peers)', self._network, int_id(_peerid), self._local['NUM_PEERS'])
     
+    # WE ARE MASTER AND SOMEONE HAS REQUESTED REGISTRATION FROM US - ANSWER IT
     def master_reg_req(self, _data, _peerid, _host, _port):
         _ip_address    = _host
         _port          = _port
@@ -838,6 +847,7 @@ class IPSC(DatagramProtocol):
         self._local['NUM_PEERS'] = len(self._peers)       
         logger.debug('(%s) Peer Added To Peer List: %s (IPSC now has %s Peers)', self._network, self._peers[_peerid], self._local['NUM_PEERS'])
     
+    # WE ARE MASTER AND SOEMONE SENT US A KEEP-ALIVE - ANSWER IT, TRACK IT
     def master_alive_req(self, _peerid, _host, _port):
         if _peerid in self._peers.keys():
             self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
@@ -850,6 +860,7 @@ class IPSC(DatagramProtocol):
         else:
             logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
     
+    # WE ARE MASTER AND A PEER HAS REQUESTED A PEER LIST - SEND THEM ONE
     def peer_list_req(self, _peerid):
         if _peerid in self._peers.keys():
             logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
@@ -870,10 +881,13 @@ class IPSC(DatagramProtocol):
         if _peerid == self._master['RADIO_ID']:
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
 
-    #
-    # NEXT THREE FUNCITONS ARE FOR AUTHENTICATED PACKETS
-    #
 
+    # THE NEXT SECTION DEFINES FUNCTIONS THAT MUST BE DIFFERENT FOR HASHED AND UNHASHED PACKETS
+    # HASHED MEANS AUTHENTICATED IPSC
+    # UNHASHED MEANS UNAUTHENTICATED IPSC
+
+    # NEXT THREE FUNCITONS ARE FOR AUTHENTICATED PACKETS
+    
     # Take a packet to be SENT, calculate auth hash and return the whole thing
     #
     def auth_hashed_packet(self, _key, _data):
@@ -897,9 +911,7 @@ class IPSC(DatagramProtocol):
         else:
             return False
     
-    #
     # NEXT THREE FUNCITONS ARE FOR UN-AUTHENTICATED PACKETS
-    #
     
     # There isn't a hash to build, so just return the data
     #
@@ -928,14 +940,17 @@ class IPSC(DatagramProtocol):
         #   IPSC connection establishment and maintenance
         #   Reporting/Housekeeping
         #
+        # IF WE'RE NOT THE MASTER...
         if not self._local['MASTER_PEER']:
             self._peer_maintenance = task.LoopingCall(self.peer_maintenance_loop)
             self._peer_maintenance_loop = self._peer_maintenance.start(self._local['ALIVE_TIMER'])
         #
+        # IF WE ARE THE MASTER...
         if self._local['MASTER_PEER']:
             self._master_maintenance = task.LoopingCall(self.master_maintenance_loop)
             self._master_maintenance_loop = self._master_maintenance.start(self._local['ALIVE_TIMER'])
         #
+        # WE ALWAYS DO THIS
         self._reporting = task.LoopingCall(self.reporting_loop)
         self._reporting_loop = self._reporting.start(REPORTS['REPORT_INTERVAL'])
     
@@ -1057,20 +1072,6 @@ class IPSC(DatagramProtocol):
                     self._peers[peer]['STATUS']['KEEP_ALIVES_SENT'] += 1
                     self._peers[peer]['STATUS']['KEEP_ALIVES_OUTSTANDING'] += 1
     
-    
-    # For public display of information, etc. - anything not part of internal logging/diagnostics
-    #
-    def _notify_event(self, network, event, info):
-        """
-            Used internally whenever an event happens that may be useful to notify the outside world about.
-            Arguments:
-                network: string, network name to look up in config
-                event:   string, basic description
-                info:    dict, in the interest of accomplishing as much as possible without code changes.
-                         The dict will typically contain the ID of a peer so the origin of the event is known.
-        """
-        pass
-    
 
 
     #************************************************
@@ -1131,25 +1132,21 @@ class IPSC(DatagramProtocol):
                 if _packettype == GROUP_VOICE:
                     self.reset_keep_alive(_peerid)
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'group_voice', {'peer': int_id(_peerid)})
                     return
             
                 elif _packettype == PVT_VOICE:
                     self.reset_keep_alive(_peerid)
                     self.private_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'private_voice', {'peer': int_id(_peerid)})
                     return
                     
                 elif _packettype == GROUP_DATA:
                     self.reset_keep_alive(_peerid)
                     self.group_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'group_data', {'peer': int_id(_peerid)})
                     return
                     
                 elif _packettype == PVT_DATA:
                     self.reset_keep_alive(_peerid)
                     self.private_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    self._notify_event(self._network, 'private_voice', {'peer': int_id(_peerid)})
                     return
                 return
                 
