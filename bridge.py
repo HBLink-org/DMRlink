@@ -47,6 +47,13 @@ __email__ = 'n0mjs@me.com'
 __status__ = 'beta'
 
 
+BURST_DATA_TYPE = {
+    'VOICE_HEAD':  '\x01',
+    'VOICE_TERM':  '\x02',
+    'SLOT1_VOICE': '\x0A',
+    'SLOT2_VOICE': '\x8A'   
+}
+
 # Notes and pieces of next steps...
 # RPT_WAKE_UP = b'\x85' + NETWORK[_network]['LOCAL']['RADIO_ID] + b'\x00\x00\x00\x01' + b'\x01' + b'\x01'
 # TS1 = 0, TS2 = 1
@@ -70,7 +77,9 @@ for _ipsc in RULES:
     for _rule in RULES[_ipsc]['GROUP_VOICE']:
         _rule['SRC_GROUP'] = hex_str_3(_rule['SRC_GROUP'])
         _rule['DST_GROUP'] = hex_str_3(_rule['DST_GROUP'])
-print()
+        _rule['SRC_TS'] = _rule['SRC_TS'] - 1
+        _rule['DST_TS'] = _rule['DST_TS'] - 1
+
 
 # Import List of Bridges
 # This is how we identify known bridges. If one of these is present
@@ -154,6 +163,30 @@ if BRIDGES:
                     _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                     # Re-Write the destination Group ID
                     _tmp_data = _tmp_data.replace(_dst_group, rule['DST_GROUP'])
+                    
+                    # Re-Write IPSC timeslot value
+                    _call_info = int_id(_data[17:18])
+                    if rule['DST_TS'] == 0:
+                        _call_info &= ~(1 << 5)
+                    elif rule['DST_TS'] == 1:
+                        _call_info |= 1 << 5
+                    _call_info = chr(_call_info)
+                    _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:] 
+                    
+                    # Re-Write DMR timeslot value
+                    # Determine if the slot is present, so we can translate if need be
+                    _burst_data_type = _data[30]
+                    if _burst_data_type == BURST_DATA_TYPE['SLOT1_VOICE'] or _burst_data_type == BURST_DATA_TYPE['SLOT2_VOICE']:
+                        _slot_valid = True
+                    else:
+                        _slot_valid = False
+                    # Re-Write timeslot if necessary...
+                    if _slot_valid:
+                        if rule['DST_TS'] == 0:
+                            _burst_data_type = BURST_DATA_TYPE['SLOT1_VOICE']
+                        elif rule['DST_TS'] == 1:
+                            _burst_data_type = BURST_DATA_TYPE['SLOT2_VOICE']
+                        _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
                 
                     # Calculate and append the authentication hash for the target network... if necessary
                     if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
@@ -184,14 +217,38 @@ else:
                 # timer = time()
             
             for rule in RULES[_network]['GROUP_VOICE']:
+                _target = rule['DST_NET']
                 # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
                 if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
                     _tmp_data = _data
-                    _target = rule['DST_NET']
                     # Re-Write the IPSC SRC to match the target network's ID
                     _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
                     # Re-Write the destination Group ID
                     _tmp_data = _tmp_data.replace(_dst_group, rule['DST_GROUP'])
+                
+                    # Re-Write IPSC timeslot value
+                    _call_info = int_id(_data[17:18])
+                    if rule['DST_TS'] == 0:
+                        _call_info &= ~(1 << 5)
+                    elif rule['DST_TS'] == 1:
+                        _call_info |= 1 << 5
+                    _call_info = chr(_call_info)
+                    _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:] 
+                    
+                    # Re-Write DMR timeslot value
+                    # Determine if the slot is present, so we can translate if need be
+                    _burst_data_type = _data[30]
+                    if _burst_data_type == BURST_DATA_TYPE['SLOT1_VOICE'] or _burst_data_type == BURST_DATA_TYPE['SLOT2_VOICE']:
+                        _slot_valid = True
+                    else:
+                        _slot_valid = False
+                    # Re-Write timeslot if necessary...
+                    if _slot_valid:
+                        if rule['DST_TS'] == 0:
+                            _burst_data_type = BURST_DATA_TYPE['SLOT1_VOICE']
+                        elif rule['DST_TS'] == 1:
+                            _burst_data_type = BURST_DATA_TYPE['SLOT2_VOICE']
+                        _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
                 
                     # Calculate and append the authentication hash for the target network... if necessary
                     if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:

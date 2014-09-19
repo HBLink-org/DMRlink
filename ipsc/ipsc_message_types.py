@@ -111,41 +111,11 @@ REPEAT = {
 }
 
 
-# Conditions for accepting certain types of messages... the cornerstone of a secure IPSC system :)
-'''
-REQ_VALID_PEER = [
-    PEER_REG_REQ,
-    PEER_REG_REPLY
-]
+# DMR IPSC Contants (in the RTP Payload)
 
-REQ_VALID_MASTER = [
-    MASTER_REG_REQ,
-    MASTER_REG_REPLY
-]
-
-REQ_MASTER_CONNECTED = [
-    CALL_MON_STATUS,
-    CALL_MON_RPT,
-    CALL_MON_NACK,
-    XCMP_XNL,
-    GROUP_VOICE,
-    PVT_VOICE,
-    GROUP_DATA,
-    GROUP_VOICE,
-    PVT_DATA,
-    RPT_WAKE_UP,
-    MASTER_ALIVE_REQ,
-    MASTER_ALIVE_REPLY,
-    DE_REG_REQ,
-    DE_REG_REPLY 
-]
-
-REQ_PEER_CONNECTED = [
-    PEER_ALIVE_REQ,
-    PEER_ALIVE_REPLY
-]
-
-REQ_VALID_MASTER_OR_PEER = [
-    REQ_VALID_PEER, REQ_VALID_MASTER
-]
-'''
+BURST_DATA_TYPE = {
+    'VOICE_HEAD':  '\x01',
+    'VOICE_TERM':  '\x02',
+    'SLOT1_VOICE': '\x0A',
+    'SLOT2_VOICE': '\x8A'   
+}
