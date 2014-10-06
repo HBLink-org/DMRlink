@@ -6,10 +6,6 @@ from binascii import b2a_hex as h
 
 import cPickle as pickle
 
-import SimpleHTTPServer
-import SocketServer
-
-
 def int_id(_hex_string):
     return int(h(_hex_string), 16)
 
@@ -27,11 +23,6 @@ def print_stats(_request, _client_address, _server):
         print('      KEEP ALIVES MISSED:   ', NETWORK[ipsc]['MASTER']['STATUS']['KEEP_ALIVES_MISSED'])
         #pprint(NETWORK[ipsc]['MASTER']['STATUS'])
 
-HTTP_PORT = 8080
-HTTP_handler = print_stats
-httpd = SocketServer.TCPServer(('', HTTP_PORT), HTTP_handler)
-httpd.serve_forever()
-    
 output_stats = task.LoopingCall(print_stats)
 output_stats.start(10)
 reactor.run()
