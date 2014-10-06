@@ -23,6 +23,8 @@ import logging
 import time
 import signal
 
+import cPickle as pickle
+
 from logging.config import dictConfig
 from hmac import new as hmac_new
 from binascii import b2a_hex as h
@@ -594,6 +596,11 @@ def print_master(_network):
                 print('\t\t\t{}: {}' .format(name, value))
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
         print('\t\t                KeepAlives Received: {},  Last KeepAlive Received at: {}' .format(_master['STATUS']['KEEP_ALIVES_RECEIVED'], _master['STATUS']['KEEP_ALIVE_RX_TIME']))
+
+def write_ipsc_stats():
+    file = open('stats.py', 'w')
+    pickle.dump(NETWORK, file)
+    file.close()
 
 # Shut ourselves down gracefully with the IPSC peers.
 #
@@ -1279,4 +1286,6 @@ if __name__ == '__main__':
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
             networks[ipsc_network] = IPSC(ipsc_network)
             reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
+    write_stats = task.LoopingCall(write_ipsc_stats)
+    write_stats.start(10)
     reactor.run()
