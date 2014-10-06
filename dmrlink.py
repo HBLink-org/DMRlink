@@ -89,7 +89,7 @@ try:
                 'LOG_LEVEL': config.get(section, 'LOG_LEVEL'),
                 'LOG_NAME': config.get(section, 'LOG_NAME')
             }
-        else:
+        elif config.getboolean(section, 'ENABLED'):
             # All other sections define indiviual IPSC Networks we connect to
             # Each IPSC network config will contain the following three sections
             NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': {}}})
