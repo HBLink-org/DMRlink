@@ -119,6 +119,7 @@ try:
                 
                 # Things we need to know to connect and be a peer in this IPSC
                 'RADIO_ID':     hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
+                'IP':           config.get(section, 'IP'),
                 'PORT':         config.getint(section, 'PORT'),
                 'ALIVE_TIMER':  config.getint(section, 'ALIVE_TIMER'),
                 'MAX_MISSED':   config.getint(section, 'MAX_MISSED'),
@@ -1285,7 +1286,7 @@ if __name__ == '__main__':
     for ipsc_network in NETWORK:
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
             networks[ipsc_network] = IPSC(ipsc_network)
-            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network])
+            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
     write_stats = task.LoopingCall(write_ipsc_stats)
     write_stats.start(10)
     reactor.run()
