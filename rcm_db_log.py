@@ -48,9 +48,9 @@ __status__ = 'Beta'
 #************************************
 #
 db_host  = '127.0.0.1'
-db_port  = 8889
+db_port  = 1234
 db_user  = 'dmrlink'
-db_pwd   = 'k0usy'
+db_pwd   = 'dmrlink'
 db_name  = 'dmrlink'
 # 
 # To change the table name, look for the line with:
@@ -74,13 +74,13 @@ class rcmIPSC(IPSC):
     #************************************************
     #
     def call_mon_status(self, _network, _data):
-        _source =   int_id(_data[1:5])
+        _source   = int_id(_data[1:5])
         _ipsc_src = int_id(_data[5:9])
-        _ts =       TS[_data[13]]
-        _status =   _data[15] # suspect [14:16] but nothing in leading byte?
-        _rf_src =   int_id(_data[16:19])
-        _rf_tgt =   int_id(_data[19:22])
-        _type =     _data[22]
+        _ts       = TS[_data[13]]
+        _status   = _data[15] # suspect [14:16] but nothing in leading byte?
+        _rf_src   = int_id(_data[16:19])
+        _rf_tgt   = int_id(_data[19:22])
+        _type     = _data[22]
 
         try:
             _status = STATUS[_status]
