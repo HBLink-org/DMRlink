@@ -735,7 +735,8 @@ class IPSC(DatagramProtocol):
     #
     def send_packet(self, _packet, (_host, _port)):
         self.transport.write(_packet, (_host, _port))
-        logger.debug('(%s) TX Packet to %s on port %s: %s', self._network, _host, _port, h(_packet))
+        # USE THE FOLLOWING ONLY UNDER DIRE CIRCUMSTANCES -- PERFORMANCE IS ADVERSLY AFFECTED!
+        #logger.debug('(%s) TX Packet to %s on port %s: %s', self._network, _host, _port, h(_packet))
         
     # Accept a complete packet, ready to be sent, and send it to all active peers + master in an IPSC
     #
