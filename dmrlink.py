@@ -875,7 +875,7 @@ class IPSC(DatagramProtocol):
             logger.debug('(%s) Peer List Request from peer %s', self._network, int_id(_peerid))
             peer_list_packet = self.PEER_LIST_REPLY_PKT + build_peer_list(self._peers)
             peer_list_packet = self.hashed_packet(self._local['AUTH_KEY'], peer_list_packet)
-            send_to_ipsc(self._network, peer_list_packet)
+            self.send_to_ipsc(peer_list_packet)
         else:
             logger.warning('(%s) Peer List Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
 
@@ -987,7 +987,7 @@ class IPSC(DatagramProtocol):
                 de_register_peer(self._network, peer)
                 peer_list_packet = self.PEER_LIST_REPLY_PKT + build_peer_list(self._peers)
                 peer_list_packet = self.hashed_packet(self._local['AUTH_KEY'], peer_list_packet)
-                send_to_ipsc(self._network, peer_list_packet)
+                self.send_to_ipsc(peer_list_packet)
                 logger.warning('(%s) Timeout Exceeded for Peer %s, De-registering', self._network, int_id(peer))
     
     # Timed loop used for IPSC connection Maintenance when we are a PEER
