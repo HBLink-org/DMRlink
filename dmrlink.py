@@ -369,24 +369,8 @@ def valid_master(_network, _peerid):
         return True     
     else:
         return False
-        
-            
-# Accept a complete packet, ready to be sent, and send it to all active peers + master in an IPSC
-#
-def send_to_ipsc(_target, _packet):
-    _network = NETWORK[_target]
-    _network_instance = networks[_target]
-    _peers = _network['PEERS']
-    
-    # Send to the Master
-    if _network['MASTER']['STATUS']['CONNECTED']:
-        _network_instance.transport.write(_packet, (_network['MASTER']['IP'], _network['MASTER']['PORT']))
-    # Send to each connected Peer
-    for peer in _peers.keys():
-        if _peers[peer]['STATUS']['CONNECTED']:
-            _network_instance.transport.write(_packet, (_peers[peer]['IP'], _peers[peer]['PORT']))
 
-    
+
 # De-register a peer from an IPSC by removing it's information
 #
 def de_register_peer(_network, _peerid):
@@ -612,7 +596,7 @@ def handler(_signal, _frame):
         this_ipsc = networks[network]
         logger.info('De-Registering from IPSC %s', network)
         de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
-        send_to_ipsc(network, de_reg_req_pkt)
+        this_ipsc.send_to_ipsc(network, de_reg_req_pkt)
     
     reactor.stop()
 
@@ -747,6 +731,23 @@ class IPSC(DatagramProtocol):
     #     IPSC SPECIFIC MAINTENANCE FUNCTIONS
     #************************************************
     
+    # Simple function to send packets - handy to have it all in one place for debugging
+    #
+    def send_packet(self, _packet, (_host, _port)):
+        self.transport.write(_packet, (_host, _port))
+        logger.debug('(%s) TX Packet to %s on port %s: %s', self._network, _host, _port, h(_packet))
+        
+    # Accept a complete packet, ready to be sent, and send it to all active peers + master in an IPSC
+    #
+    def send_to_ipsc(self, _packet):
+        # Send to the Master
+        if self._master['STATUS']['CONNECTED']:
+            self.send_packet(_packet, (self._master['IP'], self._master['PORT']))
+        # Send to each connected Peer
+        for peer in self._peers.keys():
+            if self._peers[peer]['STATUS']['CONNECTED']:
+                self.send_packet(_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
+        
     
     # FUNTIONS FOR IPSC MAINTENANCE ACTIVITIES WE RESPOND TO
     
@@ -763,14 +764,14 @@ class IPSC(DatagramProtocol):
         self._peers[_peerid]['FLAGS_DECODE'] = _decoded_flags
         # Generate a hashed packet from our template and send it.
         peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
-        self.transport.write(peer_alive_reply_packet, (_host, _port))
+        self.send_packet(peer_alive_reply_packet, (_host, _port))
         self.reset_keep_alive(_peerid)  # Might as well reset our own counter, we know it's out there...
         logger.debug('(%s) Keep-Alive reply sent to Peer %s', self._network, int_id(_peerid))
 
     # SOMEONE WANTS TO REGISTER WITH US - WE'RE COOL WITH THAT
     def peer_reg_req(self, _peerid, _host, _port):
         peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
-        self.transport.write(peer_reg_reply_packet, (_host, _port))
+        self.send_packet(peer_reg_reply_packet, (_host, _port))
         logger.info('(%s) Peer Registration Request From: %s', self._network, int_id(_peerid))
 
 
@@ -831,7 +832,7 @@ class IPSC(DatagramProtocol):
         self.MASTER_REG_REPLY_PKT = (MASTER_REG_REPLY + self._local_id + self.TS_FLAGS + hex_str_2(self._local['NUM_PEERS']) + IPSC_VER)
         
         master_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REPLY_PKT)
-        self.transport.write(master_reg_reply_packet, (_host, _port))
+        self.send_packet(master_reg_reply_packet, (_host, _port))
         logger.debug('(%s) Master Registration Packet Received from peer %s', self._network, int_id(_peerid))
 
         # If this entry was NOT already in our list, add it.
@@ -862,7 +863,7 @@ class IPSC(DatagramProtocol):
             self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
             
             master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
-            self.transport.write(master_alive_reply_packet, (_host, _port))
+            self.send_packet(master_alive_reply_packet, (_host, _port))
             
             logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
         else:
@@ -989,7 +990,6 @@ class IPSC(DatagramProtocol):
                 send_to_ipsc(self._network, peer_list_packet)
                 logger.warning('(%s) Timeout Exceeded for Peer %s, De-registering', self._network, int_id(peer))
     
-    
     # Timed loop used for IPSC connection Maintenance when we are a PEER
     #
     def peer_maintenance_loop(self):
@@ -999,14 +999,14 @@ class IPSC(DatagramProtocol):
         #
         if not self._master_stat['CONNECTED']:
             reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REQ_PKT)
-            self.transport.write(reg_packet, self._master_sock)
+            self.send_packet(reg_packet, self._master_sock)
             logger.info('(%s) Registering with the Master', self._network)
         
         # Once the master is connected, we have to send keep-alives.. and make sure we get them back
         elif self._master_stat['CONNECTED']:
             # Send keep-alive to the master
             master_alive_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_PKT)
-            self.transport.write(master_alive_packet, self._master_sock)
+            self.send_packet(master_alive_packet, self._master_sock)
             logger.debug('(%s) Keep Alive Sent to the Master', self._network)
             
             # If we had a keep-alive outstanding by the time we send another, mark it missed.
@@ -1036,7 +1036,7 @@ class IPSC(DatagramProtocol):
             # Ask the master for a peer-list
             if self._local['NUM_PEERS']:
                 peer_list_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_LIST_REQ_PKT)
-                self.transport.write(peer_list_req_packet, self._master_sock)
+                self.send_packet(peer_list_req_packet, self._master_sock)
                 logger.info('(%s), No Peer List - Requesting One From the Master', self._network)
             else:
                 self._master_stat['PEER_LIST'] = True
@@ -1056,13 +1056,13 @@ class IPSC(DatagramProtocol):
                 # If we haven't registered to a peer, send a registration
                 if not self._peers[peer]['STATUS']['CONNECTED']:
                     peer_reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REQ_PKT)
-                    self.transport.write(peer_reg_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
+                    self.send_packet(peer_reg_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
                     logger.info('(%s) Registering with Peer %s', self._network, int_id(peer))
 
                 # If we have registered with the peer, then send a keep-alive
                 elif self._peers[peer]['STATUS']['CONNECTED']:
                     peer_alive_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REQ_PKT)
-                    self.transport.write(peer_alive_req_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
+                    self.send_packet(peer_alive_req_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
                     logger.debug('(%s) Keep-Alive Sent to the Peer %s', self._network, int_id(peer))
 
                     # If we have a keep-alive outstanding by the time we send another, mark it missed.

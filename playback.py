@@ -13,7 +13,7 @@ from twisted.internet import reactor
 from binascii import b2a_hex as h
 
 import sys, time
-from dmrlink import IPSC, NETWORK, networks, logger, dmr_nat, int_id, send_to_ipsc, hex_str_3
+from dmrlink import IPSC, NETWORK, networks, logger, dmr_nat, int_id, hex_str_3
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -63,7 +63,7 @@ class playbackIPSC(IPSC):
                         _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
                         _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
                         # Send the packet to all peers in the target IPSC
-                        send_to_ipsc(_network, _tmp_data)
+                        self.send_to_ipsc(_tmp_data)
                         time.sleep(0.06)
                     self.CALL_DATA = []
                 
@@ -90,7 +90,7 @@ class playbackIPSC(IPSC):
                         _tmp_data = _tmp_data.replace(BOGUS_SUB, _orig_src)
                         _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
                         # Send the packet to all peers in the target IPSC
-                        send_to_ipsc(_network, _tmp_data)
+                        self.send_to_ipsc(_tmp_data)
                         time.sleep(0.06)
                     self.CALL_DATA = []
         

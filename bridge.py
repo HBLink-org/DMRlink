@@ -35,7 +35,7 @@ from twisted.internet import task
 from binascii import b2a_hex as h
 
 import sys
-from dmrlink import IPSC, NETWORK, networks, send_to_ipsc, dmr_nat, logger, hex_str_3, hex_str_4, int_id
+from dmrlink import IPSC, NETWORK, networks, dmr_nat, logger, hex_str_3, hex_str_4, int_id
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -192,7 +192,7 @@ if BRIDGES:
                     if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
                         _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                     # Send the packet to all peers in the target IPSC
-                    send_to_ipsc(_target, _tmp_data)
+                    networks[_target].send_to_ipsc(_tmp_data)
 
 else:
     logger.info('Initializing class methods for standard bridging')
@@ -254,7 +254,7 @@ else:
                     if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
                         _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                     # Send the packet to all peers in the target IPSC
-                    send_to_ipsc(_target, _tmp_data)
+                    networks[_target].send_to_ipsc(_tmp_data)
 
                 
                 
