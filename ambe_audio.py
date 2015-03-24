@@ -46,7 +46,12 @@ class ambeIPSC(IPSC):
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         # THIS FUNCTION IS NOT COMPLETE!!!!
         _payload_type = _data[30:31]
-        _ambe_frames = _data[33:51]
+        _ambe_frames = _data[33:52]
+        
+        if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
+            print('Voice Transmission Start')
+        if _payload_type == BURST_DATA_TYPE['VOICE_TERM']:
+            print('Voice Transmission End')
         if _payload_type == BURST_DATA_TYPE['SLOT1_VOICE']:
             print(h(_ambe_frames))
         if _payload_type == BURST_DATA_TYPE['SLOT2_VOICE']:
