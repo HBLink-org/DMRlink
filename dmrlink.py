@@ -36,7 +36,7 @@ from twisted.internet import reactor
 from twisted.internet import task
 
 __author__ = 'Cortney T. Buffington, N0MJS'
-__copyright__ = 'Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
+__copyright__ = 'Copyright (c) 2013 - 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
 __credits__ = 'Adam Fast, KC0YLK, Dave K, and he who wishes not to be named'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
 __version__ = '0.27b'
@@ -1126,7 +1126,7 @@ class IPSC(DatagramProtocol):
                 _ts         = bool(_call_info & TS_CALL_MSK)
                 _end        = bool(_call_info & END_MSK)
                 
-                # Extract RTP header fields
+                # Extract RTP Header Fields
                 '''
                 Coming soon kids!!!
                 Looks like version, padding, extention, CSIC, payload type and SSID never change.
@@ -1135,6 +1135,10 @@ class IPSC(DatagramProtocol):
                 _rtp_byte_2 = int_id(data[19:20])
                 _rtp_seq    = int_id(data[20:22])
                 _rtp_tmstmp = int_id(data[22:26])
+                _rtp_ssid = int_id(data[26:30])
+                
+                # Extract RTP Payload Data Fields
+                _payload_type = int_id(data[30:31])
                 '''
 
                 # User Voice and Data Call Types:
@@ -1281,7 +1285,7 @@ class IPSC(DatagramProtocol):
 #************************************************
 
 if __name__ == '__main__':
-    logger.info('DMRlink \'dmrlink.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
     networks = {}
     for ipsc_network in NETWORK:
