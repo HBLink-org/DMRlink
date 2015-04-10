@@ -596,7 +596,7 @@ def handler(_signal, _frame):
         this_ipsc = networks[network]
         logger.info('De-Registering from IPSC %s', network)
         de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
-        this_ipsc.send_to_ipsc(network, de_reg_req_pkt)
+        this_ipsc.send_to_ipsc(de_reg_req_pkt)
     
     reactor.stop()
 
