@@ -33,15 +33,16 @@ from __future__ import print_function
 from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as h
+from time import time
 
 import sys
 from dmrlink import IPSC, NETWORK, networks, dmr_nat, logger, hex_str_3, hex_str_4, int_id
 
 __author__ = 'Cortney T. Buffington, N0MJS'
-__copyright__ = 'Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
+__copyright__ = 'Copyright (c) 2013-2015 Cortney T. Buffington, N0MJS and the K0USY Group'
 __credits__ = 'Adam Fast, KC0YLK, Dave K, and he who wishes not to be named'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__version__ = '0.27b'
+__version__ = '0.28b'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
 __status__ = 'beta'
@@ -108,7 +109,7 @@ if BRIDGES:
         def __init__(self, *args, **kwargs):
             IPSC.__init__(self, *args, **kwargs)
             self.BRIDGE = False
-            self.ACTIVE_CALLS = []
+            self.ACTIVE_CALLS = {'TS1':0,'TS1_TIME':0,'TS2':0,'TS2_TIME':0}
             logger.info('(%s) Initializing bridge status as: %s', self._network, self.BRIDGE)
     
         # Setup the backup/polite bridging maintenance loop (based on keep-alive timer)
@@ -146,13 +147,17 @@ if BRIDGES:
         #
         def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
             logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
-            if _ts not in self.ACTIVE_CALLS:
-                self.ACTIVE_CALLS.append(_ts)
-                # send repeater wake up, but send them when a repeater is likely not TXing check time since end (see below)
-            if _end:
-                self.ACTIVE_CALLS.remove(_ts)
-                # flag the time here so we can test to see if the last call ended long enough ago to send a wake-up
-                # timer = time()
+            _burst_data_type = _data[30] # Determine the type of voice packet this is (see top of file for possible types)
+            
+            # Mark the group and time that a packet was recieved, time is null for terminator 
+            if _ts == 0:
+                self.ACTIVE_CALLS['TS1'] = _dst_group
+                self.ACTIVE_CALLS['TS1_TIME'] = time()
+            if _ts == 1:
+                self.ACTIVE_CALLS['TS2'] = _dst_group
+                self.ACTIVE_CALLS['TS2_TIME'] = time()
+            print(self.ACTIVE_CALLS)
+    
             
             for rule in RULES[_network]['GROUP_VOICE']:
                 _target = rule['DST_NET']
@@ -175,7 +180,6 @@ if BRIDGES:
                     
                     # Re-Write DMR timeslot value
                     # Determine if the slot is present, so we can translate if need be
-                    _burst_data_type = _data[30]
                     if _burst_data_type == BURST_DATA_TYPE['SLOT1_VOICE'] or _burst_data_type == BURST_DATA_TYPE['SLOT2_VOICE']:
                         _slot_valid = True
                     else:
@@ -200,7 +204,7 @@ else:
       
         def __init__(self, *args, **kwargs):
             IPSC.__init__(self, *args, **kwargs)
-            self.ACTIVE_CALLS = []
+            self.ACTIVE_CALLS = {'TS1':0,'TS1_TIME':0,'TS2':0,'TS2_TIME':0}
         
         
         #************************************************
@@ -208,13 +212,15 @@ else:
         #************************************************
         #
         def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
-            if _ts not in self.ACTIVE_CALLS:
-                self.ACTIVE_CALLS.append(_ts)
-                # send repeater wake up, but send them when a repeater is likely not TXing check time since end (see below)
-            if _end:
-                self.ACTIVE_CALLS.remove(_ts)
-                # flag the time here so we can test to see if the last call ended long enough ago to send a wake-up
-                # timer = time()
+            _burst_data_type = _data[30] # Determine the type of voice packet this is (see top of file for possible types)
+            
+            if _ts == 0:
+                self.ACTIVE_CALLS['TS1'] = _dst_group
+                self.ACTIVE_CALLS['TS1_TIME'] = time()
+            if _ts == 1:
+                self.ACTIVE_CALLS['TS2'] = _dst_group
+                self.ACTIVE_CALLS['TS2_TIME'] = time()
+            print(self.ACTIVE_CALLS)
             
             for rule in RULES[_network]['GROUP_VOICE']:
                 _target = rule['DST_NET']
@@ -237,7 +243,6 @@ else:
                     
                     # Re-Write DMR timeslot value
                     # Determine if the slot is present, so we can translate if need be
-                    _burst_data_type = _data[30]
                     if _burst_data_type == BURST_DATA_TYPE['SLOT1_VOICE'] or _burst_data_type == BURST_DATA_TYPE['SLOT2_VOICE']:
                         _slot_valid = True
                     else:
@@ -260,7 +265,7 @@ else:
                 
 
 if __name__ == '__main__':
-    logger.info('DMRlink \'bridge.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    logger.info('DMRlink \'bridge.py\' (c) 2013-2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     for ipsc_network in NETWORK:
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
             networks[ipsc_network] = bridgeIPSC(ipsc_network)
