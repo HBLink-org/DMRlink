@@ -55,9 +55,8 @@ BURST_DATA_TYPE = {
     'SLOT2_VOICE': '\x8A'   
 }
 
-# Notes and pieces of next steps...
-# RPT_WAKE_UP = b'\x85' + NETWORK[_network]['LOCAL']['RADIO_ID] + b'\x00\x00\x00\x01' + b'\x01' + b'\x01'
-# TS1 = 0, TS2 = 1
+GROUP_HANG_TIME = 5
+TS_CLEAR_TIME = .2
 
 # Import Bridging rules
 # Note: A stanza *must* exist for any IPSC configured in the main
@@ -161,6 +160,22 @@ if BRIDGES:
             
             for rule in RULES[_network]['GROUP_VOICE']:
                 _target = rule['DST_NET']
+                
+                now = time()    
+                if rule['DST_TS'] == 0:
+                    if ((networks[_target].ACTIVE_CALLS['TS1'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < GROUP_HANG_TIME)) \
+                      or ((networks[_target].ACTIVE_CALLS['TS1'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < TS_CLEAR_TIME)):
+                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                            logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 1, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                        return
+                        
+                if rule['DST_TS'] == 1:
+                    if ((networks[_target].ACTIVE_CALLS['TS2'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < GROUP_HANG_TIME)) \
+                      or ((networks[_target].ACTIVE_CALLS['TS2'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < TS_CLEAR_TIME)):
+                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                            logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 2, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                        return
+                        
                 # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
                 if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and (self.BRIDGE == True or networks[_target].BRIDGE == True):
                     _tmp_data = _data
@@ -220,10 +235,25 @@ else:
             if _ts == 1:
                 self.ACTIVE_CALLS['TS2'] = _dst_group
                 self.ACTIVE_CALLS['TS2_TIME'] = time()
-            print(self.ACTIVE_CALLS)
             
             for rule in RULES[_network]['GROUP_VOICE']:
                 _target = rule['DST_NET']
+                
+                now = time()    
+                if rule['DST_TS'] == 0:
+                    if ((networks[_target].ACTIVE_CALLS['TS1'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < GROUP_HANG_TIME)) \
+                      or ((networks[_target].ACTIVE_CALLS['TS1'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < TS_CLEAR_TIME)):
+                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                            logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 1, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                        return
+                        
+                if rule['DST_TS'] == 1:
+                    if ((networks[_target].ACTIVE_CALLS['TS2'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < GROUP_HANG_TIME)) \
+                      or ((networks[_target].ACTIVE_CALLS['TS2'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < TS_CLEAR_TIME)):
+                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                            logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 2, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                        return
+                        
                 # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
                 if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
                     _tmp_data = _data
