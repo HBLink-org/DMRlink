@@ -12,6 +12,7 @@
 from __future__ import print_function
 from twisted.internet import reactor
 from binascii import b2a_hex as h
+from bitstring import BitArray
 
 import sys
 import cPickle as pickle
@@ -46,16 +47,26 @@ class ambeIPSC(IPSC):
     def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         # THIS FUNCTION IS NOT COMPLETE!!!!
         _payload_type = _data[30:31]
-        _ambe_frames = _data[33:52]
+        _ambe_frames = BitArray('0x'+h(_data[33:52]))
+        _ambe_frame1 = _ambe_frames[0:49]
+        _ambe_frame2 = _ambe_frames[50:99]
+        _ambe_frame3 = _ambe_frames[100:149]
         
         if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
             print('Voice Transmission Start')
         if _payload_type == BURST_DATA_TYPE['VOICE_TERM']:
             print('Voice Transmission End')
         if _payload_type == BURST_DATA_TYPE['SLOT1_VOICE']:
-            print(h(_ambe_frames))
+            print(_ambe_frames)
+            print('Frame 1:', _ambe_frame1.bytes)
+            print('Frame 2:', _ambe_frame2.bytes)
+            print('Frame 3:', _ambe_frame3.bytes)
         if _payload_type == BURST_DATA_TYPE['SLOT2_VOICE']:
-            print(h(_ambe_frames))
+            print(_ambe_frames)
+            print('Frame 1:', _ambe_frame1.bytes)
+            print('Frame 2:', _ambe_frame2.bytes)
+            print('Frame 3:', _ambe_frame3.bytes)
+            
 
         
 if __name__ == '__main__':
