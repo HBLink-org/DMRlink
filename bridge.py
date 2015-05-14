@@ -216,7 +216,7 @@ if BRIDGES:
             if _ts == 0:
                 self.ACTIVE_CALLS['TS1'] = _dst_group
                 self.ACTIVE_CALLS['TS1_TIME'] = time()
-            if _ts == 1:
+            elif _ts == 1:
                 self.ACTIVE_CALLS['TS2'] = _dst_group
                 self.ACTIVE_CALLS['TS2_TIME'] = time()
 
@@ -306,7 +306,7 @@ else:
             if _ts == 0:
                 self.ACTIVE_CALLS['TS1'] = _dst_group
                 self.ACTIVE_CALLS['TS1_TIME'] = time()
-            if _ts == 1:
+            elif _ts == 1:
                 self.ACTIVE_CALLS['TS2'] = _dst_group
                 self.ACTIVE_CALLS['TS2_TIME'] = time()
 
