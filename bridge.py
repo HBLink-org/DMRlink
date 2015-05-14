@@ -55,8 +55,8 @@ BURST_DATA_TYPE = {
     'SLOT2_VOICE': '\x8A'   
 }
 
-GROUP_HANG_TIME = 5
-TS_CLEAR_TIME = .2
+GROUP_HANG_TIME = 5     # Set to whatever is used on this IPSC (what you use in repeaters)
+TS_CLEAR_TIME = .2      # Don't mess with this one
 
 # Import Bridging rules
 # Note: A stanza *must* exist for any IPSC configured in the main
@@ -148,36 +148,35 @@ if BRIDGES:
             logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
             _burst_data_type = _data[30] # Determine the type of voice packet this is (see top of file for possible types)
             
-            # Mark the group and time that a packet was recieved, time is null for terminator 
-            if _ts == 0:
-                self.ACTIVE_CALLS['TS1'] = _dst_group
-                self.ACTIVE_CALLS['TS1_TIME'] = time()
-            if _ts == 1:
-                self.ACTIVE_CALLS['TS2'] = _dst_group
-                self.ACTIVE_CALLS['TS2_TIME'] = time()
-            print(self.ACTIVE_CALLS)
-    
-            
             for rule in RULES[_network]['GROUP_VOICE']:
-                _target = rule['DST_NET']
-                
-                now = time()    
-                if rule['DST_TS'] == 0:
-                    if ((networks[_target].ACTIVE_CALLS['TS1'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < GROUP_HANG_TIME)) \
-                      or ((networks[_target].ACTIVE_CALLS['TS1'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < TS_CLEAR_TIME)):
-                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                            logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 1, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
-                        return
-                        
-                if rule['DST_TS'] == 1:
-                    if ((networks[_target].ACTIVE_CALLS['TS2'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < GROUP_HANG_TIME)) \
-                      or ((networks[_target].ACTIVE_CALLS['TS2'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < TS_CLEAR_TIME)):
-                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                            logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 2, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
-                        return
-                        
+                _target = rule['DST_NET']   # Shorthand to reduce length and make it easier to read
+                now = time()                # Mark packet arrival time -- we'll need this for call contention handling 
+
                 # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
                 if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and (self.BRIDGE == True or networks[_target].BRIDGE == True):
+                    
+                    if rule['DST_TS'] == 0:
+                        if rule['DST_GROUP'] != self.ACTIVE_CALLS['TS1'] and (now - self.ACTIVE_CALLS['TS1_TIME']) < GROUP_HANG_TIME:
+                            if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                logger.info('(%s) Call not bridged, Already bridging a call to: Destination IPSC %s, TS 1, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                            return
+                        if ((networks[_target].ACTIVE_CALLS['TS1'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < GROUP_HANG_TIME)) \
+                          or ((networks[_target].ACTIVE_CALLS['TS1'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < TS_CLEAR_TIME)):
+                            if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 1, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                            return
+                        
+                    if rule['DST_TS'] == 1:
+                        if rule['DST_GROUP'] != self.ACTIVE_CALLS['TS2'] and (now - self.ACTIVE_CALLS['TS2_TIME']) < GROUP_HANG_TIME:
+                            if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                logger.info('(%s) Call not bridged, Already bridging a call to: Destination IPSC %s, TS 2, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                            return
+                        if ((networks[_target].ACTIVE_CALLS['TS2'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < GROUP_HANG_TIME)) \
+                          or ((networks[_target].ACTIVE_CALLS['TS2'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < TS_CLEAR_TIME)):
+                            if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 2, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                            return
+                            
                     _tmp_data = _data
                     # Re-Write the IPSC SRC to match the target network's ID
                     _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
@@ -212,6 +211,14 @@ if BRIDGES:
                         _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                     # Send the packet to all peers in the target IPSC
                     networks[_target].send_to_ipsc(_tmp_data)
+
+            # Mark the group and time that a packet was recieved
+            if _ts == 0:
+                self.ACTIVE_CALLS['TS1'] = _dst_group
+                self.ACTIVE_CALLS['TS1_TIME'] = time()
+            if _ts == 1:
+                self.ACTIVE_CALLS['TS2'] = _dst_group
+                self.ACTIVE_CALLS['TS2_TIME'] = time()
 
 else:
     logger.info('Initializing class methods for standard bridging')
@@ -227,35 +234,39 @@ else:
         #************************************************
         #
         def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
+            logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
             _burst_data_type = _data[30] # Determine the type of voice packet this is (see top of file for possible types)
-            
-            if _ts == 0:
-                self.ACTIVE_CALLS['TS1'] = _dst_group
-                self.ACTIVE_CALLS['TS1_TIME'] = time()
-            if _ts == 1:
-                self.ACTIVE_CALLS['TS2'] = _dst_group
-                self.ACTIVE_CALLS['TS2_TIME'] = time()
-            
+            if _ts:
+                print('GOT PACKET')
             for rule in RULES[_network]['GROUP_VOICE']:
-                _target = rule['DST_NET']
-                
-                now = time()    
-                if rule['DST_TS'] == 0:
-                    if ((networks[_target].ACTIVE_CALLS['TS1'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < GROUP_HANG_TIME)) \
-                      or ((networks[_target].ACTIVE_CALLS['TS1'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < TS_CLEAR_TIME)):
-                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                            logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 1, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
-                        return
-                        
-                if rule['DST_TS'] == 1:
-                    if ((networks[_target].ACTIVE_CALLS['TS2'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < GROUP_HANG_TIME)) \
-                      or ((networks[_target].ACTIVE_CALLS['TS2'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < TS_CLEAR_TIME)):
-                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                            logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 2, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
-                        return
+                _target = rule['DST_NET']   # Shorthand to reduce length and make it easier to read
+                now = time()                # Mark packet arrival time -- we'll need this for call contention handling 
                         
                 # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
                 if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
+                    
+                    if rule['DST_TS'] == 0:
+                        if rule['DST_GROUP'] != self.ACTIVE_CALLS['TS1'] and (now - self.ACTIVE_CALLS['TS1_TIME']) < GROUP_HANG_TIME:
+                            if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                logger.info('(%s) Call not bridged, already bridging a call to: Destination IPSC %s, TS 1, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                            return
+                        if ((networks[_target].ACTIVE_CALLS['TS1'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < GROUP_HANG_TIME)) \
+                          or ((networks[_target].ACTIVE_CALLS['TS1'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS1_TIME']) < TS_CLEAR_TIME)):
+                            if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 1, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                            return
+                        
+                    if rule['DST_TS'] == 1:
+                        if rule['DST_GROUP'] != self.ACTIVE_CALLS['TS2'] and (now - self.ACTIVE_CALLS['TS2_TIME']) < GROUP_HANG_TIME:
+                            if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                logger.info('(%s) Call not bridged, already bridging a call to: Destination IPSC %s, TS 2, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                            return
+                        if ((networks[_target].ACTIVE_CALLS['TS2'] != rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < GROUP_HANG_TIME)) \
+                          or ((networks[_target].ACTIVE_CALLS['TS2'] == rule['DST_GROUP']) and ((now - networks[_target].ACTIVE_CALLS['TS2_TIME']) < TS_CLEAR_TIME)):
+                            if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                logger.info('(%s) Call not bridged, destination in use: Destination IPSC %s, TS 2, TGID %s', _network, _target, int_id(rule['DST_GROUP']))
+                            return
+                            
                     _tmp_data = _data
                     # Re-Write the IPSC SRC to match the target network's ID
                     _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
@@ -290,9 +301,15 @@ else:
                         _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                     # Send the packet to all peers in the target IPSC
                     networks[_target].send_to_ipsc(_tmp_data)
+                    
+            # Mark the group and time that a packet was recieved        
+            if _ts == 0:
+                self.ACTIVE_CALLS['TS1'] = _dst_group
+                self.ACTIVE_CALLS['TS1_TIME'] = time()
+            if _ts == 1:
+                self.ACTIVE_CALLS['TS2'] = _dst_group
+                self.ACTIVE_CALLS['TS2_TIME'] = time()
 
-                
-                
 
 if __name__ == '__main__':
     logger.info('DMRlink \'bridge.py\' (c) 2013-2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
