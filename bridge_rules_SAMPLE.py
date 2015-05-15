@@ -18,33 +18,27 @@ directions.
 THIS EXAMPLE WILL NOT WORK AS IT IS - YOU MUST SPECIFY NAMES AND GROUP IDS!!!
 
 NOTES:
-    * Only GROUP_VOICE is currently used by the bridge.py appication, the other
-      types are placeholders for when it does more.
+    * PRIVATE_VOICE is not yet implemented
+    * GROUP_HANGTIME should be set to the same value as the repeaters in the IPSC network
 '''
 
 RULES = {
     'IPSC_FOO': {
+        'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
             {'SRC_GROUP': 1, 'SRC_TS': 1, 'DST_NET': 'IPSC_BAR', 'DST_GROUP': 2, 'DST_TS': 2},
             # Repeat the above line for as many rules for this IPSC network as you want.
         ],
         'PRIVATE_VOICE': [
-        ],
-        'GROUP_DATA': [            
-        ],
-        'PRIVATE_DATA': [
         ]
     },
     'IPSC_BAR': {
+        'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
             {'SRC_GROUP': 2, 'SRC_TS': 2, 'DST_NET': 'IPSC_FOO', 'DST_GROUP': 1, 'DST_TS': 1},
             # Repeat the above line for as many rules for this IPSC network as you want.
         ],
         'PRIVATE_VOICE': [
-        ],
-        'GROUP_DATA': [            
-        ],
-        'PRIVATE_DATA': [
         ]
     }
 }
