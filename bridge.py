@@ -64,7 +64,7 @@ TS_CLEAR_TIME = .2
 # but it has to exist.
 #
 try:
-    from bridge_rules import RULES
+    from bridge_rules import RULES as RULES_FILE
     logger.info('Bridge rules file found and rules imported')
 except ImportError:
     sys.exit('Bridging rules file not found or invalid')
@@ -73,8 +73,8 @@ except ImportError:
 # we need to send in the actual data packets.
 #
 
-for _ipsc in RULES:
-    for _rule in RULES[_ipsc]['GROUP_VOICE']:
+for _ipsc in RULES_FILE:
+    for _rule in RULES_FILE[_ipsc]['GROUP_VOICE']:
         _rule['SRC_GROUP'] = hex_str_3(_rule['SRC_GROUP'])
         _rule['DST_GROUP'] = hex_str_3(_rule['DST_GROUP'])
         _rule['SRC_TS'] = _rule['SRC_TS'] - 1
@@ -82,8 +82,10 @@ for _ipsc in RULES:
     if _ipsc not in NETWORK:
         sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
 for _ipsc in NETWORK:
-    if _ipsc not in RULES:
+    if _ipsc not in RULES_FILE:
         sys.exit('ERROR: Bridge rules not found for all IPSC network configured')
+
+RULES = RULES_FILE
 
 # Import List of Bridges
 # This is how we identify known bridges. If one of these is present
@@ -106,7 +108,7 @@ class bridgeIPSC(IPSC):
         else:
             self.BRIDGE = True
             logger.info('Initializing standard bridging')
-        
+
         self.IPSC_STATUS = {
             'TS1': {'RX_GROUP':'\x00', 'TX_GROUP':'\x00', 'RX_TIME':0, 'TX_TIME':0, 'RX_SRC_SUB':'\x00', 'TX_SRC_SUB':'\x00'},
             'TS2': {'RX_GROUP':'\x00', 'TX_GROUP':'\x00', 'RX_TIME':0, 'TX_TIME':0, 'RX_SRC_SUB':'\x00', 'TX_SRC_SUB':'\x00'}
