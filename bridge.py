@@ -79,7 +79,11 @@ for _ipsc in RULES:
         _rule['DST_GROUP'] = hex_str_3(_rule['DST_GROUP'])
         _rule['SRC_TS'] = _rule['SRC_TS'] - 1
         _rule['DST_TS'] = _rule['DST_TS'] - 1
-
+    if _ipsc not in NETWORK:
+        sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
+for _ipsc in NETWORK:
+    if _ipsc not in RULES:
+        sys.exit('ERROR: Bridge rules not found for all IPSC network configured')
 
 # Import List of Bridges
 # This is how we identify known bridges. If one of these is present
