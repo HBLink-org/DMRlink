@@ -31,6 +31,7 @@ from binascii import b2a_hex as h
 from hashlib import sha1
 from socket import inet_ntoa as IPAddr
 from socket import inet_aton as IPHexStr
+from socket import gethostbyname 
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
@@ -119,7 +120,7 @@ try:
                 
                 # Things we need to know to connect and be a peer in this IPSC
                 'RADIO_ID':     hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
-                'IP':           config.get(section, 'IP'),
+                'IP':           gethostbyname(config.get(section, 'IP')),
                 'PORT':         config.getint(section, 'PORT'),
                 'ALIVE_TIMER':  config.getint(section, 'ALIVE_TIMER'),
                 'MAX_MISSED':   config.getint(section, 'MAX_MISSED'),
