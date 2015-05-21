@@ -148,7 +148,7 @@ try:
                 })
             if not NETWORK[section]['LOCAL']['MASTER_PEER']:
                 NETWORK[section]['MASTER'].update({
-                    'IP': config.get(section, 'MASTER_IP'),
+                    'IP': gethostbyname(config.get(section, 'MASTER_IP')),
                     'PORT': config.getint(section, 'MASTER_PORT')
                 })
             
