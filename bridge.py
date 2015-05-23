@@ -156,11 +156,12 @@ class bridgeIPSC(IPSC):
         elif _ts == 1:
             _TS = 'TS2'
         
+        now = time()                                # Mark packet arrival time -- we'll need this for call contention handling 
+        
         for rule in RULES[_network]['GROUP_VOICE']:
             _target = rule['DST_NET']               # Shorthand to reduce length and make it easier to read
             _status = networks[_target].IPSC_STATUS # Shorthand to reduce length and make it easier to read
-            now = time()                            # Mark packet arrival time -- we'll need this for call contention handling 
-                    
+
             # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
             #if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
             #if BRIDGES:
@@ -233,7 +234,7 @@ class bridgeIPSC(IPSC):
         logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
         
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
+        logger.info('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
         
         for rule in RULES[_network]['PRIVATE_DATA']:
             _target = rule                          # Shorthand to reduce length and make it easier to read
