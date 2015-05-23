@@ -234,7 +234,7 @@ class bridgeIPSC(IPSC):
         logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
         
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
-        logger.info('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
+        logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
         
         for rule in RULES[_network]['PRIVATE_DATA']:
             _target = rule                          # Shorthand to reduce length and make it easier to read
