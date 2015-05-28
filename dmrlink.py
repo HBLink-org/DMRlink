@@ -1101,8 +1101,8 @@ class IPSC(DatagramProtocol):
     def datagramReceived(self, data, (host, port)):
 
         # Loop timing test, uncomment the next two lines. Use for testing only.
-        _pkt_id = randint(0,10000)
-        _pkt_time = time.time()
+        #_pkt_id = randint(0,10000)
+        #_pkt_time = time.time()
 
         _packettype = data[0:1]
         _peerid     = data[1:5]
@@ -1155,7 +1155,7 @@ class IPSC(DatagramProtocol):
                     
                     # Loop timing test, uncomment the next two lines. Use for testing only.
                     #_pkt_proc_time = (time.time() - _pkt_time) * 1000
-                    #print('TIMING: Group voice packet ID {} took {} ms'.format(_pkt_id, _pkt_proc_time))
+                    #logger.info('TIMING: Group voice packet ID %s took %s ms', _pkt_id, _pkt_proc_time)
                     
                     return
             
