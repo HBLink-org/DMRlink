@@ -35,6 +35,7 @@ from socket import gethostbyname
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
+from random import randint
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013 - 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -1098,6 +1099,11 @@ class IPSC(DatagramProtocol):
     # Callbacks are iterated in the order of "more likely" to "less likely" to reduce processing time
     #
     def datagramReceived(self, data, (host, port)):
+
+        # Loop timing test, uncomment the next two lines. Use for testing only.
+        _pkt_id = randint(0,10000)
+        _pkt_time = time.time()
+
         _packettype = data[0:1]
         _peerid     = data[1:5]
         _ipsc_seq   = data[5:6]
@@ -1146,6 +1152,11 @@ class IPSC(DatagramProtocol):
                 if _packettype == GROUP_VOICE:
                     self.reset_keep_alive(_peerid)
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
+                    
+                    # Loop timing test, uncomment the next two lines. Use for testing only.
+                    #_pkt_proc_time = (time.time() - _pkt_time) * 1000
+                    #print('TIMING: Group voice packet ID {} took {} ms'.format(_pkt_id, _pkt_proc_time))
+                    
                     return
             
                 elif _packettype == PVT_VOICE:
