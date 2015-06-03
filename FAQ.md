@@ -1,7 +1,7 @@
 ##DMRlink FAQ
 **PURPOSE:** Since DMRlink was published, a number of similar questions have come in regarding it's use. This FAQ will attempt to address common questions or concerns.
 
-**Can DMRlink bridge networks like a c-Bridge?** Yes, it can bridge IPSC networks, but no, not not quite like a c-Bridge. DMRlink is able to bridge IPSC networks, it is able to selectively "choose" which TGIDs to bridge and which not to bridge, and it can re-write the TGID, but it cannot change the timeslot of a transmission. If it comes in on TS1, it will have to go back out on TS1. It also does not have automatic scheduling or "trigggering" of bridge events.
+**Can DMRlink bridge networks like a c-Bridge?** Yes, bridge.py can bridge IPSC networks, but no, not not quite like a c-Bridge. It does not have automatic scheduling or "trigggering" of bridge events. Currently bridge rules must all be static.
 
 **Someone said DMRlink "bricked" their repeater, is it safe to use?** DMRlink has no abilty to speak the XNL/XCMP protocol (which involves encrypted keys) that Motorla uses to control radios and repeaters. DMRlink simply cannot even remotely speak the language necessary to do this.
 
