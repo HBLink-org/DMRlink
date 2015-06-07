@@ -675,7 +675,7 @@ class IPSC(DatagramProtocol):
             self.DE_REG_REQ_PKT         = (DE_REG_REQ + self._local_id)
             self.DE_REG_REPLY_PKT       = (DE_REG_REPLY + self._local_id)
             #
-            logger.info('(%s) IPSC Instance Created', self._network)
+            logger.info('(%s) IPSC Instance Created: %s, %s:%s', self._network, int_id(self._local['RADIO_ID']), self._local['IP'], self._local['PORT'])
         else:
             # If we didn't get called correctly, log it!
             #
@@ -769,7 +769,7 @@ class IPSC(DatagramProtocol):
         peer_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REPLY_PKT)
         self.send_packet(peer_alive_reply_packet, (_host, _port))
         self.reset_keep_alive(_peerid)  # Might as well reset our own counter, we know it's out there...
-        logger.debug('(%s) Keep-Alive reply sent to Peer %s', self._network, int_id(_peerid))
+        logger.debug('(%s) Keep-Alive reply sent to Peer %s, %s:%s', self._network, int_id(_peerid), _host, _port)
 
     # SOMEONE WANTS TO REGISTER WITH US - WE'RE COOL WITH THAT
     def peer_reg_req(self, _peerid, _host, _port):
@@ -783,27 +783,27 @@ class IPSC(DatagramProtocol):
         self.reset_keep_alive(_peerid)
         self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
         self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
-        logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s', self._network, int_id(_peerid))
+        logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s, %s:%s', self._network, int_id(_peerid), self._peers[_peerid]['IP'], self._peers[_peerid]['PORT'])
     
     # SOMEONE HAS ANSWERED OUR REQEST TO REGISTER WITH THEM - KEEP TRACK OF IT
     def peer_reg_reply(self, _peerid):
         if _peerid in self._peers.keys():
             self._peers[_peerid]['STATUS']['CONNECTED'] = True
-            logger.info('(%s) Registration Reply From: %s', self._network, int_id(_peerid))
+            logger.info('(%s) Registration Reply From: %s, %s:%s', self._network, int_id(_peerid), self._peers[_peerid]['IP'], self._peers[_peerid]['PORT'])
     
     # OUR MASTER HAS ANSWERED OUR KEEP-ALIVE REQUEST - KEEP TRACK OF IT
     def master_alive_reply(self, _peerid):
         self.reset_keep_alive(_peerid)
         self._master['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
         self._master['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
-        logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s', self._network, int_id(_peerid))
+        logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s, %s:%s', self._network, int_id(_peerid), self._master['IP'], self._master['PORT'])
     
     # OUR MASTER HAS SENT US A PEER LIST - PROCESS IT
     def peer_list_reply(self, _data, _peerid):
         NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
         if len(_data) > 18:
             process_peer_list(_data, self._network)
-        logger.debug('(%s) Peer List Reply Recieved From Master %s', self._network, int_id(_peerid))
+        logger.debug('(%s) Peer List Reply Recieved From Master %s, %s:%s', self._network, int_id(_peerid), self._master['IP'], self._master['PORT'])
     
     # OUR MASTER HAS ANSWERED OUR REQUEST TO REGISTER - LOTS OF INFORMATION TO TRACK
     def master_reg_reply(self, _data, _peerid):
@@ -821,7 +821,7 @@ class IPSC(DatagramProtocol):
         self._master['FLAGS_DECODE'] = _decoded_flags
         self._master_stat['CONNECTED'] = True
         self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
-        logger.warning('(%s) Registration response (we requested reg) from the Master %s (%s peers)', self._network, int_id(_peerid), self._local['NUM_PEERS'])
+        logger.warning('(%s) Registration response (we requested reg) from the Master: %s, %s:%s (%s peers)', self._network, int_id(_peerid), self._master['IP'], self._master['PORT'], self._local['NUM_PEERS'])
     
     # WE ARE MASTER AND SOMEONE HAS REQUESTED REGISTRATION FROM US - ANSWER IT
     def master_reg_req(self, _data, _peerid, _host, _port):
@@ -1003,25 +1003,25 @@ class IPSC(DatagramProtocol):
         if not self._master_stat['CONNECTED']:
             reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REQ_PKT)
             self.send_packet(reg_packet, self._master_sock)
-            logger.info('(%s) Registering with the Master', self._network)
+            logger.info('(%s) Registering with the Master: %s:%s', self._network, self._master['IP'], self._master['PORT'])
         
         # Once the master is connected, we have to send keep-alives.. and make sure we get them back
         elif self._master_stat['CONNECTED']:
             # Send keep-alive to the master
             master_alive_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_PKT)
             self.send_packet(master_alive_packet, self._master_sock)
-            logger.debug('(%s) Keep Alive Sent to the Master', self._network)
+            logger.debug('(%s) Keep Alive Sent to the Master: %s, %s:%s', self._network, int_id(self._master['RADIO_ID']) ,self._master['IP'], self._master['PORT'])
             
             # If we had a keep-alive outstanding by the time we send another, mark it missed.
             if (self._master_stat['KEEP_ALIVES_OUTSTANDING']) > 0:
                 self._master_stat['KEEP_ALIVES_MISSED'] += 1
-                logger.info('(%s) Master Keep-Alive Missed', self._network)
+                logger.info('(%s) Master Keep-Alive Missed: %s:%s', self._network, self._master['IP'], self._master['PORT'])
             
             # If we have missed too many keep-alives, de-register the master and start over.
             if self._master_stat['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                 self._master_stat['CONNECTED'] = False
                 self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
-                logger.error('(%s) Maximum Master Keep-Alives Missed -- De-registering the Master', self._network)
+                logger.error('(%s) Maximum Master Keep-Alives Missed -- De-registering the Master: %s:%s', self._network, self._master['IP'], self._master['PORT'])
             
             # Update our stats before we move on...
             self._master_stat['KEEP_ALIVES_SENT'] += 1
@@ -1029,7 +1029,7 @@ class IPSC(DatagramProtocol):
             
         else:
             # This is bad. If we get this message, we need to reset the state and try again
-            logger.error('->> (%s) Master in UNKOWN STATE:%s:%s', self._network, self._master_sock)
+            logger.error('->> (%s) Master in UNKOWN STATE: %s:%s', self._network, self._master_sock)
             self._master_stat['CONNECTED'] = False
         
         
@@ -1060,24 +1060,24 @@ class IPSC(DatagramProtocol):
                 if not self._peers[peer]['STATUS']['CONNECTED']:
                     peer_reg_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REQ_PKT)
                     self.send_packet(peer_reg_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
-                    logger.info('(%s) Registering with Peer %s', self._network, int_id(peer))
+                    logger.info('(%s) Registering with Peer %s, %s:%s', self._network, int_id(peer), self._peers[peer]['IP'], self._peers[peer]['PORT'])
 
                 # If we have registered with the peer, then send a keep-alive
                 elif self._peers[peer]['STATUS']['CONNECTED']:
                     peer_alive_req_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_ALIVE_REQ_PKT)
                     self.send_packet(peer_alive_req_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
-                    logger.debug('(%s) Keep-Alive Sent to the Peer %s', self._network, int_id(peer))
+                    logger.debug('(%s) Keep-Alive Sent to the Peer %s, %s:%s', self._network, int_id(peer), self._peers[peer]['IP'], self._peers[peer]['PORT'])
 
                     # If we have a keep-alive outstanding by the time we send another, mark it missed.
                     if self._peers[peer]['STATUS']['KEEP_ALIVES_OUTSTANDING'] > 0:
                         self._peers[peer]['STATUS']['KEEP_ALIVES_MISSED'] += 1
-                        logger.info('(%s) Peer Keep-Alive Missed for %s', self._network, int_id(peer))
+                        logger.info('(%s) Peer Keep-Alive Missed for %s, %s:%s', self._network, int_id(peer), self._peers[peer]['IP'], self._peers[peer]['PORT'])
 
                     # If we have missed too many keep-alives, de-register the peer and start over.
                     if self._peers[peer]['STATUS']['KEEP_ALIVES_OUTSTANDING'] >= self._local['MAX_MISSED']:
                         self._peers[peer]['STATUS']['CONNECTED'] = False
                         #del peer   # Becuase once it's out of the dictionary, you can't use it for anything else.
-                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s', self._network, int_id(peer))
+                        logger.warning('(%s) Maximum Peer Keep-Alives Missed -- De-registering the Peer: %s, %s:%s', self._network, int_id(peer), self._peers[peer]['IP'], self._peers[peer]['PORT'])
                     
                     # Update our stats before moving on...
                     self._peers[peer]['STATUS']['KEEP_ALIVES_SENT'] += 1
