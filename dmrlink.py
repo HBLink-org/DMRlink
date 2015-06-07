@@ -77,10 +77,10 @@ try:
         elif section == 'REPORTS':
             # Process REPORTS items in the configuration
             REPORTS = {
-                'REPORT_PEERS': config.getboolean(section, 'REPORT_PEERS'),
+                'REPORT_NETWORKS': config.get(section, 'REPORT_NETWORKS'),
                 'REPORT_INTERVAL': config.getint(section, 'REPORT_INTERVAL'),
-                'PEER_REPORT_INC_MODE': config.getboolean(section, 'PEER_REPORT_INC_MODE'),
-                'PEER_REPORT_INC_FLAGS': config.getboolean(section, 'PEER_REPORT_INC_FLAGS')
+                'PRINT_PEERS_INC_MODE': config.getboolean(section, 'PRINT_PEERS_INC_MODE'),
+                'PRINT_PEERS_INC_FLAGS': config.getboolean(section, 'PRINT_PEERS_INC_FLAGS')
             }
 
         elif section == 'LOGGER':
@@ -551,11 +551,11 @@ def print_peer_list(_network):
              
         print('\tRADIO ID: {} {}' .format(int_id(peer), me))
         print('\t\tIP Address: {}:{}' .format(_this_peer['IP'], _this_peer['PORT']))
-        if _this_peer['MODE_DECODE'] and REPORTS['PEER_REPORT_INC_MODE']:
+        if _this_peer['MODE_DECODE'] and REPORTS['PRINT_PEERS_INC_MODE']:
             print('\t\tMode Values:')
             for name, value in _this_peer['MODE_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
-        if _this_peer['FLAGS_DECODE'] and REPORTS['PEER_REPORT_INC_FLAGS']:
+        if _this_peer['FLAGS_DECODE'] and REPORTS['PRINT_PEERS_INC_FLAGS']:
             print('\t\tService Flags:')
             for name, value in _this_peer['FLAGS_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
@@ -573,11 +573,11 @@ def print_master(_network):
         _master = NETWORK[_network]['MASTER']
         print('Master for %s' % _network)
         print('\tRADIO ID: {}' .format(int(h(_master['RADIO_ID']), 16)))
-        if _master['MODE_DECODE'] and REPORTS['PEER_REPORT_INC_MODE']:
+        if _master['MODE_DECODE'] and REPORTS['PRINT_PEERS_INC_MODE']:
             print('\t\tMode Values:')
             for name, value in _master['MODE_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
-        if _master['FLAGS_DECODE'] and REPORTS['PEER_REPORT_INC_FLAGS']:
+        if _master['FLAGS_DECODE'] and REPORTS['PRINT_PEERS_INC_FLAGS']:
             print('\t\tService Flags:')
             for name, value in _master['FLAGS_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
@@ -962,19 +962,29 @@ class IPSC(DatagramProtocol):
             self._master_maintenance = task.LoopingCall(self.master_maintenance_loop)
             self._master_maintenance_loop = self._master_maintenance.start(self._local['ALIVE_TIMER'])
         #
-        # WE ALWAYS DO THIS
-        self._reporting = task.LoopingCall(self.reporting_loop)
-        self._reporting_loop = self._reporting.start(REPORTS['REPORT_INTERVAL'])
+        # INITIALIZE THE REPORTING LOOP IF CONFIGURED
+        if REPORTS['REPORT_NETWORKS']:
+            self._reporting = task.LoopingCall(self.reporting_loop)
+            self._reporting_loop = self._reporting.start(REPORTS['REPORT_INTERVAL'])
     
     
     # Timed loop used for reporting IPSC status
     #
-    def reporting_loop(self):
-        # Right now, without this, we really don't know anything is happening.
-        logger.debug('(%s) Periodic Reporting Loop Started', self._network)
-        if REPORTS['REPORT_PEERS']:
+    # REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
+    if REPORTS['REPORT_NETWORKS'] == 'PICKLE':
+        def reporting_loop(self):  
+            logger.debug('(%s) Periodic Reporting Loop Started', self._network)
+            
+    elif REPORTS['REPORT_NETWORKS'] == 'JSON':
+        def reporting_loop(self):  
+            logger.debug('(%s) Periodic Reporting Loop Started', self._network)
+            
+    elif REPORTS['REPORT_NETWORKS'] == 'PRINT':
+        def reporting_loop(self):      
+            logger.debug('(%s) Periodic Reporting Loop Started', self._network)
             print_master(self._network)
             print_peer_list(self._network)
+
     
     # Timed loop used for IPSC connection Maintenance when we are the MASTER
     #    
