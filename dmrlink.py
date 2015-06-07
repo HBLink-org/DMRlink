@@ -775,7 +775,7 @@ class IPSC(DatagramProtocol):
     def peer_reg_req(self, _peerid, _host, _port):
         peer_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.PEER_REG_REPLY_PKT)
         self.send_packet(peer_reg_reply_packet, (_host, _port))
-        logger.info('(%s) Peer Registration Request From: %s', self._network, int_id(_peerid))
+        logger.info('(%s) Peer Registration Request From: %s, %s:%s', self._network, int_id(_peerid), _host, _port)
 
 
     # SOMEONE HAS ANSWERED OUR KEEP-ALIVE REQUEST - KEEP TRACK OF IT
@@ -836,7 +836,7 @@ class IPSC(DatagramProtocol):
         
         master_reg_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_REG_REPLY_PKT)
         self.send_packet(master_reg_reply_packet, (_host, _port))
-        logger.debug('(%s) Master Registration Packet Received from peer %s', self._network, int_id(_peerid))
+        logger.info('(%s) Master Registration Packet Received from peer %s, %s:%s', self._network, int_id(_peerid), _host, _port)
 
         # If this entry was NOT already in our list, add it.
         if _peerid not in self._peers.keys():
@@ -857,7 +857,7 @@ class IPSC(DatagramProtocol):
                     }
                 }
         self._local['NUM_PEERS'] = len(self._peers)       
-        logger.debug('(%s) Peer Added To Peer List: %s (IPSC now has %s Peers)', self._network, self._peers[_peerid], self._local['NUM_PEERS'])
+        logger.debug('(%s) Peer Added To Peer List: %s, %s:%s (IPSC now has %s Peers)', self._network, self._peers[_peerid], _host, _port, self._local['NUM_PEERS'])
     
     # WE ARE MASTER AND SOEMONE SENT US A KEEP-ALIVE - ANSWER IT, TRACK IT
     def master_alive_req(self, _peerid, _host, _port):
@@ -868,9 +868,9 @@ class IPSC(DatagramProtocol):
             master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
             self.send_packet(master_alive_reply_packet, (_host, _port))
             
-            logger.debug('(%s) Master Keep-Alive Request Received from peer %s', self._network, int_id(_peerid))
+            logger.debug('(%s) Master Keep-Alive Request Received from peer %s, %s:%s', self._network, int_id(_peerid), _host, _port)
         else:
-            logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s', self._network, int_id(_peerid))
+            logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s, %s:%s', self._network, int_id(_peerid), _host_port)
     
     # WE ARE MASTER AND A PEER HAS REQUESTED A PEER LIST - SEND THEM ONE
     def peer_list_req(self, _peerid):
@@ -1110,7 +1110,7 @@ class IPSC(DatagramProtocol):
         
         # AUTHENTICATE THE PACKET
         if not self.validate_auth(self._local['AUTH_KEY'], data):
-            logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer ID: %s', self._network, h(_packettype), int_id(_peerid))
+            logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer: %s, %s:%s', self._network, h(_packettype), int_id(_peerid), host, port)
             return
             
         # REMOVE SHA-1 AUTHENTICATION HASH: WE NO LONGER NEED IT
@@ -1119,7 +1119,7 @@ class IPSC(DatagramProtocol):
         # PACKETS THAT WE RECEIVE FROM ANY VALID PEER OR VALID MASTER
         if _packettype in ANY_PEER_REQUIRED:
             if not(valid_master(self._network, _peerid) == False or valid_peer(self._peers.keys(), _peerid) == False):
-                logger.warning('(%s) PeerError: Peer not in peer-list: %s', self._network, int_id(_peerid))
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s, %s:%s', self._network, int_id(_peerid), host, port)
                 return
                 
             # ORIGINATED BY SUBSCRIBER UNITS - a.k.a someone transmitted
@@ -1196,16 +1196,16 @@ class IPSC(DatagramProtocol):
             # IPSC CONNECTION MAINTENANCE MESSAGES
             elif _packettype == DE_REG_REQ:
                 de_register_peer(self._network, _peerid)
-                logger.warning('(%s) Peer De-Registration Request From: %s', self._network, int_id(_peerid))
+                logger.warning('(%s) Peer De-Registration Request From: %s, %s:%s', self._network, int_id(_peerid), host, port)
                 return
             
             elif _packettype == DE_REG_REPLY:
-                logger.warning('(%s) Peer De-Registration Reply From: %s', self._network, int_id(_peerid))
+                logger.warning('(%s) Peer De-Registration Reply From: %s, %s:%s', self._network, int_id(_peerid), host, port)
                 return
                 
             elif _packettype == RPT_WAKE_UP:
                 self.repeater_wake_up(self._network, data)
-                logger.debug('(%s) Repeater Wake-Up Packet From: %s', self._network, int_id(_peerid))
+                logger.debug('(%s) Repeater Wake-Up Packet From: %s, %s:%s', self._network, int_id(_peerid), host, port)
                 return
             return
 
@@ -1216,7 +1216,7 @@ class IPSC(DatagramProtocol):
         # ONLY ACCEPT FROM A PREVIOUSLY VALIDATED PEER
         if _packettype in PEER_REQUIRED:
             if not valid_peer(self._peers.keys(), _peerid):
-                logger.warning('(%s) PeerError: Peer %s not in peer-list', self._network, int_id(_peerid))
+                logger.warning('(%s) PeerError: Peer not in peer-list: %s, %s:%s', self._network, int_id(_peerid), host, port)
                 return
             
             # REQUESTS FROM PEERS: WE MUST REPLY IMMEDIATELY FOR IPSC MAINTENANCE
@@ -1244,7 +1244,7 @@ class IPSC(DatagramProtocol):
         # PACKETS WE ONLY ACCEPT IF WE HAVE FINISHED REGISTERING WITH OUR MASTER
         if _packettype in MASTER_REQUIRED:
             if not valid_master(self._network, _peerid):
-                logger.warning('(%s) MasterError: %s is not the master peer', self._network, int_id(_peerid))
+                logger.warning('(%s) MasterError: %s, %s:%s is not the master peer', self._network, int_id(_peerid), host, port)
                 return
             
             # ANSWERS FROM REQUESTS WE SENT TO THE MASTER: WE DO NOT REPLY    
