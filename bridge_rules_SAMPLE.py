@@ -20,10 +20,14 @@ THIS EXAMPLE WILL NOT WORK AS IT IS - YOU MUST SPECIFY NAMES AND GROUP IDS!!!
 NOTES:
     * PRIVATE_VOICE is not yet implemented
     * GROUP_HANGTIME should be set to the same value as the repeaters in the IPSC network
+    * TRUNK is a boolean set to True only for DMRlink to DMRlink IPSCs that need to move 
+        multiple packet streams that may match the same TS - this essentially makes the
+        source,timeslot,talkgroup ID a tuple to indentify an arbitrary number of streams
 '''
 
 RULES = {
     'IPSC_FOO': {
+        'TRUNK': False,
         'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
             {'SRC_GROUP': 1, 'SRC_TS': 1, 'DST_NET': 'IPSC_BAR', 'DST_GROUP': 2, 'DST_TS': 2},
@@ -33,6 +37,7 @@ RULES = {
         ]
     },
     'IPSC_BAR': {
+        'TRUNK': False,
         'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
             {'SRC_GROUP': 2, 'SRC_TS': 2, 'DST_NET': 'IPSC_FOO', 'DST_GROUP': 1, 'DST_TS': 1},
