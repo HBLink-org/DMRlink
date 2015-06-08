@@ -79,6 +79,7 @@ try:
             REPORTS = {
                 'REPORT_NETWORKS': config.get(section, 'REPORT_NETWORKS'),
                 'REPORT_INTERVAL': config.getint(section, 'REPORT_INTERVAL'),
+                'REPORT_PATH': config.get(section, 'REPORT_PATH'),
                 'PRINT_PEERS_INC_MODE': config.getboolean(section, 'PRINT_PEERS_INC_MODE'),
                 'PRINT_PEERS_INC_FLAGS': config.getboolean(section, 'PRINT_PEERS_INC_FLAGS')
             }
@@ -973,15 +974,19 @@ class IPSC(DatagramProtocol):
     # REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
     if REPORTS['REPORT_NETWORKS'] == 'PICKLE':
         def reporting_loop(self):  
-            logger.debug('(%s) Periodic Reporting Loop Started', self._network)
+            logger.debug('(%s) Periodic Reporting Loop Started (PICKLE)', self._network)
             
     elif REPORTS['REPORT_NETWORKS'] == 'JSON':
         def reporting_loop(self):  
-            logger.debug('(%s) Periodic Reporting Loop Started', self._network)
+            logger.debug('(%s) Periodic Reporting Loop Started (JSON)', self._network)
+    
+    elif REPORTS['REPORT_NETWORKS'] == 'REDIS':
+        def reporting_loop(self):  
+            logger.debug('(%s) Periodic Reporting Loop Started (REDIS)', self._network)
             
     elif REPORTS['REPORT_NETWORKS'] == 'PRINT':
         def reporting_loop(self):      
-            logger.debug('(%s) Periodic Reporting Loop Started', self._network)
+            logger.debug('(%s) Periodic Reporting Loop Started (PRINT)', self._network)
             print_master(self._network)
             print_peer_list(self._network)
 
