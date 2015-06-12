@@ -13,3 +13,5 @@ known_bridges.py
 *.lcl
 *.conf
 *.config
+*.json
+*.pickle

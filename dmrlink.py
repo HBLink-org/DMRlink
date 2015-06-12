@@ -36,6 +36,8 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
 from random import randint
+from time import time
+from json import dumps as json_dump
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013 - 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -584,11 +586,41 @@ def print_master(_network):
                 print('\t\t\t{}: {}' .format(name, value))
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
         print('\t\t                KeepAlives Received: {},  Last KeepAlive Received at: {}' .format(_master['STATUS']['KEEP_ALIVES_RECEIVED'], _master['STATUS']['KEEP_ALIVE_RX_TIME']))
+    
+    
+# Timed loop used for reporting IPSC status
+#
+# REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
+if REPORTS['REPORT_NETWORKS'] == 'PICKLE':
+    def reporting_loop():  
+        logger.debug('Periodic Reporting Loop Started (PICKLE)')
+        try:
+            with open(REPORTS['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
+                pass
+                file.close()
+        except IOError as detail:
+            logger.error('I/O Error: %s', detail)
+        
+elif REPORTS['REPORT_NETWORKS'] == 'JSON':
+    def reporting_loop():
+        logger.info('Periodic Reporting Loop Started (JSON)')
+        try:
+            with open(REPORTS['REPORT_PATH']+'dmrlink_stats.json', 'wb') as file:
+                pass
+                file.close()
+        except IOError as detail:
+            logger.error('I/O Error: %s', detail)
 
-def write_ipsc_stats():
-    file = open('stats.py', 'w')
-    pickle.dump(NETWORK, file)
-    file.close()
+elif REPORTS['REPORT_NETWORKS'] == 'REDIS':
+    def reporting_loop():  
+        logger.debug('Periodic Reporting Loop Started (REDIS)')
+        
+elif REPORTS['REPORT_NETWORKS'] == 'PRINT':
+    def reporting_loop():      
+        logger.debug('Periodic Reporting Loop Started (PRINT)')
+        print_master(NETWORK)
+        print_peer_list(NETWORK)
+
 
 # Shut ourselves down gracefully with the IPSC peers.
 #
@@ -783,7 +815,7 @@ class IPSC(DatagramProtocol):
     def peer_alive_reply(self, _peerid):
         self.reset_keep_alive(_peerid)
         self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
-        self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
+        self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time())
         logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from Peer %s, %s:%s', self._network, int_id(_peerid), self._peers[_peerid]['IP'], self._peers[_peerid]['PORT'])
     
     # SOMEONE HAS ANSWERED OUR REQEST TO REGISTER WITH THEM - KEEP TRACK OF IT
@@ -796,7 +828,7 @@ class IPSC(DatagramProtocol):
     def master_alive_reply(self, _peerid):
         self.reset_keep_alive(_peerid)
         self._master['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
-        self._master['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
+        self._master['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time())
         logger.debug('(%s) Keep-Alive Reply (we sent the request) Received from the Master %s, %s:%s', self._network, int_id(_peerid), self._master['IP'], self._master['PORT'])
     
     # OUR MASTER HAS SENT US A PEER LIST - PROCESS IT
@@ -854,7 +886,7 @@ class IPSC(DatagramProtocol):
                     'KEEP_ALIVES_MISSED':      0,
                     'KEEP_ALIVES_OUTSTANDING': 0,
                     'KEEP_ALIVES_RECEIVED':    0,
-                    'KEEP_ALIVE_RX_TIME':      int(time.time())
+                    'KEEP_ALIVE_RX_TIME':      int(time())
                     }
                 }
         self._local['NUM_PEERS'] = len(self._peers)       
@@ -864,7 +896,7 @@ class IPSC(DatagramProtocol):
     def master_alive_req(self, _peerid, _host, _port):
         if _peerid in self._peers.keys():
             self._peers[_peerid]['STATUS']['KEEP_ALIVES_RECEIVED'] += 1
-            self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
+            self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time())
             
             master_alive_reply_packet = self.hashed_packet(self._local['AUTH_KEY'], self.MASTER_ALIVE_REPLY_PKT)
             self.send_packet(master_alive_reply_packet, (_host, _port))
@@ -890,7 +922,7 @@ class IPSC(DatagramProtocol):
     def reset_keep_alive(self, _peerid):
         if _peerid in self._peers.keys():
             self._peers[_peerid]['STATUS']['KEEP_ALIVES_OUTSTANDING'] = 0
-            self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time.time())
+            self._peers[_peerid]['STATUS']['KEEP_ALIVE_RX_TIME'] = int(time())
         if _peerid == self._master['RADIO_ID']:
             self._master_stat['KEEP_ALIVES_OUTSTANDING'] = 0
 
@@ -962,40 +994,13 @@ class IPSC(DatagramProtocol):
         if self._local['MASTER_PEER']:
             self._master_maintenance = task.LoopingCall(self.master_maintenance_loop)
             self._master_maintenance_loop = self._master_maintenance.start(self._local['ALIVE_TIMER'])
-        #
-        # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-        if REPORTS['REPORT_NETWORKS']:
-            self._reporting = task.LoopingCall(self.reporting_loop)
-            self._reporting_loop = self._reporting.start(REPORTS['REPORT_INTERVAL'])
-    
-    
-    # Timed loop used for reporting IPSC status
-    #
-    # REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
-    if REPORTS['REPORT_NETWORKS'] == 'PICKLE':
-        def reporting_loop(self):  
-            logger.debug('(%s) Periodic Reporting Loop Started (PICKLE)', self._network)
-            
-    elif REPORTS['REPORT_NETWORKS'] == 'JSON':
-        def reporting_loop(self):  
-            logger.debug('(%s) Periodic Reporting Loop Started (JSON)', self._network)
-    
-    elif REPORTS['REPORT_NETWORKS'] == 'REDIS':
-        def reporting_loop(self):  
-            logger.debug('(%s) Periodic Reporting Loop Started (REDIS)', self._network)
-            
-    elif REPORTS['REPORT_NETWORKS'] == 'PRINT':
-        def reporting_loop(self):      
-            logger.debug('(%s) Periodic Reporting Loop Started (PRINT)', self._network)
-            print_master(self._network)
-            print_peer_list(self._network)
 
     
     # Timed loop used for IPSC connection Maintenance when we are the MASTER
     #    
     def master_maintenance_loop(self):
         logger.debug('(%s) MASTER Connection Maintenance Loop Started', self._network)
-        update_time = int(time.time())
+        update_time = int(time())
         
         for peer in self._peers.keys():
             keep_alive_delta = update_time - self._peers[peer]['STATUS']['KEEP_ALIVE_RX_TIME']
@@ -1117,7 +1122,7 @@ class IPSC(DatagramProtocol):
 
         # Loop timing test, uncomment the next two lines. Use for testing only.
         #_pkt_id = randint(0,10000)
-        #_pkt_time = time.time()
+        #_pkt_time = time()
 
         _packettype = data[0:1]
         _peerid     = data[1:5]
@@ -1169,7 +1174,7 @@ class IPSC(DatagramProtocol):
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
                     
                     # Loop timing test, uncomment the next two lines. Use for testing only.
-                    #_pkt_proc_time = (time.time() - _pkt_time) * 1000
+                    #_pkt_proc_time = (time() - _pkt_time) * 1000
                     #logger.info('TIMING: Group voice packet ID %s took %s ms', _pkt_id, _pkt_proc_time)
                     
                     return
@@ -1314,11 +1319,16 @@ class IPSC(DatagramProtocol):
 if __name__ == '__main__':
     logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
     networks = {}
     for ipsc_network in NETWORK:
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
             networks[ipsc_network] = IPSC(ipsc_network)
             reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
-    write_stats = task.LoopingCall(write_ipsc_stats)
-    write_stats.start(10)
+  
+    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
+    if REPORTS['REPORT_NETWORKS']:
+        reporting = task.LoopingCall(reporting_loop)
+        reporting.start(REPORTS['REPORT_INTERVAL'])
+  
     reactor.run()
