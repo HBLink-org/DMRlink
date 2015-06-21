@@ -600,7 +600,9 @@ if REPORTS['REPORT_NETWORKS'] == 'PICKLE':
                 file.close()
         except IOError as detail:
             logger.error('I/O Error: %s', detail)
-        
+
+'''
+JSON DOES NOT WORK, AND MAY NEVER... NEED TO FIX IT OR REMOVE IT        
 elif REPORTS['REPORT_NETWORKS'] == 'JSON':
     def reporting_loop():
         logger.info('Periodic Reporting Loop Started (JSON)')
@@ -610,7 +612,7 @@ elif REPORTS['REPORT_NETWORKS'] == 'JSON':
                 file.close()
         except IOError as detail:
             logger.error('I/O Error: %s', detail)
-
+'''
 elif REPORTS['REPORT_NETWORKS'] == 'REDIS':
     def reporting_loop():  
         logger.debug('Periodic Reporting Loop Started (REDIS)')
