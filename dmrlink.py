@@ -905,7 +905,7 @@ class IPSC(DatagramProtocol):
             
             logger.debug('(%s) Master Keep-Alive Request Received from peer %s, %s:%s', self._network, int_id(_peerid), _host, _port)
         else:
-            logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s, %s:%s', self._network, int_id(_peerid), _host_port)
+            logger.warning('(%s) Master Keep-Alive Request Received from *UNREGISTERED* peer %s, %s:%s', self._network, int_id(_peerid), _host, _port)
     
     # WE ARE MASTER AND A PEER HAS REQUESTED A PEER LIST - SEND THEM ONE
     def peer_list_req(self, _peerid):
