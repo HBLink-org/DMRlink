@@ -1,8 +1,9 @@
 from __future__ import print_function
 from cPickle import load
 from pprint import pprint
-from os.path import getmtime
-from time import sleep
+from twisted.internet import reactor
+from twisted.internet import task
+from binascii import b2a_hex as h
 
 
 # This is the only user-configuration necessary
@@ -10,8 +11,8 @@ from time import sleep
 stat_file = 'dmrlink_stats.pickle'
 
 
-last = getmtime(stat_file)
-
+def int_id(_hex_string):
+    return int(h(_hex_string), 16)
 
 def read_dict():
     try:
@@ -23,12 +24,21 @@ def read_dict():
     except EOFError:
         print('EOFError')
 
+def print_stats():
+    NETWORK = read_dict()
+    if NETWORK != "None":
+        for ipsc in NETWORK:
+            stat = NETWORK[ipsc]['MASTER']['STATUS']
+            print(ipsc)
+            print('  MASTER Information:')
+            print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(NETWORK[ipsc]['MASTER']['RADIO_ID'])).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
+            print('  PEER Information:')
+            for peer in NETWORK[ipsc]['PEERS']:
+                stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
+                print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(peer)).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
+        print()
 
-pprint(read_dict())
-
-while 1:
-    sleep(1)
-    now = getmtime(stat_file)
-    if now > last:
-        last = now
-        pprint(read_dict())
+if __name__ == '__main__': 
+    output_stats = task.LoopingCall(print_stats)
+    output_stats.start(10)
+    reactor.run()
