@@ -20,10 +20,7 @@ import binascii
 import csv
 import os
 import logging
-import time
 import signal
-
-import cPickle as pickle
 
 from logging.config import dictConfig
 from hmac import new as hmac_new
@@ -38,6 +35,7 @@ from twisted.internet import task
 from random import randint
 from time import time
 from json import dumps as json_dump
+from cPickle import dump as pickle_dump
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013 - 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -596,7 +594,7 @@ if REPORTS['REPORT_NETWORKS'] == 'PICKLE':
         logger.debug('Periodic Reporting Loop Started (PICKLE)')
         try:
             with open(REPORTS['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
-                pass
+                pickle_dump(NETWORK, file, 2)
                 file.close()
         except IOError as detail:
             logger.error('I/O Error: %s', detail)
