@@ -31,22 +31,46 @@ def print_stats():
     NETWORK = read_dict()
     if NETWORK != "None":
         print('NETWORK STATISTICS REPORT:', ctime())
+
         for ipsc in NETWORK:
             stat = NETWORK[ipsc]['MASTER']['STATUS']
+            master = NETWORK[ipsc]['LOCAL']['MASTER_PEER']
+            
             print(ipsc)
-            if (NETWORK[ipsc]['LOCAL']['MASTER_PEER']):
+            
+            if master:
                 print('  MASTER Information:')
-                print('    This DMRLink IPSC Instance is the Master')
+                print('    RADIO ID: {} (self)'.format(str(int_id(NETWORK[ipsc]['LOCAL']['RADIO_ID'])).rjust(8,'0')))
             else:
                 print('  MASTER Information:')
-                print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(NETWORK[ipsc]['MASTER']['RADIO_ID'])).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
+                print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(\
+                        str(int_id(NETWORK[ipsc]['MASTER']['RADIO_ID'])).rjust(8,'0'),\
+                        stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],\
+                        stat['KEEP_ALIVES_RECEIVED'],\
+                        stat['KEEP_ALIVES_MISSED']))
+                        
+                        
             print('  PEER Information:')
-            for peer in NETWORK[ipsc]['PEERS']:
-                stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
-                if peer == NETWORK[ipsc]['LOCAL']['RADIO_ID']:
-                    print('    RADIO ID: {} Is this DMRLink IPSC instance'.format(str(int_id(peer)).rjust(8,'0')))
-                else:
-                    print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(peer)).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
+            
+            if master:
+                for peer in NETWORK[ipsc]['PEERS']:
+                    stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
+                    print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: RECEIVED {}'.format(\
+                        str(int_id(peer)).rjust(8,'0'),\
+                        stat['CONNECTED'],\
+                        stat['KEEP_ALIVES_RECEIVED']))
+            else:
+                for peer in NETWORK[ipsc]['PEERS']:
+                    stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
+                    if peer == NETWORK[ipsc]['LOCAL']['RADIO_ID']:
+                        print('    RADIO ID: {} (self)'.format(str(int_id(peer)).rjust(8,'0')))
+                    else:
+                        print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(\
+                            str(int_id(peer)).rjust(8,'0'),\
+                            stat['CONNECTED'],\
+                            stat['KEEP_ALIVES_SENT'],\
+                            stat['KEEP_ALIVES_RECEIVED'],\
+                            stat['KEEP_ALIVES_MISSED']))
         print()
         print()
 
