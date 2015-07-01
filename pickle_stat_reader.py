@@ -40,7 +40,10 @@ def print_stats():
             print('  PEER Information:')
             for peer in NETWORK[ipsc]['PEERS']:
                 stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
-                print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(peer)).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
+                if peer == NETWORK[ipsc]['LOCAL']['RADIO_ID']:
+                    print('    RADIO ID: {} Is this instance'.format(str(int_id(peer)).rjust(8,'0')))
+                else:
+                    print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(peer)).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
         print()
         print()
 
