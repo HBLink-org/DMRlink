@@ -8,7 +8,9 @@ from binascii import b2a_hex as h
 
 # This is the only user-configuration necessary
 #   Tell the program where the pickle file is
+#   Tell the program how often to print a report
 stat_file = '../dmrlink_stats.pickle'
+frequency = 30
 
 
 def int_id(_hex_string):
@@ -49,5 +51,5 @@ def print_stats():
 
 if __name__ == '__main__': 
     output_stats = task.LoopingCall(print_stats)
-    output_stats.start(10)
+    output_stats.start(frequency)
     reactor.run()
