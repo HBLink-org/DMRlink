@@ -30,8 +30,12 @@ def print_stats():
         for ipsc in NETWORK:
             stat = NETWORK[ipsc]['MASTER']['STATUS']
             print(ipsc)
-            print('  MASTER Information:')
-            print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(NETWORK[ipsc]['MASTER']['RADIO_ID'])).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
+            if (NETWORK[ipsc]['LOCAL']['MASTER_PEER']):
+                print('  MASTER Information:')
+                print('    This DMRLink IPSC Instance is the Master')
+            else:
+                print('  MASTER Information:')
+                print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(NETWORK[ipsc]['MASTER']['RADIO_ID'])).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
             print('  PEER Information:')
             for peer in NETWORK[ipsc]['PEERS']:
                 stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
