@@ -36,7 +36,7 @@ from binascii import b2a_hex as h
 from time import time
 
 import sys
-from dmrlink import IPSC, NETWORK, networks, dmr_nat, logger, hex_str_3, hex_str_4, int_id
+from dmrlink import IPSC, NETWORK, networks, REPORTS, reporting_loop, dmr_nat, logger, hex_str_3, hex_str_4, int_id
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2013-2015 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -351,9 +351,16 @@ class bridgeIPSC(IPSC):
 
 if __name__ == '__main__':
     logger.info('DMRlink \'bridge.py\' (c) 2013-2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
     for ipsc_network in NETWORK:
         if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
             networks[ipsc_network] = bridgeIPSC(ipsc_network)
             reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
-        
+    
+    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
+    if REPORTS['REPORT_NETWORKS']:
+        reporting = task.LoopingCall(reporting_loop)
+        reporting.start(REPORTS['REPORT_INTERVAL'])
+       
     reactor.run()
