@@ -27,6 +27,7 @@ def read_dict():
 def print_stats():
     NETWORK = read_dict()
     if NETWORK != "None":
+        print('NETWORK STATISTICS REPORT')
         for ipsc in NETWORK:
             stat = NETWORK[ipsc]['MASTER']['STATUS']
             print(ipsc)
@@ -40,6 +41,7 @@ def print_stats():
             for peer in NETWORK[ipsc]['PEERS']:
                 stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
                 print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(peer)).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
+        print()
         print()
 
 if __name__ == '__main__': 
