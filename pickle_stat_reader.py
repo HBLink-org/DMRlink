@@ -8,7 +8,7 @@ from binascii import b2a_hex as h
 
 # This is the only user-configuration necessary
 #   Tell the program where the pickle file is
-stat_file = 'dmrlink_stats.pickle'
+stat_file = '../dmrlink_stats.pickle'
 
 
 def int_id(_hex_string):
