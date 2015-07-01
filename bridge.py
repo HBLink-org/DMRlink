@@ -356,4 +356,9 @@ if __name__ == '__main__':
             networks[ipsc_network] = bridgeIPSC(ipsc_network)
             reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
     
+    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
+    if REPORTS['REPORT_NETWORKS']:
+        reporting = task.LoopingCall(reporting_loop)
+        reporting.start(REPORTS['REPORT_INTERVAL'])
+        
     reactor.run()
