@@ -1,6 +1,7 @@
 from __future__ import print_function
 from cPickle import load
 from pprint import pprint
+from time import ctime
 from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as h
@@ -29,7 +30,7 @@ def read_dict():
 def print_stats():
     NETWORK = read_dict()
     if NETWORK != "None":
-        print('NETWORK STATISTICS REPORT')
+        print('NETWORK STATISTICS REPORT:', ctime())
         for ipsc in NETWORK:
             stat = NETWORK[ipsc]['MASTER']['STATUS']
             print(ipsc)
