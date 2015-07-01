@@ -41,7 +41,7 @@ def print_stats():
             for peer in NETWORK[ipsc]['PEERS']:
                 stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
                 if peer == NETWORK[ipsc]['LOCAL']['RADIO_ID']:
-                    print('    RADIO ID: {} Is this instance'.format(str(int_id(peer)).rjust(8,'0')))
+                    print('    RADIO ID: {} Is this DMRLink IPSC instance'.format(str(int_id(peer)).rjust(8,'0')))
                 else:
                     print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(str(int_id(peer)).rjust(8,'0'),stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],stat['KEEP_ALIVES_RECEIVED'],stat['KEEP_ALIVES_MISSED']))
         print()
