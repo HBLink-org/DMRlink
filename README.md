@@ -1,4 +1,4 @@
-***VERSION V0.27b RELEASE***
+***VERSION V2.0b RELEASE***
 
 (NOTE: All active development moved to 3.0 branch. "master" will be frozen for bug fixes until 3.0 is functional. At that time, the master branch will change to 3.0 and the existing master (this branch) will be left at 2.x and not developed further)
 
