@@ -1,6 +1,8 @@
 ***VERSION V2.0b RELEASE***
 
-(NOTE: All active development moved to 3.0 branch. "master" will be frozen for bug fixes until 3.0 is functional. At that time, the master branch will change to 3.0 and the existing master (this branch) will be left at 2.x and not developed further)
+~~(NOTE: All active development moved to 3.0 branch. "master" will be frozen for bug fixes until 3.0 is functional. At that time, the master branch will change to 3.0 and the existing master (this branch) will be left at 2.x and not developed further)~~
+
+Initial tests with bytearray proved not to provide the significant improvement hoped for, the V3.0 branch has been deleted, work will remain with strings.
 
 
 ##PROJECT: Open Source IPSC Client.
