@@ -174,7 +174,7 @@ class bridgeIPSC(IPSC):
                     
                     if ((rule['DST_GROUP'] != _status[_TS]['TX_GROUP']) and ((now - _status[_TS]['TX_TIME']) < RULES[_network]['GROUP_HANGTIME'])):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                            logger.info('(%s) Call not bridged to destination on TGID %s, target in group hangtime: IPSC %s, %s, TGID%s', _network, _status[_TS]['TX_GROUP'] _target, _TS, int_id(rule['DST_GROUP']))
+                            logger.info('(%s) Call not bridged to destination on TGID %s, target in group hangtime: IPSC %s, %s, TGID%s', _network, _status[_TS]['TX_GROUP'], _target, _TS, int_id(rule['DST_GROUP']))
                         return
 
                     if (rule['DST_GROUP'] == _status[_TS]['TX_GROUP']) and (_src_sub != _status[_TS]['TX_SRC_SUB']) and ((now - _status[_TS]['TX_TIME']) < TS_CLEAR_TIME):
