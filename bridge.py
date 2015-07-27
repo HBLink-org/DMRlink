@@ -222,7 +222,7 @@ class bridgeIPSC(IPSC):
                 # Send the packet to all peers in the target IPSC
                 networks[_target].send_to_ipsc(_tmp_data)
 
-                _status[_TS]['TX_GROUP'] = _dst_group
+                _status[_TS]['TX_GROUP'] = rule['DST_GROUP']
                 _status[_TS]['TX_TIME'] = now
                 _status[_TS]['TX_SRC_SUB'] = _src_sub
 
