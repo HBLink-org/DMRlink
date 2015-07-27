@@ -8,6 +8,14 @@
 
 # Known IPSC Message Types
 CALL_CONFIRMATION     = '\x05' # Confirmation FROM the recipient of a confirmed call.
+RADIO_CHK_SUCCESS     = '\x48'
+RADIO_DISABLE_REQ     = '\x49'
+RADIO_DISABLE_RX      = '\x4A'
+RADIO_ENABLE_REQ      = '\x4B'
+RADIO_ENABLE_RX       = '\x4C'
+REMOTE_MON_REQ        = '\x4D'
+REMOTE_MOX_RX         = '\x4E'
+TXT_MESSAGE_ACK       = '\x54' # Doesn't seem to mean success, though. This code is sent success or failure
 CALL_MON_STATUS       = '\x61' #  |
 CALL_MON_RPT          = '\x62' #  | Exact meaning unknown
 CALL_MON_NACK         = '\x63' #  |
