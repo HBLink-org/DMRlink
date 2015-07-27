@@ -750,7 +750,6 @@ class IPSC(DatagramProtocol):
         logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
 
     def unknown_message(self, _network, _packettype, _peerid, _data):
-        _packettype = h(_packettype)
         logger.error('(%s) Unknown Message - Type: %s From: %s Packet: %s', _network, h(_packettype), int_id(_peerid), h(_data))
 
 
