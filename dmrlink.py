@@ -613,6 +613,10 @@ elif REPORTS['REPORT_NETWORKS'] == 'PRINT':
         print_master(NETWORK)
         print_peer_list(NETWORK)
 
+else:
+    def reporting_loop():
+        logger.debug('Periodic Reporting Loop Started (NULL)')
+
 
 # Shut ourselves down gracefully with the IPSC peers.
 #
