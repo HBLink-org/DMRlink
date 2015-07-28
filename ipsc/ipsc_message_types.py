@@ -8,13 +8,6 @@
 
 # Known IPSC Message Types
 CALL_CONFIRMATION     = '\x05' # Confirmation FROM the recipient of a confirmed call.
-RADIO_CHK_SUCCESS     = '\x48'
-RADIO_DISABLE_REQ     = '\x49'
-RADIO_DISABLE_RX      = '\x4A'
-RADIO_ENABLE_REQ      = '\x4B'
-RADIO_ENABLE_RX       = '\x4C'
-REMOTE_MON_REQ        = '\x4D'
-REMOTE_MOX_RX         = '\x4E'
 TXT_MESSAGE_ACK       = '\x54' # Doesn't seem to mean success, though. This code is sent success or failure
 CALL_MON_STATUS       = '\x61' #  |
 CALL_MON_RPT          = '\x62' #  | Exact meaning unknown
@@ -83,14 +76,22 @@ TYPE = {
     '\x30': 'Private Data Set-Up',
     '\x31': 'Group Data Set-Up',
     '\x32': 'Private CSBK Set-Up',
-    '\x47': 'Radio Check Request',
     '\x45': 'Call Alert',
+    '\x47': 'Radio Check Request',
+    '\x48': 'Radio Check Success',
+    '\x49': 'Radio Disable Request',
+    '\x4A': 'Radio Disable Received',
+    '\x4B': 'Radio Enable Request',
+    '\x4C': 'Radio Enable Received',
+    '\x4D': 'Remote Monitor Request',
+    '\x4E': 'Remote Monitor Request Received', #(doesn't mean it was successful) 
     '\x4D': 'Remote Monitor Request',
     '\x4F': 'Group Voice',
     '\x50': 'Private Voice',
     '\x51': 'Group Data',
     '\x52': 'Private Data',
     '\x53': 'All Call',
+    '\x54': 'Message ACK/Failure', #text message acknowledgement, but doesn't mean it was successful - it gives the same code if it worked or failed...
     '\x84': 'ARS/GPS?' # Not yet clear, seen by a user running ARS & GPS
 }
 
