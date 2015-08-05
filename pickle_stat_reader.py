@@ -43,11 +43,12 @@ def print_stats():
                 print('    RADIO ID: {} (self)'.format(str(int_id(NETWORK[ipsc]['LOCAL']['RADIO_ID'])).rjust(8,'0')))
             else:
                 print('  MASTER Information:')
-                print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(\
+                print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {} ({})'.format(\
                         str(int_id(NETWORK[ipsc]['MASTER']['RADIO_ID'])).rjust(8,'0'),\
                         stat['CONNECTED'],stat['KEEP_ALIVES_SENT'],\
                         stat['KEEP_ALIVES_RECEIVED'],\
-                        stat['KEEP_ALIVES_MISSED']))
+                        stat['KEEP_ALIVES_MISSED'],\
+                        NETWORK[ipsc]['MASTER']['IP']))
                         
                         
             print('  PEER Information:')
@@ -55,22 +56,24 @@ def print_stats():
             if master:
                 for peer in NETWORK[ipsc]['PEERS']:
                     stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
-                    print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: RECEIVED {}'.format(\
+                    print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: RECEIVED {} ({})'.format(\
                         str(int_id(peer)).rjust(8,'0'),\
                         stat['CONNECTED'],\
-                        stat['KEEP_ALIVES_RECEIVED']))
+                        stat['KEEP_ALIVES_RECEIVED'],\
+                        NETWORK[ipsc]['PEERS'][peer]['IP']))
             else:
                 for peer in NETWORK[ipsc]['PEERS']:
                     stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
                     if peer == NETWORK[ipsc]['LOCAL']['RADIO_ID']:
                         print('    RADIO ID: {} (self)'.format(str(int_id(peer)).rjust(8,'0')))
                     else:
-                        print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {}'.format(\
+                        print('    RADIO ID: {} CONNECTED: {}, KEEP ALIVES: SENT {} RECEIVED {} MISSED {} ({})'.format(\
                             str(int_id(peer)).rjust(8,'0'),\
                             stat['CONNECTED'],\
                             stat['KEEP_ALIVES_SENT'],\
                             stat['KEEP_ALIVES_RECEIVED'],\
-                            stat['KEEP_ALIVES_MISSED']))
+                            stat['KEEP_ALIVES_MISSED'],\
+                            NETWORK[ipsc]['PEERS'][peer]['IP']))
         print()
         print()
 
