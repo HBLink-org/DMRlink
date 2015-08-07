@@ -170,22 +170,22 @@ class bridgeIPSC(IPSC):
                     if ((rule['DST_GROUP'] != _status[_TS]['RX_GROUP']) and ((now - _status[_TS]['RX_TIME']) < RULES[_network]['GROUP_HANGTIME'])):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                             logger.info('(%s) Call not bridged, target active or in group hangtime: IPSC %s, %s, TGID%s', _network, _target, _TS, int_id(rule['DST_GROUP']))
-                        return
+                        continue
                     
                     if ((rule['DST_GROUP'] != _status[_TS]['TX_GROUP']) and ((now - _status[_TS]['TX_TIME']) < RULES[_network]['GROUP_HANGTIME'])):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                             logger.info('(%s) Call not bridged to destination on TGID %s, target in group hangtime: IPSC %s, %s, TGID%s', _network, int_id(_status[_TS]['TX_GROUP']), _target, _TS, int_id(rule['DST_GROUP']))
-                        return
+                        continue
 
                     if (rule['DST_GROUP'] == _status[_TS]['TX_GROUP']) and (_src_sub != _status[_TS]['TX_SRC_SUB']) and ((now - _status[_TS]['TX_TIME']) < TS_CLEAR_TIME):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                             logger.info('(%s) Call not bridged, call bridge in progress from %s, target: IPSC %s, %s, TGID%s', _network, int_id(_src_sub), _target, _TS, int_id(rule['DST_GROUP']))
-                        return
+                        continue
 
                     if (rule['DST_GROUP'] == _status[_TS]['RX_GROUP']) and ((now - _status[_TS]['RX_TIME']) < TS_CLEAR_TIME):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                             logger.info('(%s) Call not bridged, matching call already active on target: IPSC %s, %s, TGID%s', _network, _target, _TS, int_id(rule['DST_GROUP']))
-                        return
+                        continue
                        
                 _tmp_data = _data
                 # Re-Write the IPSC SRC to match the target network's ID
