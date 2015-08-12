@@ -81,14 +81,14 @@ class playIPSC(IPSC):
                     _tmp_data = _tmp_data.replace(_tmp_data[9:12], _dst_group)
                     
                     # Re-Write IPSC timeslot value
+                    print('start: ', h(_data[17:18]))
                     _call_info = int_id(_data[17:18])
-                    print('start: ', _call_info)
                     if _ts == 0:
                         _call_info &= ~(1 << 5)
                     elif _ts == 1:
                         _call_info |= 1 << 5
-                    print('end: ', _call_info)
                     _call_info = chr(_call_info)
+                    print('end: ', h(_call_info))
                     _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:]
                     
                     # Re-Write DMR timeslot value
