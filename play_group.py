@@ -62,10 +62,6 @@ class playIPSC(IPSC):
                 
                 # Determine the type of voice packet this is (see top of file for possible types)
                 _burst_data_type = _data[30]
-                if _ts == 0:
-                    _TS = 'TS1'
-                elif _ts == 1:
-                    _TS = 'TS2'
                     
                 time.sleep(2)
                 self.CALL_DATA = pickle.load(open(filename, 'rb'))
@@ -86,10 +82,12 @@ class playIPSC(IPSC):
                     
                     # Re-Write IPSC timeslot value
                     _call_info = int_id(_data[17:18])
+                    print('start: ', h(_call_info))
                     if _ts == 0:
                         _call_info &= ~(1 << 5)
                     elif _ts == 1:
                         _call_info |= 1 << 5
+                    print('end: ', h(_call_info))
                     _call_info = chr(_call_info)
                     _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:]
                     
