@@ -83,7 +83,8 @@ class playIPSC(IPSC):
                     
                     # Re-Write IPSC timeslot value
                     print('start: ', h(_tmp_data))
-                    _call_info = int_id(_data[17:18])
+                    print('start: ', h(_tmp_data[17:18]))
+                    _call_info = int_id(_tmp_data[17:18])
                     if _ts == 0:
                         _call_info &= ~(1 << 5)
                     elif _ts == 1:
