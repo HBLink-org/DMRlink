@@ -67,7 +67,7 @@ class playIPSC(IPSC):
     #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _end:
-            if trigger = True:
+            if trigger == True:
                 if (_ts == 0 and _dst_group not in trigger_groups_1) or (_ts == 1 and _dst_group not in trigger_groups_2):
                     return
             else:
