@@ -59,6 +59,7 @@ class playIPSC(IPSC):
         if _end:
             if (_ts == 0 and _dst_group in trigger_groups_1) or (_ts == 1 and _dst_group in trigger_groups_2) :
                 logger.info('(Event ID: %s) Playback triggered from TS %s, TGID %s', self.event_id, (_ts +1), int_id(_dst_group))
+                
                 # Determine the type of voice packet this is (see top of file for possible types)
                 _burst_data_type = _data[30]
                 if _ts == 0:
@@ -69,17 +70,18 @@ class playIPSC(IPSC):
                 time.sleep(2)
                 self.CALL_DATA = pickle.load(open(filename, 'rb'))
                 logger.info('(Event ID: %s) Playing back file: %s', self.event_id, filename)
+                
+                _self_peer = NETWORK[_network]['LOCAL']['RADIO_ID']
+                _self_src = _self_peer[1:]
+                
                 for i in self.CALL_DATA:
                     _tmp_data = i
                     
                     # re-Write the peer radio ID to that of this program
-                    _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
-                    
+                    _tmp_data = _tmp_data.replace(_peerid, _self_peer)
                     
                     # re-Write the source subscriber ID to that of this program
-                    print('source:', h(_src_sub))
-                    print('dest:', h(NETWORK[_network]['LOCAL']['RADIO_ID'][1:]))
-                    _tmp_data = _tmp_data.replace(_src_sub, NETWORK[_network]['LOCAL']['RADIO_ID'][1:])
+                    _tmp_data = _tmp_data.replace(_src_sub, _self_src)
                     
                     # Re-Write IPSC timeslot value
                     '''
