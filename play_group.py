@@ -73,7 +73,7 @@ class playIPSC(IPSC):
                 
                 _self_peer = NETWORK[_network]['LOCAL']['RADIO_ID']
                 _self_src = _self_peer[1:]
-                
+                _dst_sub    = data[9:12]
                 for i in self.CALL_DATA:
                     _tmp_data = i
                     
@@ -82,6 +82,9 @@ class playIPSC(IPSC):
                     
                     # re-Write the source subscriber ID to that of this program
                     _tmp_data = _tmp_data.replace(_src_sub, _self_src)
+                    
+                    # Re-Write the destination Group ID
+                    _tmp_data = _tmp_data.replace(_tmp_data[9:12], _dst_group)
                     
                     # Re-Write IPSC timeslot value
                     '''
