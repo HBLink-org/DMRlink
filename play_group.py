@@ -76,9 +76,13 @@ class playIPSC(IPSC):
                 if (_ts == 0 and _dst_group in trigger_groups_1) or (_ts == 1 and _dst_group in trigger_groups_2):
                     return
             '''
-            print(h(_dst_group))
-            print(trigger_groups_1)
-            print(trigger_groups_2)
+            print('on air:', h(_dst_group))
+            print('TS1')
+            for group in trigger_groups_1:
+                print(h(group))
+            print('TS2')
+            for group in trigger_groups_2:
+                print(h(group))
             if (_ts == 0 and _dst_group in trigger_groups_1):
                 return
             if (_ts == 1 and _dst_group in trigger_groups_2):                
