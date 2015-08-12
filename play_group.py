@@ -81,15 +81,17 @@ class playIPSC(IPSC):
                     _tmp_data = _tmp_data.replace(_tmp_data[9:12], _dst_group)
                     
                     # Re-Write IPSC timeslot value
-                    print('start: ', h(_data[17:18]))
+                    print('start: ', h(_tmp_data))
                     _call_info = int_id(_data[17:18])
                     if _ts == 0:
                         _call_info &= ~(1 << 5)
                     elif _ts == 1:
                         _call_info |= 1 << 5
                     _call_info = chr(_call_info)
-                    print('end: ', h(_call_info))
                     _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:]
+                    print('end:   ', h(_tmp_data))
+                    print()
+                    
                     
                     # Re-Write DMR timeslot value
                     # Determine if the slot is present, so we can translate if need be
