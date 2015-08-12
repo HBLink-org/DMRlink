@@ -77,9 +77,9 @@ class playIPSC(IPSC):
                     return
             '''
             
-            if (_ts == 0 and _dst_group not in trigger_groups_1):
+            if (_ts == 0 and _dst_group in trigger_groups_1):
                 return
-            if (_ts == 1 and _dst_group not in trigger_groups_2):
+            if (_ts == 1 and _dst_group in trigger_groups_2):
                 return
             
             logger.info('(Event ID: %s) Playback triggered from TS %s, TGID %s', self.event_id, (_ts +1), int_id(_dst_group))
