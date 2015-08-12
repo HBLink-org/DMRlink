@@ -76,7 +76,7 @@ class playIPSC(IPSC):
                     _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
                     
                     # re-Write the source subscriber ID to that of this program
-                    _tmp_data = _tmp_data.replace(_src_sub, NETWORK[_network]['LOCAL']['RADIO_ID'])
+                    #_tmp_data = _tmp_data.replace(_src_sub, NETWORK[_network]['LOCAL']['RADIO_ID'])
                     
                     # Re-Write IPSC timeslot value
                     _call_info = int_id(_data[17:18])
