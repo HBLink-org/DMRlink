@@ -68,6 +68,13 @@ class playIPSC(IPSC):
     #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _end:
+            _self_peer = NETWORK[_network]['LOCAL']['RADIO_ID']
+            _self_src = _self_peer[1:]
+            
+            if (_peer_id == _self_peer) or (_src_sub == _self_src):
+                print ('oh crap, why are we hearing ourselves?'
+                return
+            
             if trigger == False:
                 if (_ts == 0 and _dst_group not in trigger_groups_1) or (_ts == 1 and _dst_group not in trigger_groups_2):
                     return
@@ -83,9 +90,6 @@ class playIPSC(IPSC):
             time.sleep(2)
             self.CALL_DATA = pickle.load(open(filename, 'rb'))
             logger.info('(Event ID: %s) Playing back file: %s', self.event_id, filename)
-            
-            _self_peer = NETWORK[_network]['LOCAL']['RADIO_ID']
-            _self_src = _self_peer[1:]
            
             for i in self.CALL_DATA:
                 _tmp_data = i
