@@ -51,6 +51,7 @@ filename = '../test.pickle'
 trigger = True
 
 # groups that we want to trigger playback of this file (ts1 and ts2)
+#   Note this is a python list type, even if there's just one value
 trigger_groups_1 = ['\x00\x00\x01', '\x00\x00\x0D', '\x00\x00\x64']
 trigger_groups_2 = ['\x00\xC0\x30',]
 
@@ -67,7 +68,7 @@ class playIPSC(IPSC):
     #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _end:
-            if trigger == True:
+            if trigger == False:
                 if (_ts == 0 and _dst_group not in trigger_groups_1) or (_ts == 1 and _dst_group not in trigger_groups_2):
                     return
             else:
