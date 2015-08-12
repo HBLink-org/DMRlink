@@ -58,7 +58,7 @@ class playIPSC(IPSC):
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _end:
             if (_ts == 0 and _dst_group in trigger_groups_1) or (_ts == 1 and _dst_group in trigger_groups_2) :
-                logger.info('(Event ID: %s) Playback triggered from TS %s, TGID %s', self.event_id, (_ts +1), _dst_group)
+                logger.info('(Event ID: %s) Playback triggered from TS %s, TGID %s', self.event_id, (_ts +1), int_id(_dst_group))
                 # Determine the type of voice packet this is (see top of file for possible types)
                 _burst_data_type = _data[30]
                 if _ts == 0:
