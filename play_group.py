@@ -48,7 +48,7 @@ BURST_DATA_TYPE = {
 filename = '../test.pickle'
 
 # trigger logic - True, trigger on these IDs, False trigger on any but these IDs
-trigger = False
+trigger = True
 
 # groups that we want to trigger playback of this file (ts1 and ts2)
 trigger_groups_1 = ['\x00\x00\x01', '\x00\x00\x0D', '\x00\x00\x64']
