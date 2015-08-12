@@ -57,6 +57,7 @@ class playIPSC(IPSC):
     #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _end:
+            print('timeslot: ', _ts)
             if (_ts == 0 and _dst_group in trigger_groups_1) or (_ts == 1 and _dst_group in trigger_groups_2) :
                 logger.info('(Event ID: %s) Playback triggered from TS %s, TGID %s', self.event_id, (_ts +1), int_id(_dst_group))
                 
