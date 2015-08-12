@@ -82,8 +82,6 @@ class playIPSC(IPSC):
                     _tmp_data = _tmp_data.replace(_tmp_data[9:12], _dst_group)
                     
                     # Re-Write IPSC timeslot value
-                    print('start: ', h(_tmp_data))
-                    print('start: ', h(_tmp_data[17:18]))
                     _call_info = int_id(_tmp_data[17:18])
                     if _ts == 0:
                         _call_info &= ~(1 << 5)
@@ -91,13 +89,9 @@ class playIPSC(IPSC):
                         _call_info |= 1 << 5
                     _call_info = chr(_call_info)
                     _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:]
-                    print('end:   ', h(_tmp_data))
-                    print()
-                    
-                    
+                        
                     # Re-Write DMR timeslot value
                     # Determine if the slot is present, so we can translate if need be
-                    '''
                     if _burst_data_type == BURST_DATA_TYPE['SLOT1_VOICE'] or _burst_data_type == BURST_DATA_TYPE['SLOT2_VOICE']:
                         # Re-Write timeslot if necessary...
                         if _ts == 0:
@@ -105,7 +99,7 @@ class playIPSC(IPSC):
                         elif _ts == 1:
                             _burst_data_type = BURST_DATA_TYPE['SLOT2_VOICE']
                         _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
-                    '''
+                    
                     _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
                     # Send the packet to all peers in the target IPSC
                     self.send_to_ipsc(_tmp_data)
