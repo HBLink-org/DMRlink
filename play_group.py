@@ -78,7 +78,7 @@ class playIPSC(IPSC):
                     
                     # re-Write the source subscriber ID to that of this program
                     print('source:', h(_src_sub))
-                    print('dest:', h(NETWORK[_network]['LOCAL']['RADIO_ID']))
+                    print('dest:', h(NETWORK[_network]['LOCAL']['RADIO_ID'][1:]))
                     _tmp_data = _tmp_data.replace(_src_sub, NETWORK[_network]['LOCAL']['RADIO_ID'][1:])
                     
                     # Re-Write IPSC timeslot value
