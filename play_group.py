@@ -72,7 +72,7 @@ class playIPSC(IPSC):
             _self_src = _self_peer[1:]
             
             if (_peer_id == _self_peer) or (_src_sub == _self_src):
-                print ('oh crap, why are we hearing ourselves?'
+                print ('oh crap, why are we hearing ourselves?')
                 return
             
             if trigger == False:
