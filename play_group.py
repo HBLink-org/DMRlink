@@ -72,7 +72,7 @@ class playIPSC(IPSC):
             _self_src = _self_peer[1:]
             
             if (_peerid == _self_peer) or (_src_sub == _self_src):
-                print ('oh crap, why are we hearing ourselves?')
+                logger.error('(%s) Just received a packet that appears to have been originated by us. PeerID: %s Subscriber: %s TS: %s, TGID: %s', _network, int_id(_peerid), int_id(_src_sub), _ts, int_id(dst_group))
                 return
             
             if trigger == False:
