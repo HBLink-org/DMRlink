@@ -73,7 +73,7 @@ class playIPSC(IPSC):
                 
                 _self_peer = NETWORK[_network]['LOCAL']['RADIO_ID']
                 _self_src = _self_peer[1:]
-                _dst_sub    = data[9:12]
+               
                 for i in self.CALL_DATA:
                     _tmp_data = i
                     
