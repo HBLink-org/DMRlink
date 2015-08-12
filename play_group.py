@@ -71,7 +71,7 @@ class playIPSC(IPSC):
             _self_peer = NETWORK[_network]['LOCAL']['RADIO_ID']
             _self_src = _self_peer[1:]
             
-            if (_peer_id == _self_peer) or (_src_sub == _self_src):
+            if (_peerid == _self_peer) or (_src_sub == _self_src):
                 print ('oh crap, why are we hearing ourselves?')
                 return
             
