@@ -79,15 +79,12 @@ class playIPSC(IPSC):
                     
                     # re-Write the peer radio ID to that of this program
                     _tmp_data = _tmp_data.replace(_peerid, _self_peer)
-                    
                     # re-Write the source subscriber ID to that of this program
                     _tmp_data = _tmp_data.replace(_src_sub, _self_src)
-                    
                     # Re-Write the destination Group ID
                     _tmp_data = _tmp_data.replace(_tmp_data[9:12], _dst_group)
                     
                     # Re-Write IPSC timeslot value
-                    '''
                     _call_info = int_id(_data[17:18])
                     if _ts == 0:
                         _call_info &= ~(1 << 5)
@@ -95,7 +92,7 @@ class playIPSC(IPSC):
                         _call_info |= 1 << 5
                     _call_info = chr(_call_info)
                     _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:]
-                    '''
+                    
                     # Re-Write DMR timeslot value
                     # Determine if the slot is present, so we can translate if need be
                     '''
