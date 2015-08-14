@@ -28,7 +28,7 @@ from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2014 - 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
-__credits__ = 'Adam Fast, KC0YLK; Dave K; and he who wishes not to be named'
+__credits__ = 'Adam Fast, KC0YLK; Dave Kierzkowski KD8EYF; and he who wishes not to be named'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __version__ = '0.9b'
@@ -68,6 +68,7 @@ class playIPSC(IPSC):
     #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _end:
+            logger.info('(%s) End Voice Call. SRC SUB %s, TS %s, DST GROUP %s, PEER %s', _network, int_id(_src_sub), _ts+1, int_id(_dst_group), int_id(_peerid))
             _self_peer = NETWORK[_network]['LOCAL']['RADIO_ID']
             _self_src = _self_peer[1:]
             
