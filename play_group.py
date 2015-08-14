@@ -68,7 +68,7 @@ class playIPSC(IPSC):
     #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
         if _end:
-            logger.info('(%s) End Voice Call. SRC SUB %s, TS %s, DST GROUP %s, PEER %s', _network, int_id(_src_sub), _ts+1, int_id(_dst_group), int_id(_peerid))
+            logger.info('(%s) End Voice Call. SourceID %s, TS %s, TGID %s, PeerID %s', _network, int_id(_src_sub), _ts+1, int_id(_dst_group), int_id(_peerid))
             _self_peer = NETWORK[_network]['LOCAL']['RADIO_ID']
             _self_src = _self_peer[1:]
             
@@ -83,14 +83,14 @@ class playIPSC(IPSC):
                 if (_ts == 0 and _dst_group in trigger_groups_1) or (_ts == 1 and _dst_group in trigger_groups_2):
                     return
             
-            logger.info('(Event ID: %s) Playback triggered from TS %s, TGID %s', self.event_id, (_ts +1), int_id(_dst_group))
+            logger.info('(%s) Event ID: %s - Playback triggered from SourceID %s, TS %s, TGID %s, PeerID %s', _network, self.event_id, int_id(_src_sub), _ts+1, int_id(_dst_group), int_id(_peerid))
             
             # Determine the type of voice packet this is (see top of file for possible types)
             _burst_data_type = _data[30]
                 
             time.sleep(2)
             self.CALL_DATA = pickle.load(open(filename, 'rb'))
-            logger.info('(Event ID: %s) Playing back file: %s', self.event_id, filename)
+            logger.info('(%s) Event ID: %s - Playing back file: %s', _network, self.event_id, filename)
            
             for i in self.CALL_DATA:
                 _tmp_data = i
@@ -126,7 +126,7 @@ class playIPSC(IPSC):
                 self.send_to_ipsc(_tmp_data)
                 time.sleep(0.06)
             self.CALL_DATA = []
-            logger.info('(Event ID: %s) Playback Completed', self.event_id)
+            logger.info('(%s) Event ID: %s - Playback Completed', _network, self.event_id)
             self.event_id = self.event_id + 1
         
 if __name__ == '__main__':
