@@ -233,36 +233,34 @@ class bridgeIPSC(IPSC):
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
         
-        for rule in RULES[_network]['GROUP_DATA']:
-            _target = rule                          # Shorthand to reduce length and make it easier to read
+        for target in RULES[_network]['GROUP_DATA']:
             
-            if self.BRIDGE == True or networks[_target].BRIDGE == True:
+            if self.BRIDGE == True or networks[target].BRIDGE == True:
                 _tmp_data = _data
                 # Re-Write the IPSC SRC to match the target network's ID
-                _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
+                _tmp_data = _tmp_data.replace(_peerid, NETWORK[target]['LOCAL']['RADIO_ID'])
 
                 # Calculate and append the authentication hash for the target network... if necessary
-                if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
-                    _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
+                if NETWORK[target]['LOCAL']['AUTH_ENABLED']:
+                    _tmp_data = self.hashed_packet(NETWORK[target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
-                networks[_target].send_to_ipsc(_tmp_data)
+                networks[target].send_to_ipsc(_tmp_data)
 
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
         
-        for rule in RULES[_network]['PRIVATE_DATA']:
-            _target = rule                          # Shorthand to reduce length and make it easier to read
-       
-            if self.BRIDGE == True or networks[_target].BRIDGE == True:
+        for target in RULES[_network]['PRIVATE_DATA']:
+                   
+            if self.BRIDGE == True or networks[target].BRIDGE == True:
                 _tmp_data = _data
                 # Re-Write the IPSC SRC to match the target network's ID
-                _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
+                _tmp_data = _tmp_data.replace(_peerid, NETWORK[target]['LOCAL']['RADIO_ID'])
 
                 # Calculate and append the authentication hash for the target network... if necessary
-                if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
-                    _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
+                if NETWORK[target]['LOCAL']['AUTH_ENABLED']:
+                    _tmp_data = self.hashed_packet(NETWORK[target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
-                networks[_target].send_to_ipsc(_tmp_data)
+                networks[target].send_to_ipsc(_tmp_data)
 
 
 if __name__ == '__main__':
