@@ -33,11 +33,14 @@ try:
     from ipsc.ipsc_message_types import *
 except ImportError:
     sys.exit('IPSC message types file not found or invalid')
-    
+
+# Utility function to convert bytes to string of hex values (for debug)
 def ByteToHex( byteStr ):
     return ''.join( [ "%02X " % ord(x) for x in byteStr ] ).strip()
 
-
+#
+# Define default values for operation.  These will be overridden by the .cfg file if found
+#
 _configFile='ambe_audio.cfg'
 _debug = False
 _outToFile = False
@@ -45,11 +48,14 @@ _outToUDP = True
 #_gateway = "192.168.1.184"
 _gateway = "127.0.0.1"
 _gateway_port = 1234
+_remote_control_port = 1235
 _tg_filter = [2,3,13,3174,3777215,3100,9,9998,3112]  #set this to the tg to monitor
 _no_tg = -99
 
 
-
+#
+# Now read the configuration file and parse out the values we need
+#
 config = ConfigParser.ConfigParser()
 try:
     _tg_filter=[]
@@ -69,7 +75,9 @@ except:
     sys.exit('Configuration file \''+_configFile+'\' is not a valid configuration file! Exiting...')
 
 
-
+#
+# Open output sincs, should be inside of the class....
+#
 if _outToFile == True:
     f = open('ambe.bin', 'wb')
 if _outToUDP == True:
@@ -162,7 +170,11 @@ class ambeIPSC(IPSC):
 
 import thread
 
+#
 # Define a function for the thread
+# Use netcat to dynamically change the TGs that are forwarded to Allstar
+# echo "x,y,z" | nc 127.0.0.1 1235
+#
 def remote_control(port):
     s = socket.socket()         # Create a socket object
     host = socket.gethostname() # Get local machine name
@@ -179,7 +191,7 @@ def remote_control(port):
             print( 'New TGs=', _tg_filter )
         c.close()                # Close the connection
 try:
-    thread.start_new_thread( remote_control, (1235, ) )
+    thread.start_new_thread( remote_control, (_remote_control_port, ) )
 except:
     print( "Error: unable to start thread" )
 
