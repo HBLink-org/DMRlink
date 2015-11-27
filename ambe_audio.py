@@ -83,7 +83,7 @@ class ambeIPSC(IPSC):
 
 
     # Utility function to convert bytes to string of hex values (for debug)
-    def ByteToHex( byteStr ):
+    def ByteToHex( self, byteStr ):
         return ''.join( [ "%02X " % ord(x) for x in byteStr ] ).strip()
 
     #
