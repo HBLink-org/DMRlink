@@ -27,11 +27,11 @@ __version__ = '0.1a'
 __email__ = 'n0mjs@me.com'
 __status__ = 'pre-alpha'
 
+
 try:
     from ipsc.ipsc_message_types import *
 except ImportError:
     sys.exit('IPSC message types file not found or invalid')
-
 
 #
 # ambeIPSC class,
@@ -129,29 +129,25 @@ class ambeIPSC(IPSC):
             _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
             if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
                 if self._currentTG == self._no_tg:
-                    if _ts:     _ts = 2
-                    else:       _ts = 1
                     _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
-                    print('Voice Transmission Start on TS {} and TG {} ({}) from {}'.format(_ts, _dst_sub, _tg_id, _src_sub))
+                    print('Voice Transmission Start on TS {} and TG {} ({}) from {}'.format("2" if _ts else "1", _dst_sub, _tg_id, _src_sub))
                     self._currentTG = _tg_id
                 else:
                     if self._currentTG != _tg_id:
                         print('Transmission in progress, will not decode stream on TG {}'.format(_tg_id))
-            if _payload_type == BURST_DATA_TYPE['VOICE_TERM']:
-                if self._currentTG == _tg_id:
+            if self._currentTG == _tg_id:
+                if _payload_type == BURST_DATA_TYPE['VOICE_TERM']:
                     print('Voice Transmission End')
                     self._currentTG = self._no_tg
-            if _payload_type == BURST_DATA_TYPE['SLOT1_VOICE']:
-                if self._currentTG == _tg_id:
+                if _payload_type == BURST_DATA_TYPE['SLOT1_VOICE']:
                     self.outputFrames(_ambe_frames, _ambe_frame1, _ambe_frame2, _ambe_frame3)
-            if _payload_type == BURST_DATA_TYPE['SLOT2_VOICE']:
-                if self._currentTG == _tg_id:
+                if _payload_type == BURST_DATA_TYPE['SLOT2_VOICE']:
                     self.outputFrames(_ambe_frames, _ambe_frame1, _ambe_frame2, _ambe_frame3)
     
         else:
             if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
                 _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
-                print('Ignored Voice Transmission Start on TS {} and TG {}'.format(_ts, _dst_sub))
+                print('Ignored Voice Transmission Start on TS {} and TG {}'.format("2" if _ts else "1", _dst_sub))
 
     def outputFrames(self, _ambe_frames, _ambe_frame1, _ambe_frame2, _ambe_frame3):
         if self._debug == True:
