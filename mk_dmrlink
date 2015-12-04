@@ -6,6 +6,9 @@
 #                                               #
 #################################################
 
+apt-get install unzip -y
+apt-get install python-twisted -y
+
 # To allow multiple instances of DMRlink to run
 # You need multiple ipsc directories, dmrlink.py and dmrlink.cfg
 # The needed files are copied to /opt/dmrlink
