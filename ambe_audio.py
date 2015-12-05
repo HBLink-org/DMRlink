@@ -17,6 +17,7 @@ from bitstring import BitArray
 import sys, socket, ConfigParser, thread, traceback
 import cPickle as pickle
 from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3, get_info, talkgroup_ids, subscriber_ids
+from time import time
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -49,7 +50,8 @@ class ambeIPSC(IPSC):
     _tg_filter = [2,3,13,3174,3777215,3100,9,9998,3112]  #set this to the tg to monitor
     _no_tg = -99
     _sock = -1;
-
+    lastPacketTimeout = 0
+    
     def __init__(self, *args, **kwargs):
         IPSC.__init__(self, *args, **kwargs)
         self.CALL_DATA = []
@@ -134,7 +136,11 @@ class ambeIPSC(IPSC):
                     self._currentTG = _tg_id
                 else:
                     if self._currentTG != _tg_id:
-                        print('Transmission in progress, will not decode stream on TG {}'.format(_tg_id))
+                        if time() > self.lastPacketTimeout:
+                            self._currentTG = self._no_tg    #looks like we never saw an EOT from the last stream
+                            print('EOT timeout')
+                        else:
+                            print('Transmission in progress, will not decode stream on TG {}'.format(_tg_id))
             if self._currentTG == _tg_id:
                 if _payload_type == BURST_DATA_TYPE['VOICE_TERM']:
                     print('Voice Transmission End')
@@ -143,6 +149,7 @@ class ambeIPSC(IPSC):
                     self.outputFrames(_ambe_frames, _ambe_frame1, _ambe_frame2, _ambe_frame3)
                 if _payload_type == BURST_DATA_TYPE['SLOT2_VOICE']:
                     self.outputFrames(_ambe_frames, _ambe_frame1, _ambe_frame2, _ambe_frame3)
+                self.lastPacketTimeout = time() + 10
     
         else:
             if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
