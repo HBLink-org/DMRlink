@@ -51,6 +51,7 @@ class ambeIPSC(IPSC):
     _no_tg = -99
     _sock = -1;
     lastPacketTimeout = 0
+    _transmitStartTime = 0
     
     def __init__(self, *args, **kwargs):
         IPSC.__init__(self, *args, **kwargs)
@@ -134,6 +135,7 @@ class ambeIPSC(IPSC):
                     _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
                     print('Voice Transmission Start on TS {} and TG {} ({}) from {}'.format("2" if _ts else "1", _dst_sub, _tg_id, _src_sub))
                     self._currentTG = _tg_id
+                    self._transmitStartTime = time()
                 else:
                     if self._currentTG != _tg_id:
                         if time() > self.lastPacketTimeout:
@@ -143,7 +145,7 @@ class ambeIPSC(IPSC):
                             print('Transmission in progress, will not decode stream on TG {}'.format(_tg_id))
             if self._currentTG == _tg_id:
                 if _payload_type == BURST_DATA_TYPE['VOICE_TERM']:
-                    print('Voice Transmission End')
+                    print('Voice Transmission End %.2f seconds' % (time() - self._transmitStartTime))
                     self._currentTG = self._no_tg
                 if _payload_type == BURST_DATA_TYPE['SLOT1_VOICE']:
                     self.outputFrames(_ambe_frames, _ambe_frame1, _ambe_frame2, _ambe_frame3)
