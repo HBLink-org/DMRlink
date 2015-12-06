@@ -17,8 +17,8 @@
 # id { nnnnnn } (query an individual record)
 
 # Get the user IDs.
-wget -O subscriber_idsxxx.csv -q "http://www.dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=users&format=csv&header=0"
+wget -O subscriber_ids.csv -q "http://www.dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=users&format=csv&header=0"
 
 # Get the peer IDs
-wget -O peer_idsxxx.csv -q "http://www.dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=repeaters&format=csv&header=0"
+wget -O peer_ids.csv -q "http://www.dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=repeaters&format=csv&header=0"
 
