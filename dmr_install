@@ -7,10 +7,10 @@
 #################################################
 
 # Minor updates to DIAL
-rm /etc/asterisk/firsttime 
+# rm /etc/asterisk/firsttime 
 cd /etc/asterisk/
 wget https://github.com/N4IRS/AllStar/raw/master/configs/dnsmgr.conf
-wget https://github.com/N4IRS/AllStar/raw/master/configs/modules.conf
+# wget https://github.com/N4IRS/AllStar/raw/master/configs/modules.conf
 
 # Checkout DMRlink and put it in /opt
 cd /srv
