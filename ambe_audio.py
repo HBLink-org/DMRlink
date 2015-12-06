@@ -16,7 +16,7 @@ from bitstring import BitArray
 
 import sys, socket, ConfigParser, thread, traceback
 import cPickle as pickle
-from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3, get_info, talkgroup_ids, subscriber_ids
+from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3, get_info, talkgroup_ids, subscriber_ids, peer_ids
 from time import time
 
 __author__ = 'Cortney T. Buffington, N0MJS'
@@ -133,7 +133,8 @@ class ambeIPSC(IPSC):
             if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
                 if self._currentTG == self._no_tg:
                     _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
-                    print('Voice Transmission Start on TS {} and TG {} ({}) from {}'.format("2" if _ts else "1", _dst_sub, _tg_id, _src_sub))
+                    _peerid     = get_info(int_id(_peerid), peer_ids)
+                    print('Voice Transmission Start on TS {} and TG {} ({}) from {} on peer {}'.format("2" if _ts else "1", _dst_sub, _tg_id, _src_sub, _peerid))
                     self._currentTG = _tg_id
                     self._transmitStartTime = time()
                 else:

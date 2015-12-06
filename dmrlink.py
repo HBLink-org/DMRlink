@@ -286,15 +286,8 @@ subscriber_ids = {}
 peer_ids = {}
 talkgroup_ids = {}
 
-#try:
-#    with open(PATH+'subscriber_ids.csv', 'rU') as subscriber_ids_csv:
-#        subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
-#        for row in subscribers:
-#            subscriber_ids[int(row[1])] = (row[0])
-#except ImportError:
-#    logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
 try:
-    with open(PATH+'subscriber_idsxxx.csv', 'rU') as subscriber_ids_csv:
+    with open(PATH+'subscriber_ids.csv', 'rU') as subscriber_ids_csv:
         subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
         for row in subscribers:
             subscriber_ids[int(row[0])] = (row[1])
@@ -305,7 +298,7 @@ try:
     with open(PATH+'peer_ids.csv', 'rU') as peer_ids_csv:
         peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
         for row in peers:
-            peer_ids[int(row[1])] = (row[0])
+            peer_ids[int(row[0])] = (row[1])
 except ImportError:
     logger.warning('peer_ids.csv not found: Peer aliases will not be available')
 
