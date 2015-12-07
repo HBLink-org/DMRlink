@@ -1,3 +1,11 @@
+#! /bin/sh
+
+#################################################
+#                                               #
+# Create directory structure for DMRlink        #
+#                                               #
+#################################################
+
 # To provide more readable output from DMRlink with current subscriber and repeater IDs, we download the CSV files from DMR-MARC
 # If you are going to use this in a cron task,  don't run it more then once a day.
 # It might be good to find alternale a source as a backup.

@@ -1,0 +1,56 @@
+#! /bin/sh
+
+#################################################
+#                                               #
+# Create directory structure for DMRlink        #
+#                                               #
+#################################################
+
+# Minor updates to DIAL
+# rm /etc/asterisk/firsttime
+cd /etc/asterisk/
+wget https://github.com/N4IRS/AllStar/raw/master/configs/dnsmgr.conf
+# wget https://github.com/N4IRS/AllStar/raw/master/configs/modules.conf
+
+# Checkout DMRlink and put it in /opt
+cd /srv
+git clone https://github.com/N4IRS/DMRlink
+cd /srv/DMRlink/
+./mk_dmrlink
+
+# setup boot for DV3000
+cd /srv
+systemctl stop getty@ttyAMA0.service
+systemctl disable getty@ttyAMA0.service
+apt-get install -y sudo
+
+# Setup WiringPi
+git clone git://git.drogon.net/wiringPi
+cd wiringPi/
+./build
+cd ..
+
+# Setup AMBEserverGPIO
+git clone https://github.com/dl5di/OpenDV.git
+mv OpenDV/DummyRepeater/DV3000 DV3000
+rm -rf OpenDV
+cd DV3000/
+make clean
+make
+make install
+make init-install
+python AMBEtest3.py
+cd /etc/init.d
+update-rc.d AMBEserverGPIO start 50 2 3 4 5
+
+# Setup DMRGateway
+cd /srv
+git clone https://github.com/N4IRS/DMRGateway.git
+cd DMRGateway/
+./install.sh
+cp config.txt /boot
+cp cmdline.txt /boot
+
+# reboot
+
+
