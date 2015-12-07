@@ -133,8 +133,7 @@ class ambeIPSC(IPSC):
             if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
                 if self._currentTG == self._no_tg:
                     _src_sub    = get_info(int_id(_src_sub), subscriber_ids)
-                    _peerid     = get_info(int_id(_peerid), peer_ids)
-                    print('Voice Transmission Start on TS {} and TG {} ({}) from {} on peer {}'.format("2" if _ts else "1", _dst_sub, _tg_id, _src_sub, _peerid))
+                    print('Voice Transmission Start on TS {} and TG {} ({}) from {}'.format("2" if _ts else "1", _dst_sub, _tg_id, _src_sub))
                     self._currentTG = _tg_id
                     self._transmitStartTime = time()
                 else:
