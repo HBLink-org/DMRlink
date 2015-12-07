@@ -7,7 +7,7 @@
 #################################################
 
 # Minor updates to DIAL
-# rm /etc/asterisk/firsttime 
+# rm /etc/asterisk/firsttime
 cd /etc/asterisk/
 wget https://github.com/N4IRS/AllStar/raw/master/configs/dnsmgr.conf
 # wget https://github.com/N4IRS/AllStar/raw/master/configs/modules.conf
@@ -16,7 +16,7 @@ wget https://github.com/N4IRS/AllStar/raw/master/configs/dnsmgr.conf
 cd /srv
 git clone https://github.com/N4IRS/DMRlink
 cd /srv/DMRlink/
-./mk_dmrlink 
+./mk_dmrlink
 
 # setup boot for DV3000
 cd /srv
@@ -47,7 +47,7 @@ update-rc.d AMBEserverGPIO start 50 2 3 4 5
 cd /srv
 git clone https://github.com/N4IRS/DMRGateway.git
 cd DMRGateway/
-# ./install.sh 
+./install.sh
 cp config.txt /boot
 cp cmdline.txt /boot
 
