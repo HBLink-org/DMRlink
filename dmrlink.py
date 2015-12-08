@@ -46,6 +46,8 @@ __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
 __status__ = 'beta'
 
+# Change the current directory to the location of the application
+os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
