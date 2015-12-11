@@ -218,7 +218,7 @@ class bridgeIPSC(IPSC):
             
                 # Calculate and append the authentication hash for the target network... if necessary
                 if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
-                    _tmp_data = self.hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
+                    _tmp_data = self.auth_hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 networks[_target].send_to_ipsc(_tmp_data)
 
@@ -242,7 +242,7 @@ class bridgeIPSC(IPSC):
 
                 # Calculate and append the authentication hash for the target network... if necessary
                 if NETWORK[target]['LOCAL']['AUTH_ENABLED']:
-                    _tmp_data = self.hashed_packet(NETWORK[target]['LOCAL']['AUTH_KEY'], _tmp_data)
+                    _tmp_data = self.auth_hashed_packet(NETWORK[target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 networks[target].send_to_ipsc(_tmp_data)
 
@@ -258,7 +258,7 @@ class bridgeIPSC(IPSC):
 
                 # Calculate and append the authentication hash for the target network... if necessary
                 if NETWORK[target]['LOCAL']['AUTH_ENABLED']:
-                    _tmp_data = self.hashed_packet(NETWORK[target]['LOCAL']['AUTH_KEY'], _tmp_data)
+                    _tmp_data = self.auth_hashed_packet(NETWORK[target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 networks[target].send_to_ipsc(_tmp_data)
 
