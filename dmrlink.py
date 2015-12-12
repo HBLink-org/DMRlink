@@ -46,6 +46,8 @@ __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
 __status__ = 'beta'
 
+# Change the current directory to the location of the application
+os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
@@ -290,15 +292,15 @@ try:
     with open(PATH+'subscriber_ids.csv', 'rU') as subscriber_ids_csv:
         subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
         for row in subscribers:
-            subscriber_ids[int(row[1])] = (row[0])
+            subscriber_ids[int(row[0])] = (row[1])
 except ImportError:
     logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
-    
+
 try:
     with open(PATH+'peer_ids.csv', 'rU') as peer_ids_csv:
         peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
         for row in peers:
-            peer_ids[int(row[1])] = (row[0])
+            peer_ids[int(row[0])] = (row[1])
 except ImportError:
     logger.warning('peer_ids.csv not found: Peer aliases will not be available')
 

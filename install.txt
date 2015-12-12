@@ -1,0 +1,6 @@
+To install DMRlink for DMRGateway
+cd /srv
+git clone https://github.com/N4IRS/DMRlink.git
+cd DMRlink
+./mk_dmrlink
+
