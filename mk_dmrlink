@@ -85,6 +85,7 @@ cp /srv/DMRlink/bridge.py /opt/dmrlink/bridge/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/bridge/
 cp /srv/DMRlink/bridge_rules_SAMPLE.py /opt/dmrlink/bridge/
 cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/bridge/dmrlink.cfg
+cp /srv/DMRlink/known_bridges_SAMPLE.py /opt/dmrlink/bridge/known_bridges.py
 
 # Log app
 cp /srv/DMRlink/log.py /opt/dmrlink/log/
@@ -95,6 +96,7 @@ cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/log/dmrlink.cfg
 cp /srv/DMRlink/playback.py /opt/dmrlink/playback/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/playback/
 cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/playback/dmrlink.cfg
+cp /srv/DMRlink/playback_config_SAMPLE.py /opt/dmrlink/playback/playback_config_SAMPLE.py
 
 # Play Group app
 cp /srv/DMRlink/play_group.py /opt/dmrlink/play_group/
