@@ -16,8 +16,9 @@ from bitstring import BitArray
 
 import sys, socket, ConfigParser, thread, traceback
 import cPickle as pickle
-from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3, get_info, talkgroup_ids, subscriber_ids, peer_ids
+from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3, get_info, talkgroup_ids, subscriber_ids, peer_ids, PATH
 from time import time
+import csv
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -83,7 +84,6 @@ class ambeIPSC(IPSC):
         except:
             traceback.print_exc()
             print( "Error: unable to start thread" )
-
 
     # Utility function to convert bytes to string of hex values (for debug)
     def ByteToHex( self, byteStr ):
@@ -176,11 +176,21 @@ class ambeIPSC(IPSC):
             self._sock.sendto(_ambe_frame3.tobytes(), (self._gateway, self._gateway_port))
 
 
+    def reread_subscribers(self):
+        try:
+            with open(PATH+'subscriber_ids.csv', 'rU') as subscriber_ids_csv:
+                subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
+                subscriber_ids = {}
+                for row in subscribers:
+                    subscriber_ids[int(row[0])] = (row[1])
+                print('Subscriber file has been updated')
+        except ImportError:
+            logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
 
     #
     # Define a function for the thread
     # Use netcat to dynamically change the TGs that are forwarded to Allstar
-    # echo "x,y,z" | nc 127.0.0.1 1235
+    # echo -n "x,y,z" | nc 127.0.0.1 1235
     #
     def remote_control(self, port):
         s = socket.socket()         # Create a socket object
@@ -193,11 +203,14 @@ class ambeIPSC(IPSC):
             c, addr = s.accept()     # Establish connection with client.
             print( 'Got connection from', addr )
             tgs = c.recv(1024)
+            print('Command:"{}"'.format(tgs))
             if tgs:
-                self._tg_filter = map(int, tgs.split(','))
-                print( 'New TGs=', self._tg_filter )
+                if tgs == 'reread_subscribers':
+                    self.reread_subscribers()
+                else:
+                    self._tg_filter = map(int, tgs.split(','))
+                    print( 'New TGs=', self._tg_filter )
             c.close()                # Close the connection
-
 
 
 if __name__ == '__main__':
