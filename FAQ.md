@@ -11,7 +11,7 @@
 
 **Why can't DMRlink talk to my c-Bridge over a CC-CC connection??** The c-Bridge CC-CC connection is a proprietary system written by Ravennet Systems. It is not part of IPSC, and is used only between c-Bridge, TL-NET and other Ravennet-based RoIP systems. The DMRlink project only deals with IPSC. As such it doesn't communicate with SmartPTT radioserver-to-radioserver links either.
 
-**Will you help me get it working?** DMRlink is not commercial software, and nobody is getting paid to write it. The work here represnets HUNDREDS of hours of volunteer effort. We will help as we can, but you must be familiar with IP data networking, very basic programming (preferably python) and IPSC or you will likely have a very hard time getting it to work to your satisfaction.
+**Will you help me get it working?** DMRlink is not commercial software, and nobody is getting paid to write it. The work here represents HUNDREDS of hours of volunteer effort. We will help as we can, but you must be familiar with IP data networking, very basic programming (preferably python) and IPSC or you will likely have a very hard time getting it to work to your satisfaction.
  
 
 ***73 DE N0MJS***
