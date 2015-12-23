@@ -1,10 +1,10 @@
 #! /bin/sh
 
-#################################################
-#                                               #
-# Create directory structure for DMRlink        #
-#                                               #
-#################################################
+###################################################
+#                                                 #
+# Download Subscriber and Peer ID's from DMR-MARC #
+#                                                 #
+###################################################
 
 # To provide more readable output from DMRlink with current subscriber and repeater IDs, we download the CSV files from DMR-MARC
 # If you are going to use this in a cron task,  don't run it more then once a day.
@@ -29,4 +29,7 @@ wget -O subscriber_ids.csv -q "http://www.dmr-marc.net/cgi-bin/trbo-database/dat
 
 # Get the peer IDs
 wget -O peer_ids.csv -q "http://www.dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=repeaters&format=csv&header=0"
+
+# Tell ambe_audio to re-read the files
+echo -n "reread_subscribers" | nc 127.0.0.1 1235
 
