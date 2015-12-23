@@ -30,8 +30,10 @@ RULES = {
         'TRUNK': False,
         'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
-            {'SRC_GROUP': 1, 'SRC_TS': 1, 'DST_NET': 'IPSC_BAR', 'DST_GROUP': 2, 'DST_TS': 2},
+            {'SRC_TS': 1, 'SRC_GROUP': 1, 'DST_NET': 'IPSC_BAR', 'DST_TS': 2, 'DST_GROUP': 2},
+            # Send the IPSC_FOO network Time Slice 1, Talk Group 1 to the IPSC_BAR network on Time Slice 2 Talk Group 2
             # Repeat the above line for as many rules for this IPSC network as you want.
+
         ],
         'PRIVATE_VOICE': [
         ]
@@ -40,7 +42,8 @@ RULES = {
         'TRUNK': False,
         'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
-            {'SRC_GROUP': 2, 'SRC_TS': 2, 'DST_NET': 'IPSC_FOO', 'DST_GROUP': 1, 'DST_TS': 1},
+            {'SRC_TS': 2, 'SRC_GROUP': 2, 'DST_NET': 'IPSC_FOO', 'DST_TS': 1, 'DST_GROUP': 1},
+            # Send the IPSC_BAR network Time Slice 2, Talk Group 2 to the IPSC_FOO network on Time Slice 1 Talk Group 1
             # Repeat the above line for as many rules for this IPSC network as you want.
         ],
         'PRIVATE_VOICE': [
