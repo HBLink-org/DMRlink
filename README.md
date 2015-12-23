@@ -24,7 +24,7 @@ When communications exchanges are described, the symbols "->" and "<-" are used 
 **HOW TO USE THIS SOFTWARE:**  
 The primary objective is the IPSC "stack" itself, and is represended in dmrlink.py. It gets the majority of work, and the applicaitons are examples to show how dmrlink.py can be used. As such, dmrlink.py, dmrlink.cfg and the ipsc directory are pre-requisites for eveyrthing here. dmrlink.py does very little on it's own, but you should ALWAYS make sure it runs directly, as nothing else will work if it does not. Turn on the logging options, set the logger to DEBUG and watch to make sure everything works right **BEFORE** working with the application files.
 
-dmrlink, optionally, uses three additional files to map dmr identifiers to understandable names. These are the .csv files for subscribers, peers (other repeaters, 3rd party console applications, etc.) and one for common talkgroups. These files are really only meaningful for logging and reporting.
+dmrlink, optionally, uses three additional files to map DMR identifiers to understandable names. These are the .csv files for subscribers, peers (other repeaters, 3rd party console applications, etc.) and one for common talkgroups. These files are really only meaningful for logging and reporting.
 
 The remaining files are sample applicaitons that sub-class dmrlink. Since dmrlink takes a default action on each packet type, overriding the class methods for particular packet types are how the examples are presented. For example, bridge.py only needs access to group voice packets, so the group_voice class method is overridden to perform the bridging function. In this particlar example, several other class methods are also overridden, but only to set them to do nothing.
 
