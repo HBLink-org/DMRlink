@@ -30,9 +30,12 @@ try:
 except ImportError:
     sys.exit('Configuration file not found or invalid')
 
-HEX_TGID  = hex_str_3(TGID)
-HEX_SUB   = hex_str_3(SUB)
-BOGUS_SUB = '\xFF\xFF\xFF'
+HEX_TGID    = hex_str_3(TGID)
+HEX_SUB     = hex_str_3(SUB)
+BOGUS_SUB   = '\xFF\xFF\xFF'
+if GROUP_SRC_SUB:
+    logger.info('Playback: USING SUBSCRIBER ID: %s FOR GROUP REPEAT', GROUP_SRC_SUB)
+    HEX_GRP_SUB = hex_str_3(GROUP_SRC_SUB)
 
 class playbackIPSC(IPSC):
     
@@ -61,6 +64,8 @@ class playbackIPSC(IPSC):
                     for i in self.CALL_DATA:
                         _tmp_data = i
                         _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
+                        if GROUP_SRC_SUB:
+                            _tmp_data = _tmp_data.replace(_src_sub, HEX_GRP_SUB)
                         _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
                         # Send the packet to all peers in the target IPSC
                         self.send_to_ipsc(_tmp_data)

@@ -13,6 +13,13 @@ TGID = 12345
 #    one, you still have to use the parenthesis and comma. Just
 #    deal with it, or make it better. TS1 = 0, TS2 = 1.
 GROUP_TS = (1,)
+# ALTERNATE SOURCE SUBSCRIBER ID FOR REPEATED TRANSMISSION
+#   Some folks have radios that don't respond to their own subscriber
+#   IDs. Some just don't want to have the playback come from the same
+#   subscriber ID. If this variable is set to something, it will
+#   be used as the source subscriber for playback.
+#       SET TO 0 TO NOT USE THIS FEATURE!!!
+GROUP_SRC_SUB = 0
 
 
 # ENABLE PRIVATE VOICE PLAYBACK?
