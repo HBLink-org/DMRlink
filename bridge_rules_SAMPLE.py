@@ -23,6 +23,10 @@ NOTES:
     * TRUNK is a boolean set to True only for DMRlink to DMRlink IPSCs that need to move 
         multiple packet streams that may match the same TS - this essentially makes the
         source,timeslot,talkgroup ID a tuple to indentify an arbitrary number of streams
+    * NAME is any name you want, but it MUST MATCH like group names in different groups
+    * ACTIVE should be set to True if you want the rule active by default
+    * ON and OFF are group IDs used to trigger this rule off and on. A reciprocal rule by
+        the same NAME will be enabled/disabled in the rules for DST_NET
 '''
 
 RULES = {
@@ -30,10 +34,9 @@ RULES = {
         'TRUNK': False,
         'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
-            {'SRC_TS': 1, 'SRC_GROUP': 1, 'DST_NET': 'IPSC_BAR', 'DST_TS': 2, 'DST_GROUP': 2},
+            {'NAME': 'STATEWIDE', 'ACTIVE': False, 'ON': 8, 'OFF': 9, 'SRC_TS': 1, 'SRC_GROUP': 1, 'DST_NET': 'IPSC_BAR', 'DST_TS': 2, 'DST_GROUP': 2},
             # Send the IPSC_FOO network Time Slice 1, Talk Group 1 to the IPSC_BAR network on Time Slice 2 Talk Group 2
             # Repeat the above line for as many rules for this IPSC network as you want.
-
         ],
         'PRIVATE_VOICE': [
         ]
@@ -42,7 +45,7 @@ RULES = {
         'TRUNK': False,
         'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
-            {'SRC_TS': 2, 'SRC_GROUP': 2, 'DST_NET': 'IPSC_FOO', 'DST_TS': 1, 'DST_GROUP': 1},
+            {'NAME': 'STATEWIDE', 'ACTIVE': False, 'ON': 8, 'OFF': 9, 'SRC_TS': 2, 'SRC_GROUP': 2, 'DST_NET': 'IPSC_FOO', 'DST_TS': 1, 'DST_GROUP': 1},
             # Send the IPSC_BAR network Time Slice 2, Talk Group 2 to the IPSC_FOO network on Time Slice 1 Talk Group 1
             # Repeat the above line for as many rules for this IPSC network as you want.
         ],

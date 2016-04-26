@@ -77,8 +77,10 @@ for _ipsc in RULES_FILE:
     for _rule in RULES_FILE[_ipsc]['GROUP_VOICE']:
         _rule['SRC_GROUP'] = hex_str_3(_rule['SRC_GROUP'])
         _rule['DST_GROUP'] = hex_str_3(_rule['DST_GROUP'])
-        _rule['SRC_TS'] = _rule['SRC_TS'] - 1
-        _rule['DST_TS'] = _rule['DST_TS'] - 1
+        _rule['ON']        = hex_str_3(_rule['ON'])
+        _rule['OFF']       = hex_str_3(_rule['OFF'])
+        _rule['SRC_TS']    = _rule['SRC_TS'] - 1
+        _rule['DST_TS']    = _rule['DST_TS'] - 1
     if _ipsc not in NETWORK:
         sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
 for _ipsc in NETWORK:
@@ -156,6 +158,19 @@ class bridgeIPSC(IPSC):
         elif _ts == 1:
             _TS = 'TS2'
         
+        # Activate/Deactivate rules based on group voice activity -- PTT or UA for you c-Bridge dorks.
+        # This will ONLY work for symmetrical rules!!!    
+        if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']: # Action happens on un-key
+            for rule in RULES[_network]['GROUP_VOICE']:
+                if _dst_group == rule['ON']:
+                    rule['ACTIVE'] = True
+                    #RULES[(rule[DST_NET])]['GROUP_VOICE'][_network]['ACTIVE'] = True
+                    logger.info('(%s) Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
+                if _dst_group == rule['OFF']:
+                    rule['ACTIVE'] = False
+                    #RULES[(rule[DST_NET])]['GROUP_VOICE'][_network]['ACTIVE'] = False
+                    logger.info('(%s) Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])                    
+        
         now = time()                                # Mark packet arrival time -- we'll need this for call contention handling 
         
         for rule in RULES[_network]['GROUP_VOICE']:
@@ -165,7 +180,7 @@ class bridgeIPSC(IPSC):
             # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
             #if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
             #if BRIDGES:
-            if (rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts) and (self.BRIDGE == True or networks[_target].BRIDGE == True):
+            if (rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and rule['ACTIVE'] == True) and (self.BRIDGE == True or networks[_target].BRIDGE == True):
                 if RULES[_network]['TRUNK'] == False:
                     if ((rule['DST_GROUP'] != _status[_TS]['RX_GROUP']) and ((now - _status[_TS]['RX_TIME']) < RULES[_network]['GROUP_HANGTIME'])):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
