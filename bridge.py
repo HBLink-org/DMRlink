@@ -164,12 +164,20 @@ class bridgeIPSC(IPSC):
             for rule in RULES[_network]['GROUP_VOICE']:
                 if _dst_group == rule['ON']:
                     rule['ACTIVE'] = True
-                    #RULES[(rule[DST_NET])]['GROUP_VOICE'][_network]['ACTIVE'] = True
-                    logger.info('(%s) Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
+                    _target = rule['DST_NET']
+                    logger.info('(%s) Primary Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
+                    for target_rule in RULES[_target]['GROUP_VOICE']:
+                        if target_rule['NAME'] == rule['NAME']:
+                            target_rule['ACTIVE'] = True
+                            logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])
                 if _dst_group == rule['OFF']:
                     rule['ACTIVE'] = False
-                    #RULES[(rule[DST_NET])]['GROUP_VOICE'][_network]['ACTIVE'] = False
-                    logger.info('(%s) Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])                    
+                    _target = rule['DST_NET']
+                    logger.info('(%s) Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
+                    for target_rule in RULES[_target]['GROUP_VOICE']:
+                        if target_rule['NAME'] == rule['NAME']:
+                            target_rule['ACTIVE'] = False
+                            logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])               
         
         now = time()                                # Mark packet arrival time -- we'll need this for call contention handling 
         
