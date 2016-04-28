@@ -23,10 +23,9 @@ NOTES:
     * TRUNK is a boolean set to True only for DMRlink to DMRlink IPSCs that need to move 
         multiple packet streams that may match the same TS - this essentially makes the
         source,timeslot,talkgroup ID a tuple to indentify an arbitrary number of streams
-    * NAME is any name you want, but it MUST MATCH like group names in different groups
-    * ACTIVE should be set to True if you want the rule active by default
-    * ON and OFF are group IDs used to trigger this rule off and on. A reciprocal rule by
-        the same NAME will be enabled/disabled in the rules for DST_NET
+    * NAME is any name you want, and is used to match reciprocal rules for user-activateion
+    * ACTIVE should be set to True if you want the rule active by default, False to be inactive
+    * ON and OFF are Talkgroup IDs used to trigger this rule off and on.
 '''
 
 RULES = {
