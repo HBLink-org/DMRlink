@@ -39,10 +39,9 @@ import sys
 from dmrlink import IPSC, NETWORK, networks, REPORTS, reporting_loop, dmr_nat, logger, hex_str_3, hex_str_4, int_id
 
 __author__ = 'Cortney T. Buffington, N0MJS'
-__copyright__ = 'Copyright (c) 2013-2015 Cortney T. Buffington, N0MJS and the K0USY Group'
-__credits__ = 'Adam Fast, KC0YLK, Dave K, and he who wishes not to be named'
+__copyright__ = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
+__credits__ = 'Adam Fast, KC0YLK; Dave Kierzkowski, KD8EYF; Steve Zingman, N4IRS; Mike Zingman, N4IRR'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__version__ = '0.29b'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
 __status__ = 'beta'

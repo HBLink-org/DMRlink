@@ -17,12 +17,11 @@ from dmrlink import IPSC, NETWORK, networks, logger, dmr_nat, int_id, hex_str_3
 
 __author__ = 'Cortney T. Buffington, N0MJS'
 __copyright__ = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
-__credits__ = 'Adam Fast, KC0YLK; Dave K; and he who wishes not to be named'
+__credits__ = 'Adam Fast, KC0YLK; Dave Kierzkowski, KD8EYF'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__version__ = '0.1a'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
-__status__ = 'pre-alpha'
+__status__ = 'beta'
 
 
 try:

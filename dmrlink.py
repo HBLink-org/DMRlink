@@ -34,14 +34,12 @@ from twisted.internet import reactor
 from twisted.internet import task
 from random import randint
 from time import time
-from json import dumps as json_dump
 from cPickle import dump as pickle_dump
 
 __author__ = 'Cortney T. Buffington, N0MJS'
-__copyright__ = 'Copyright (c) 2013 - 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
-__credits__ = 'Adam Fast, KC0YLK, Dave K, and he who wishes not to be named'
+__copyright__ = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
+__credits__ = 'Adam Fast, KC0YLK; Dave Kierzkowski, KD8EYF; Steve Zingman, N4IRS; Mike Zingman, N4IRR'
 __license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__version__ = '0.27b'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__ = 'n0mjs@me.com'
 __status__ = 'beta'
