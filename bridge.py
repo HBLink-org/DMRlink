@@ -163,7 +163,6 @@ class bridgeIPSC(IPSC):
         # This will ONLY work for symmetrical rules!!!    
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']: # Action happens on un-key
             for rule in RULES[_network]['GROUP_VOICE']:
-                print(rule['ON'])
                 if _dst_group in rule['ON']:
                     rule['ACTIVE'] = True
                     _target = rule['DST_NET']
