@@ -76,10 +76,12 @@ for _ipsc in RULES_FILE:
     for _rule in RULES_FILE[_ipsc]['GROUP_VOICE']:
         _rule['SRC_GROUP'] = hex_str_3(_rule['SRC_GROUP'])
         _rule['DST_GROUP'] = hex_str_3(_rule['DST_GROUP'])
-        _rule['ON']        = hex_str_3(_rule['ON'])
-        _rule['OFF']       = hex_str_3(_rule['OFF'])
         _rule['SRC_TS']    = _rule['SRC_TS'] - 1
         _rule['DST_TS']    = _rule['DST_TS'] - 1
+        for i, e in enumerate(_rule['ON']):
+            _rule['ON'][i] = hex_str_3(_rule['ON'][i])
+        for i, e in enumerate(_rule['OFF']):
+            _rule['OFF'][i] = hex_str_3(_rule['OFF'][i])
     if _ipsc not in NETWORK:
         sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
 for _ipsc in NETWORK:
@@ -161,7 +163,8 @@ class bridgeIPSC(IPSC):
         # This will ONLY work for symmetrical rules!!!    
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']: # Action happens on un-key
             for rule in RULES[_network]['GROUP_VOICE']:
-                if _dst_group == rule['ON']:
+                print(rule['ON'])
+                if _dst_group in rule['ON']:
                     rule['ACTIVE'] = True
                     _target = rule['DST_NET']
                     logger.info('(%s) Primary Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
@@ -169,7 +172,7 @@ class bridgeIPSC(IPSC):
                         if target_rule['NAME'] == rule['NAME']:
                             target_rule['ACTIVE'] = True
                             logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])
-                if _dst_group == rule['OFF']:
+                if _dst_group in rule['OFF']:
                     rule['ACTIVE'] = False
                     _target = rule['DST_NET']
                     logger.info('(%s) Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
@@ -178,7 +181,7 @@ class bridgeIPSC(IPSC):
                             target_rule['ACTIVE'] = False
                             logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])               
         
-        now = time()                                # Mark packet arrival time -- we'll need this for call contention handling 
+        now = time() # Mark packet arrival time -- we'll need this for call contention handling 
         
         for rule in RULES[_network]['GROUP_VOICE']:
             _target = rule['DST_NET']               # Shorthand to reduce length and make it easier to read
