@@ -25,7 +25,8 @@ NOTES:
         source,timeslot,talkgroup ID a tuple to indentify an arbitrary number of streams
     * NAME is any name you want, and is used to match reciprocal rules for user-activateion
     * ACTIVE should be set to True if you want the rule active by default, False to be inactive
-    * ON and OFF are Talkgroup IDs used to trigger this rule off and on.
+    * ON and OFF are LISTS of Talkgroup IDs used to trigger this rule off and on. Even if you
+        only want one (as shown in the ON example), it has to be in list format.
 '''
 
 RULES = {
@@ -33,7 +34,7 @@ RULES = {
         'TRUNK': False,
         'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
-            {'NAME': 'STATEWIDE', 'ACTIVE': False, 'ON': 8, 'OFF': 9, 'SRC_TS': 1, 'SRC_GROUP': 1, 'DST_NET': 'IPSC_BAR', 'DST_TS': 2, 'DST_GROUP': 2},
+            {'NAME': 'STATEWIDE', 'ACTIVE': False, 'ON': [8,], 'OFF': [9,10], 'SRC_TS': 1, 'SRC_GROUP': 1, 'DST_NET': 'IPSC_BAR', 'DST_TS': 2, 'DST_GROUP': 2},
             # Send the IPSC_FOO network Time Slice 1, Talk Group 1 to the IPSC_BAR network on Time Slice 2 Talk Group 2
             # Repeat the above line for as many rules for this IPSC network as you want.
         ],
@@ -44,7 +45,7 @@ RULES = {
         'TRUNK': False,
         'GROUP_HANGTIME': 5,
         'GROUP_VOICE': [
-            {'NAME': 'STATEWIDE', 'ACTIVE': False, 'ON': 8, 'OFF': 9, 'SRC_TS': 2, 'SRC_GROUP': 2, 'DST_NET': 'IPSC_FOO', 'DST_TS': 1, 'DST_GROUP': 1},
+            {'NAME': 'STATEWIDE', 'ACTIVE': False, 'ON': [8,], 'OFF': [9,10], 'SRC_TS': 2, 'SRC_GROUP': 2, 'DST_NET': 'IPSC_FOO', 'DST_TS': 1, 'DST_GROUP': 1},
             # Send the IPSC_BAR network Time Slice 2, Talk Group 2 to the IPSC_FOO network on Time Slice 1 Talk Group 1
             # Repeat the above line for as many rules for this IPSC network as you want.
         ],
