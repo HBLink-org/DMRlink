@@ -55,6 +55,9 @@ BURST_DATA_TYPE = {
     'SLOT1_VOICE': '\x0A',
     'SLOT2_VOICE': '\x8A'   
 }
+
+# Minimum time between different subscribers transmitting on the same TGID
+#
 TS_CLEAR_TIME = .2
 
 # Import Bridging rules
@@ -157,28 +160,7 @@ class bridgeIPSC(IPSC):
         if _ts == 0:
             _TS = 'TS1'
         elif _ts == 1:
-            _TS = 'TS2'
-        
-        # Activate/Deactivate rules based on group voice activity -- PTT or UA for you c-Bridge dorks.
-        # This will ONLY work for symmetrical rules!!!    
-        if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']: # Action happens on un-key
-            for rule in RULES[_network]['GROUP_VOICE']:
-                if _dst_group in rule['ON']:
-                    rule['ACTIVE'] = True
-                    _target = rule['DST_NET']
-                    logger.info('(%s) Primary Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
-                    for target_rule in RULES[_target]['GROUP_VOICE']:
-                        if target_rule['NAME'] == rule['NAME']:
-                            target_rule['ACTIVE'] = True
-                            logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])
-                if _dst_group in rule['OFF']:
-                    rule['ACTIVE'] = False
-                    _target = rule['DST_NET']
-                    logger.info('(%s) Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
-                    for target_rule in RULES[_target]['GROUP_VOICE']:
-                        if target_rule['NAME'] == rule['NAME']:
-                            target_rule['ACTIVE'] = False
-                            logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])               
+            _TS = 'TS2'               
         
         now = time() # Mark packet arrival time -- we'll need this for call contention handling 
         
@@ -187,33 +169,53 @@ class bridgeIPSC(IPSC):
             _status = networks[_target].IPSC_STATUS # Shorthand to reduce length and make it easier to read
 
             # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
-            #if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
-            #if BRIDGES:
+            # if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
+            # if BRIDGES:
             if (rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and rule['ACTIVE'] == True) and (self.BRIDGE == True or networks[_target].BRIDGE == True):
-                if RULES[_network]['TRUNK'] == False:
+                
+                #
+                # BEGIN CONTENTION HANDLING
+                # 
+                # If this is an inter-DMRlink trunk, this isn't necessary
+                if RULES[_network]['TRUNK'] == False: 
+                    
+                    # The rules for each of the 4 "ifs" below are listed here for readability. The Frame To Send is:
+                    #   From a different group than last RX from this IPSC, but it has been less than Group Hangtime
+                    #   From a different group than last TX to this IPSC, but it has been less than Group Hangtime
+                    #   From the same group as the last RX from this IPSC, but from a different subscriber, and it has been less than TS Clear Time
+                    #   From the same group as the last TX to this IPSC, but from a different subscriber, and it has been less than TS Clear Time
+                    # The "continue" at the end of each means the next iteration of the for loop that tests for matching rules
+                    #
                     if ((rule['DST_GROUP'] != _status[_TS]['RX_GROUP']) and ((now - _status[_TS]['RX_TIME']) < RULES[_network]['GROUP_HANGTIME'])):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                             logger.info('(%s) Call not bridged, target active or in group hangtime: IPSC %s, %s, TGID%s', _network, _target, _TS, int_id(rule['DST_GROUP']))
-                        continue
-                    
+                        continue    
                     if ((rule['DST_GROUP'] != _status[_TS]['TX_GROUP']) and ((now - _status[_TS]['TX_TIME']) < RULES[_network]['GROUP_HANGTIME'])):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                             logger.info('(%s) Call not bridged to destination on TGID %s, target in group hangtime: IPSC %s, %s, TGID%s', _network, int_id(_status[_TS]['TX_GROUP']), _target, _TS, int_id(rule['DST_GROUP']))
                         continue
-
-                    if (rule['DST_GROUP'] == _status[_TS]['TX_GROUP']) and (_src_sub != _status[_TS]['TX_SRC_SUB']) and ((now - _status[_TS]['TX_TIME']) < TS_CLEAR_TIME):
-                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                            logger.info('(%s) Call not bridged, call bridge in progress from %s, target: IPSC %s, %s, TGID%s', _network, int_id(_src_sub), _target, _TS, int_id(rule['DST_GROUP']))
-                        continue
-
                     if (rule['DST_GROUP'] == _status[_TS]['RX_GROUP']) and ((now - _status[_TS]['RX_TIME']) < TS_CLEAR_TIME):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                             logger.info('(%s) Call not bridged, matching call already active on target: IPSC %s, %s, TGID%s', _network, _target, _TS, int_id(rule['DST_GROUP']))
                         continue
-                       
+                    if (rule['DST_GROUP'] == _status[_TS]['TX_GROUP']) and (_src_sub != _status[_TS]['TX_SRC_SUB']) and ((now - _status[_TS]['TX_TIME']) < TS_CLEAR_TIME):
+                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                            logger.info('(%s) Call not bridged, call bridge in progress from %s, target: IPSC %s, %s, TGID%s', _network, int_id(_src_sub), _target, _TS, int_id(rule['DST_GROUP']))
+                        continue
+                #
+                # END CONTENTION HANDLING
+                #
+                
+                
+                #
+                # BEGIN FRAME FORWARDING
+                #     
+                # Make a copy of the payload       
                 _tmp_data = _data
+                
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[_target]['LOCAL']['RADIO_ID'])
+                
                 # Re-Write the destination Group ID
                 _tmp_data = _tmp_data.replace(_dst_group, rule['DST_GROUP'])
             
@@ -245,14 +247,63 @@ class bridgeIPSC(IPSC):
                     _tmp_data = self.auth_hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 networks[_target].send_to_ipsc(_tmp_data)
-
+                #
+                # END FRAME FORWARDING
+                #
+                
+                
+                # Set values for the contention handler to test next time there is a frame to forward
                 _status[_TS]['TX_GROUP'] = rule['DST_GROUP']
                 _status[_TS]['TX_TIME'] = now
                 _status[_TS]['TX_SRC_SUB'] = _src_sub
+                
 
-        # Mark the group and time that a packet was recieved
+        # Mark the group and time that a packet was recieved for the contention handler to use later
         self.IPSC_STATUS[_TS]['RX_GROUP'] = _dst_group
-        self.IPSC_STATUS[_TS]['RX_TIME'] = now 
+        self.IPSC_STATUS[_TS]['RX_TIME']  = now
+        
+        
+        #
+        # BEGIN IN-BAND SIGNALING BASED ON TGID & VOICE TERMINATOR FRAME
+        #
+        # Activate/Deactivate rules based on group voice activity -- PTT or UA for you c-Bridge dorks.
+        # This will ONLY work for symmetrical rules!!!
+        
+        # Action happens on un-key
+        if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
+            
+            # Iterate the rules dictionary
+            for rule in RULES[_network]['GROUP_VOICE']:
+                
+                # TGID matches an ACTIVATION trigger
+                if _dst_group in rule['ON']:
+                    # Set the matching rule as ACTIVE
+                    rule['ACTIVE'] = True
+                    logger.info('(%s) Primary Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
+                    
+                    # Set reciprocal rules for other IPSCs as ACTIVE
+                    _target = rule['DST_NET']
+                    for target_rule in RULES[_target]['GROUP_VOICE']:
+                        if target_rule['NAME'] == rule['NAME']:
+                            target_rule['ACTIVE'] = True
+                            logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])
+                            
+                # TGID matches an DE-ACTIVATION trigger
+                if _dst_group in rule['OFF']:
+                    # Set the matching rule as ACTIVE
+                    rule['ACTIVE'] = False
+                    logger.info('(%s) Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
+                    
+                    # Set reciprocal rules for other IPSCs as ACTIVE
+                    _target = rule['DST_NET']
+                    for target_rule in RULES[_target]['GROUP_VOICE']:
+                        if target_rule['NAME'] == rule['NAME']:
+                            target_rule['ACTIVE'] = False
+                            logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])
+        #                    
+        # END IN-BAND SIGNALLING
+        #
+
 
     def group_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         logger.debug('(%s) Group Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
