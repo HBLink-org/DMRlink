@@ -79,7 +79,7 @@ class rcmIPSC(IPSC):
         try:
             print('Status:      ', STATUS[_status])
         except KeyError:
-            print('Status (unknown): ', h(status))
+            print('Status (unknown): ', h(_status))
         try:
             print('Type:        ', TYPE[_type])
         except KeyError:
