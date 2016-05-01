@@ -35,8 +35,8 @@ except ImportError:
     sys.exit('IPSC message types file not found or invalid')
 
 status = True
-rpt = False
-nack = False
+rpt = True
+nack = True
 
 class rcmIPSC(IPSC):
     
@@ -61,14 +61,14 @@ class rcmIPSC(IPSC):
         _prio =     _data[23]
         _sec =      _data[24]
         
-        _source = get_info(int_id(_source), peer_ids)
-        _ipsc_src = get_info(int_id(_ipsc_src), peer_ids)
-        _rf_src = get_info(int_id(_rf_src), subscriber_ids)
+        _source = str(int_id(_source)) + ', ' + str(get_info(int_id(_source), peer_ids))
+        _ipsc_src = str(int_id(_ipsc_src)) + ', ' + str(get_info(int_id(_ipsc_src), peer_ids))
+        _rf_src = str(int_id(_rf_src)) + ', ' + str(get_info(int_id(_rf_src), subscriber_ids))
         
         if _type == '\x4F' or '\x51':
-            _rf_tgt = get_info(int_id(_rf_tgt), talkgroup_ids)
+            _rf_tgt = 'TGID: ' + str(int_id(_rf_tgt)) + ', ' + str(get_info(int_id(_rf_tgt), talkgroup_ids))
         else:
-            _rf_tgt = get_info(int_id(_rf_tgt), subscriber_ids)
+            _rf_tgt = 'SID: ' + str(int_id(_rf_tgt)) + ', ' + str(get_info(int_id(_rf_tgt), subscriber_ids))
         
         print('Call Monitor - Call Status')
         print('TIME:        ', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -95,7 +95,7 @@ class rcmIPSC(IPSC):
         _ts1_state = _data[5]
         _ts2_state = _data[6]
         
-        _source = get_info(int_id(_source), peer_ids)
+        _source = str(int_id(_source)) + ', ' + str(get_info(int_id(_source), peer_ids))
         
         print('Call Monitor - Repeater State')
         print('TIME:         ', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
