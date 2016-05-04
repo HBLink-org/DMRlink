@@ -116,6 +116,7 @@ try:
     logger.info('Subscriber access control file found, subscriber ACL imported')
 except ImportError:
     logger.critical('\'sub_acl.py\' not found - all subscriber IDs are valid')
+    ACL_ACTION = 'NONE'
 
 # Depending on which type of ACL is used (PERMIT, DENY... or there isn't one)
 # define a differnet function to be used to check the ACL
@@ -123,10 +124,14 @@ if ACL_ACTION == 'PERMIT':
     def allow_sub(_sub):
         if _sub in ACL:
             return True
+        else:
+            return False
 elif ACL_ACTION == 'DENY':
     def allow_sub(_sub):
         if _sub not in ACL:
             return True
+        else:
+            return False
 else:
     def allow_sub(_sub):
         return True
@@ -187,7 +192,7 @@ class bridgeIPSC(IPSC):
         
         # Check for ACL match, and return if the subscriber is not allowed
         if allow_sub(_src_sub) == False:
-            logger.debug('(%s) Group Voice Packet ***REJECTED BY ACL*** From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
+            logger.warning('(%s) Group Voice Packet ***REJECTED BY ACL*** From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
             return
         
         # Process the packet
