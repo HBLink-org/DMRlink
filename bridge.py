@@ -104,6 +104,35 @@ except ImportError:
     logger.critical('\'known_bridges.py\' not found - backup bridge service will not be enabled')
     BRIDGES = []
 
+# Import subscriber ACL
+# ACL may be a single list of subscriber IDs
+# Global action is to allow or deny them. Multiple lists with different actions and ranges
+# are not yet implemented.
+try:
+    from sub_acl import ACL_ACTION, ACL
+    # uses more memory to build hex strings, but processes MUCH faster when checking for matches
+    for i, e in enumerate(ACL):
+        ACL[i] = hex_str_3(ACL[i])
+    logger.info('Subscriber access control file found, subscriber ACL imported')
+except ImportError:
+    logger.critical('\'sub_acl.py\' not found - all subscriber IDs are valid')
+
+# Depending on which type of ACL is used (PERMIT, DENY... or there isn't one)
+# define a differnet function to be used to check the ACL
+if ACL_ACTION == 'PERMIT':
+    def allow_sub(_sub):
+        if _sub in ACL:
+            return True
+elif ACL_ACTION == 'DENY':
+    def allow_sub(_sub):
+        if _sub not in ACL:
+            return True
+else:
+    def allow_sub(_sub):
+        return True
+
+
+
 
 class bridgeIPSC(IPSC):
     def __init__(self, *args, **kwargs):
@@ -155,6 +184,13 @@ class bridgeIPSC(IPSC):
     #************************************************
     #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
+        
+        # Check for ACL match, and return if the subscriber is not allowed
+        if allow_sub(_src_sub) == False:
+            logger.debug('(%s) Group Voice Packet ***REJECTED BY ACL*** From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
+            return
+        
+        # Process the packet
         logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
         _burst_data_type = _data[30] # Determine the type of voice packet this is (see top of file for possible types)
         if _ts == 0:
