@@ -1,7 +1,11 @@
+#NOTICE: The only licensing stipulation for DMRlink is to provide attribution. Come on guys, start providing attribution as required by the license, and outlined in this document of DMRlink is going to be taken down. ONE SIMPLE RULE and NONE of you have followed it.#
+
 **FOR THE IMPATENT PLEASE AT LEAST READ THIS**
 
 There are two ways to "install" DMRlink:
+
 1) Use the Makefile
+
 2) Don't
 
 The makefile will create a directory tree and copy all of the pertient files, making duplicates of some things so that each of the applications have a full set of all of the files they need, standalone.
