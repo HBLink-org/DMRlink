@@ -1,8 +1,14 @@
-***VERSION V2.0b RELEASE***
+**FOR THE IMPATENT PLEASE AT LEAST READ THIS**
 
-~~(NOTE: All active development moved to 3.0 branch. "master" will be frozen for bug fixes until 3.0 is functional. At that time, the master branch will change to 3.0 and the existing master (this branch) will be left at 2.x and not developed further)~~
+There are two ways to "install" DMRlink:
+1) Use the Makefile
+2) Don't
 
-Initial tests with bytearray proved not to provide the significant improvement hoped for, the V3.0 branch has been deleted, work will remain with strings.
+The makefile will create a directory tree and copy all of the pertient files, making duplicates of some things so that each of the applications have a full set of all of the files they need, standalone.
+
+Not using the makefile leaves the structure as it existis in the repo, which is fully functional. It trades the autonomy of the file tree and duplicates for a simpler installation, and the ability to sync to new versions more easily.
+
+The one you use is up to you -- just please don't blindly go download it and type "make" becuase that's just what you do without thinking about this.
 
 
 ##PROJECT: Open Source IPSC Client.
