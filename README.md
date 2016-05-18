@@ -1,4 +1,5 @@
-#NOTICE: The only licensing stipulation for DMRlink is to provide attribution. Come on guys, start providing attribution as required by the license, and outlined in this document of DMRlink is going to be taken down. ONE SIMPLE RULE and NONE of you have followed it.#
+#NOTICE: The only licensing stipulation for DMRlink is to provide attribution. Come on guys, start providing attribution as required by the license, and outlined in this document or DMRlink is going to be taken down. ONE SIMPLE RULE and NONE of you have followed it.#
+
 
 **FOR THE IMPATENT PLEASE AT LEAST READ THIS**
 
