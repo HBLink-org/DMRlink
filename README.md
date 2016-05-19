@@ -289,10 +289,10 @@ Attribution is requested to be given with the following information:
     Link: "http://creativecommons.org/licenses/by-sa/3.0/"
 
 An example where Title, Author and License are hyperlinked:
-  ["DMRlink"](http://github.com/n0mjs710/DMRlink) by [K0USY Group](http://www.k0usy.org) is licensed under [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
+  ["DMRlink"](http://github.com/n0mjs710/DMRlink) by [K0USY Group](http://strikingly.k0usy.com) is licensed under [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
     
 An example where hyperlinks are not possible:
-  "DMRlink" (http://github.com/n0mjs710/DMRlink) by K0USY Group (http://www.k0usy.org) is licensed under CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)
+  "DMRlink" (http://github.com/n0mjs710/DMRlink) by K0USY Group (http://strikingly.k0usy.com) is licensed under CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)
     
 Attribution is requested to be made in any official public or private documentation about the use or derivative use of DMRlink in conjunction with whatever function(s), operation(s) or feature(s) employ DMRlink in whole or in part. Attribution need only be made once per any such "official" documentation and may be placed wherever deemed appropriate by the author of such documentation.
 
