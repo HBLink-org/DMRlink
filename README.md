@@ -1,4 +1,4 @@
-#NOTICE: The only licensing stipulation for DMRlink is to provide attribution. Come on guys, start providing attribution as required by the license, and outlined in this document or DMRlink is going to be taken down. ONE SIMPLE RULE and NONE of you have followed it.#
+##NOTICE: The only licensing stipulation for DMRlink is to provide attribution. Come on guys, start providing attribution as required by the license, and outlined in this document or DMRlink is going to be taken down. ONE SIMPLE RULE and NONE of you have followed it.##
 
 
 **FOR THE IMPATENT PLEASE AT LEAST READ THIS**
@@ -280,10 +280,10 @@ Number of peers can be derived from PEER_LIST_LENGTH, as each peer entry is 11 b
 Attribution is requested to be given with the following information:
 
     Title: "DMRlink"
-    Source: "http://github.com/n0mjs/DMRlink"
+    Source: "http://github.com/n0mjs710/DMRlink"
 
     Author: "K0USY Group"
-    Link: "http://www.k0usy.org"
+    Link: "http://k0usy.strikingly.com"
 
     License: "CC BY-SA 3.0"
     Link: "http://creativecommons.org/licenses/by-sa/3.0/"
