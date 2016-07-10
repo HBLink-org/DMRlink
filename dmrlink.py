@@ -289,30 +289,47 @@ subscriber_ids = {}
 peer_ids = {}
 talkgroup_ids = {}
 
-try:
-    with open(PATH+'subscriber_ids.csv', 'rU') as subscriber_ids_csv:
-        subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
-        for row in subscribers:
-            subscriber_ids[int(row[0])] = (row[1])
-except ImportError:
-    logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
+def reread_peers():
+    global peer_ids
+    try:
+        with open(PATH+'peer_ids.csv', 'rU') as peer_ids_csv:
+            peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
+            peer_ids = {}
+            for row in peers:
+                peer_ids[int(row[0])] = (row[1])
+    except ImportError:
+        logger.warning('peer_ids.csv not found: Peer aliases will not be available')
 
-try:
-    with open(PATH+'peer_ids.csv', 'rU') as peer_ids_csv:
-        peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
-        for row in peers:
-            peer_ids[int(row[0])] = (row[1])
-except ImportError:
-    logger.warning('peer_ids.csv not found: Peer aliases will not be available')
+def reread_talkgroups():
+    global talkgroup_ids
+    try:
+        with open(PATH+'talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
+            talkgroups = csv.reader(talkgroup_ids_csv, dialect='excel', delimiter=',')
+            talkgroup_ids = {}
+            for row in talkgroups:
+                talkgroup_ids[int(row[1])] = (row[0])
+    except ImportError:
+        logger.warning('talkgroup_ids.csv not found: Talkgroup aliases will not be available')
 
-try:
-    with open(PATH+'talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
-        talkgroups = csv.reader(talkgroup_ids_csv, dialect='excel', delimiter=',')
-        for row in talkgroups:
-            talkgroup_ids[int(row[1])] = (row[0])
-except ImportError:
-    logger.warning('talkgroup_ids.csv not found: Talkgroup aliases will not be available')
 
+def reread_subscribers():
+    global subscriber_ids
+    try:
+        with open(PATH+'subscriber_ids.csv', 'rU') as subscriber_ids_csv:
+            subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
+            subscriber_ids = {}
+            for row in subscribers:
+                subscriber_ids[int(row[0])] = (row[1])
+            print('Subscriber file has been updated.', len(subscriber_ids), 'IDs imported')
+    except ImportError:
+        logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
+
+reread_peers()
+reread_talkgroups()
+reread_subscribers()
+
+def get_subscriber_info(_src_sub):
+    return get_info(int_id(_src_sub), subscriber_ids)
 
 #************************************************
 #     UTILITY FUNCTIONS FOR INTERNAL USE
@@ -449,8 +466,8 @@ def process_flags_bytes(_hex_flags):
         'VOICE': _voice,
         'MASTER': _master
         } 
-        
-        
+
+
 # Take a received peer list and the network it belongs to, process and populate the
 # data structure in my_ipsc_config with the results, and return a simple list of peers.
 #
@@ -601,7 +618,7 @@ if REPORTS['REPORT_NETWORKS'] == 'PICKLE':
                 file.close()
         except IOError as detail:
             logger.error('I/O Error: %s', detail)
-        
+     
 elif REPORTS['REPORT_NETWORKS'] == 'PRINT':
     def reporting_loop():      
         logger.debug('Periodic Reporting Loop Started (PRINT)')
@@ -813,7 +830,7 @@ class IPSC(DatagramProtocol):
         if _peerid in self._peers.keys():
             self._peers[_peerid]['STATUS']['CONNECTED'] = True
             logger.info('(%s) Registration Reply From: %s, %s:%s', self._network, int_id(_peerid), self._peers[_peerid]['IP'], self._peers[_peerid]['PORT'])
-    
+
     # OUR MASTER HAS ANSWERED OUR KEEP-ALIVE REQUEST - KEEP TRACK OF IT
     def master_alive_reply(self, _peerid):
         self.reset_keep_alive(_peerid)
@@ -1117,14 +1134,15 @@ class IPSC(DatagramProtocol):
         _packettype = data[0:1]
         _peerid     = data[1:5]
         _ipsc_seq   = data[5:6]
-        
+    
         # AUTHENTICATE THE PACKET
         if not self.validate_auth(self._local['AUTH_KEY'], data):
             logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer: %s, %s:%s', self._network, h(_packettype), int_id(_peerid), host, port)
-            return
+        #            return
             
         # REMOVE SHA-1 AUTHENTICATION HASH: WE NO LONGER NEED IT
-        data = self.strip_hash(data)
+        else:
+            data = self.strip_hash(data)
 
         # PACKETS THAT WE RECEIVE FROM ANY VALID PEER OR VALID MASTER
         if _packettype in ANY_PEER_REQUIRED:

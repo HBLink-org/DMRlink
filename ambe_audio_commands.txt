@@ -1,0 +1,31 @@
+AllStar DTMF command examples:
+82=cmd,/bin/bash -c 'do something here'
+82=cmd,/bin/bash -c 'echo -n "section=Shutup" | nc 127.0.0.1 31002'
+
+Shell command examples:
+# Use netcat to dynamically change ambe_audio without a restart
+# echo -n "tgs=x,y,z" | nc 127.0.0.1 31002
+# echo -n "reread_subscribers" | nc 127.0.0.1 31002
+# echo -n "reread_config" | nc 127.0.0.1 31002
+# echo -n "txTg=##" | nc 127.0.0.1 31002
+# echo -n "txTs=#" | nc 127.0.0.1 31002
+# echo -n "section=XX" | nc 127.0.0.1 31002
+
+Remote control commands:
+'reread_subscribers'
+'reread_config'
+'txTg'
+'txTs'
+'section'
+'gateway_dmr_id'
+'gateway_peer_id'
+'restart'
+'playbackFromFile'
+'tgs'
+'dump_template'
+'get_info'
+
+
+
+
+
