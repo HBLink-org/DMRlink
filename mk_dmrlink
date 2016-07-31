@@ -16,7 +16,6 @@ apt-get install python-twisted -y
 # Make needed directories
 mkdir -p /opt/dmrlink/ambe_audio/ipsc
 mkdir -p /opt/dmrlink/bridge/ipsc
-mkdir -p /opt/dmrlink/gateway/ipsc
 mkdir -p /opt/dmrlink/log/ipsc
 mkdir -p /opt/dmrlink/playback/ipsc
 mkdir -p /opt/dmrlink/play_group/ipsc
@@ -32,12 +31,12 @@ cp /srv/DMRlink/init.d/bridge /opt/dmrlink/rc.bridge
 
 # bitstring install
 cd /opt/dmrlink
-wget https://pypi.python.org/packages/source/b/bitstring/bitstring-3.1.3.zip
-unzip bitstring-3.1.3.zip
-cd bitstring-3.1.3
+wget https://pypi.python.org/packages/f3/e5/dfe4c49c93d174a5fd807ed307d3a3f38c6b3e140972945f81a5f5578ca7/bitstring-3.1.5.zip
+unzip bitstring-3.1.5.zip
+cd bitstring-3.1.5
 python setup.py install
 cd /opt/dmrlink
-rm bitstring-3.1.3.zip
+# rm bitstring-3.1.3.zip
 
 # Put common files in /opt/dmrlink
 cp /srv/DMRlink/subscriber_ids.csv /opt/dmrlink
@@ -48,7 +47,6 @@ cp /srv/DMRlink/get_ids.sh /opt/dmrlink
 # Copy ipsc directory into each app directory
 cp /srv/DMRlink/ipsc/* /opt/dmrlink/ambe_audio/ipsc
 cp /srv/DMRlink/ipsc/* /opt/dmrlink/bridge/ipsc
-cp /srv/DMRlink/ipsc/* /opt/dmrlink/gateway/ipsc
 cp /srv/DMRlink/ipsc/* /opt/dmrlink/log/ipsc
 cp /srv/DMRlink/ipsc/* /opt/dmrlink/playback/ipsc
 cp /srv/DMRlink/ipsc/* /opt/dmrlink/play_group/ipsc
@@ -68,17 +66,12 @@ cp /srv/DMRlink/LICENSE.txt /opt/dmrlink/doc
 cp /srv/DMRlink/README.md /opt/dmrlink/doc
 cp /srv/DMRlink/requirements.txt /opt/dmrlink/doc
 
-# Stock ambe_audio
+# ambe_audio
 cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/ambe_audio.py /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/ambe_audio/dmrlink.cfg
-
-# ambe_audio for DMRGateway
-cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/gateway/
-cp /srv/DMRlink/ambe_audio.py /opt/dmrlink/gateway/
-cp /srv/DMRlink/dmrlink.py /opt/dmrlink/gateway/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/gateway/dmrlink.cfg
+cp /srv/DMRlink/template.bin /opt/dmrlink/ambe_audio/
 
 # Bridge app
 cp /srv/DMRlink/bridge.py /opt/dmrlink/bridge/
