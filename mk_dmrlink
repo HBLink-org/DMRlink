@@ -58,6 +58,8 @@ cp /srv/DMRlink/bridge_rules_SAMPLE.py /opt/dmrlink/samples
 cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/samples
 cp /srv/DMRlink/known_bridges_SAMPLE.py /opt/dmrlink/samples
 cp /srv/DMRlink/playback_config_SAMPLE.py /opt/dmrlink/samples
+cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/samples
+cp /srv/DMRlink/sub_acl_SAMPLE.py /opt/dmrlink/samples
 
 # Put the doc together for easy ref
 cp /srv/DMRlink/FAQ.md /opt/dmrlink/doc
@@ -65,6 +67,7 @@ cp /srv/DMRlink/internal_data_decode.txt /opt/dmrlink/doc
 cp /srv/DMRlink/LICENSE.txt /opt/dmrlink/doc
 cp /srv/DMRlink/README.md /opt/dmrlink/doc
 cp /srv/DMRlink/requirements.txt /opt/dmrlink/doc
+cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/doc
 
 # ambe_audio
 cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/ambe_audio/
@@ -72,6 +75,7 @@ cp /srv/DMRlink/ambe_audio.py /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/ambe_audio/dmrlink.cfg
 cp /srv/DMRlink/template.bin /opt/dmrlink/ambe_audio/
+cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/ambe_audio/
 
 # Bridge app
 cp /srv/DMRlink/bridge.py /opt/dmrlink/bridge/
