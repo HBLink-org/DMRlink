@@ -31,5 +31,5 @@ wget -O subscriber_ids.csv -q "http://www.dmr-marc.net/cgi-bin/trbo-database/dat
 wget -O peer_ids.csv -q "http://www.dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=repeaters&format=csv&header=0"
 
 # Tell ambe_audio to re-read the files
-echo -n "reread_subscribers" | nc 127.0.0.1 1235
+echo -n "reread_subscribers" | nc 127.0.0.1 31002
 
