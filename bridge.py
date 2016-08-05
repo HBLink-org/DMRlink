@@ -322,6 +322,7 @@ class bridgeIPSC(IPSC):
             
             # Iterate the rules dictionary
             for rule in RULES[_network]['GROUP_VOICE']:
+                rule['TIMER'] = time()
                 
                 # TGID matches an ACTIVATION trigger
                 if _dst_group in rule['ON']:
