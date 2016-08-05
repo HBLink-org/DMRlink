@@ -320,7 +320,7 @@ def reread_subscribers():
             subscriber_ids = {}
             for row in subscribers:
                 subscriber_ids[int(row[0])] = (row[1])
-            print('Subscriber file has been updated.', len(subscriber_ids), 'IDs imported')
+            logger.info('Subscriber file has been updated. %s IDs imported', len(subscriber_ids))
     except ImportError:
         logger.warning('subscriber_ids.csv not found: Subscriber aliases will not be available')
 
