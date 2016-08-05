@@ -35,6 +35,9 @@ from twisted.internet import task
 from binascii import b2a_hex as h
 from time import time
 
+# For debugging
+from pprint import pprint
+
 import sys
 from dmrlink import IPSC, NETWORK, networks, REPORTS, reporting_loop, dmr_nat, logger, hex_str_3, hex_str_4, int_id
 
@@ -77,14 +80,17 @@ except ImportError:
 
 for _ipsc in RULES_FILE:
     for _rule in RULES_FILE[_ipsc]['GROUP_VOICE']:
-        _rule['SRC_GROUP'] = hex_str_3(_rule['SRC_GROUP'])
-        _rule['DST_GROUP'] = hex_str_3(_rule['DST_GROUP'])
-        _rule['SRC_TS']    = _rule['SRC_TS'] - 1
-        _rule['DST_TS']    = _rule['DST_TS'] - 1
+        _rule['SRC_GROUP']  = hex_str_3(_rule['SRC_GROUP'])
+        _rule['DST_GROUP']  = hex_str_3(_rule['DST_GROUP'])
+        _rule['SRC_TS']     = _rule['SRC_TS'] - 1
+        _rule['DST_TS']     = _rule['DST_TS'] - 1
         for i, e in enumerate(_rule['ON']):
-            _rule['ON'][i] = hex_str_3(_rule['ON'][i])
+            _rule['ON'][i]  = hex_str_3(_rule['ON'][i])
         for i, e in enumerate(_rule['OFF']):
             _rule['OFF'][i] = hex_str_3(_rule['OFF'][i])
+        _rule['ON_TIME']    = _rule['ON_TIME']*60
+        _rule['OFF_TIME']   = _rule['OFF_TIME']*60
+        _rule['TIMER']      = time()
     if _ipsc not in NETWORK:
         sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
 for _ipsc in NETWORK:
@@ -136,8 +142,9 @@ else:
     def allow_sub(_sub):
         return True
 
-
-
+# Run this every minute for rule timer updates
+def rule_timer_loop():
+    pass
 
 class bridgeIPSC(IPSC):
     def __init__(self, *args, **kwargs):
@@ -392,5 +399,9 @@ if __name__ == '__main__':
     if REPORTS['REPORT_NETWORKS']:
         reporting = task.LoopingCall(reporting_loop)
         reporting.start(REPORTS['REPORT_INTERVAL'])
+        
+    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
+    rule_timer = task.LoopingCall(rule_timer_loop)
+    rule_timer.start(60)
        
     reactor.run()
