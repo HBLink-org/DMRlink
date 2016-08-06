@@ -88,8 +88,8 @@ for _ipsc in RULES_FILE:
             _rule['ON'][i]  = hex_str_3(_rule['ON'][i])
         for i, e in enumerate(_rule['OFF']):
             _rule['OFF'][i] = hex_str_3(_rule['OFF'][i])
-        _rule['ON_TIME']    = _rule['ON_TIME']*60
-        _rule['OFF_TIME']   = _rule['OFF_TIME']*60
+        _rule['ON_TIMEOUT']= _rule['ON_TIMEOUT']*60
+        _rule['OFF_TIMEOUT']   = _rule['OFF_TIMEOUT']*60
         _rule['TIMER']      = time()
     if _ipsc not in NETWORK:
         sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
