@@ -88,9 +88,8 @@ for _ipsc in RULES_FILE:
             _rule['ON'][i]  = hex_str_3(_rule['ON'][i])
         for i, e in enumerate(_rule['OFF']):
             _rule['OFF'][i] = hex_str_3(_rule['OFF'][i])
-        _rule['ON_TIMEOUT']= _rule['ON_TIMEOUT']*60
-        _rule['OFF_TIMEOUT']   = _rule['OFF_TIMEOUT']*60
-        _rule['TIMER']      = time()
+        _rule['TIMEOUT']= _rule['TIMEOUT']*60
+        _rule['TIMER']      = time() + _rule['TIMEOUT']
     if _ipsc not in NETWORK:
         sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
 for _ipsc in NETWORK:
@@ -144,7 +143,22 @@ else:
 
 # Run this every minute for rule timer updates
 def rule_timer_loop():
-    pass
+    logger.debug('Rule timer loop started')
+    _now = time()
+    for _network in RULES:
+        for _rule in RULES[_network]['GROUP_VOICE']:
+            if _rule['TO_TYPE'] == 'ON':
+                if _rule['ACTIVE'] == True:
+                    if _rule['TIMER'] < _now:
+                        _rule['ACTIVE'] = False
+                        logger.info('(%s) Rule timout DEACTIVATE: Rule name: %s, Target IPSC: %s, TS: %s, TGID: %s', _network, _rule['NAME'], _rule['DST_NET'], _rule['DST_TS']+1, int_id(_rule['DST_GROUP']))
+            elif _rule['TO_TYPE'] == 'OFF':
+                if _rule['ACTIVE'] == False:
+                    if _rule['TIMER'] < _now:
+                        _rule['ACTIVE'] = True
+                        logger.info('(%s) Rule timout ACTIVATE: Rule name: %s, Target IPSC: %s, TS: %s, TGID: %s', _network, _rule['NAME'], _rule['DST_NET'], _rule['DST_TS']+1, int_id(_rule['DST_GROUP']))
+            else:
+                logger.debug('Rule timer loop made no rule changes')
 
 class bridgeIPSC(IPSC):
     def __init__(self, *args, **kwargs):
@@ -319,10 +333,10 @@ class bridgeIPSC(IPSC):
         
         # Action happens on un-key
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
+            _now = time()
             
             # Iterate the rules dictionary
             for rule in RULES[_network]['GROUP_VOICE']:
-                rule['TIMER'] = time()
                 
                 # TGID matches an ACTIVATION trigger
                 if _dst_group in rule['ON']:
