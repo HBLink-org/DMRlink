@@ -342,6 +342,7 @@ class bridgeIPSC(IPSC):
                 if _dst_group in rule['ON']:
                     # Set the matching rule as ACTIVE
                     rule['ACTIVE'] = True
+                    rule['TIMER'] = _now + rule['TIMEOUT']
                     logger.info('(%s) Primary Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
                     
                     # Set reciprocal rules for other IPSCs as ACTIVE
@@ -349,6 +350,7 @@ class bridgeIPSC(IPSC):
                     for target_rule in RULES[_target]['GROUP_VOICE']:
                         if target_rule['NAME'] == rule['NAME']:
                             target_rule['ACTIVE'] = True
+                            target_rule['TIMER'] = _now + target_rule['TIMEOUT']
                             logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])
                             
                 # TGID matches an DE-ACTIVATION trigger
