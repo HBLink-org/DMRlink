@@ -333,24 +333,34 @@ class bridgeIPSC(IPSC):
         
         # Action happens on un-key
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
-            _now = time()
             
             # Iterate the rules dictionary
             for rule in RULES[_network]['GROUP_VOICE']:
+                _target = rule['DST_NET']
+                
+                # TGID matches a rule source, reset its timer
+                if _ts == rule['SRC_TS'] and _dst_group == rule['SRC_GROUP']:
+                    rule['TIMER'] = now + rule['TIMEOUT']
+                    logger.info('(%s) Source group transmission match for rule \"%s\". Reset timeout to %s', _network, rule['NAME'], rule['TIMER'])
+                    
+                    # Scan for reciprocal rules and reset their timers as well.
+                    for target_rule in RULES[_target]['GROUP_VOICE']:
+                        if target_rule['NAME'] == rule['NAME']:
+                            target_rule['TIMER'] = now + target_rule['TIMEOUT']
+                            logger.info('(%s) Reciprocal group transmission match for rule \"%s\" for IPSC %s. Reset timeout to %s', _network, target_rule['NAME'], _target, rule['TIMER'])
                 
                 # TGID matches an ACTIVATION trigger
                 if _dst_group in rule['ON']:
                     # Set the matching rule as ACTIVE
                     rule['ACTIVE'] = True
-                    rule['TIMER'] = _now + rule['TIMEOUT']
+                    rule['TIMER'] = now + rule['TIMEOUT']
                     logger.info('(%s) Primary Bridge Rule \"%s\" changed to state: %s', _network, rule['NAME'], rule['ACTIVE'])
                     
                     # Set reciprocal rules for other IPSCs as ACTIVE
-                    _target = rule['DST_NET']
                     for target_rule in RULES[_target]['GROUP_VOICE']:
                         if target_rule['NAME'] == rule['NAME']:
                             target_rule['ACTIVE'] = True
-                            target_rule['TIMER'] = _now + target_rule['TIMEOUT']
+                            target_rule['TIMER'] = now + target_rule['TIMEOUT']
                             logger.info('(%s) Reciprocal Bridge Rule \"%s\" in IPSC \"%s\" changed to state: %s', _network, target_rule['NAME'], _target, rule['ACTIVE'])
                             
                 # TGID matches an DE-ACTIVATION trigger
