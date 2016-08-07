@@ -331,8 +331,13 @@ class bridgeIPSC(IPSC):
         # Activate/Deactivate rules based on group voice activity -- PTT or UA for you c-Bridge dorks.
         # This will ONLY work for symmetrical rules!!!
         
+        # Action happens on key up
+        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+            logger.info('(%s) GROUP VOICE START: PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group))
+        
         # Action happens on un-key
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
+            logger.info('(%s) GROUP VOICE END:   PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group))
             
             # Iterate the rules dictionary
             for rule in RULES[_network]['GROUP_VOICE']:
@@ -347,7 +352,7 @@ class bridgeIPSC(IPSC):
                     for target_rule in RULES[_target]['GROUP_VOICE']:
                         if target_rule['NAME'] == rule['NAME']:
                             target_rule['TIMER'] = now + target_rule['TIMEOUT']
-                            logger.info('(%s) Reciprocal group transmission match for rule \"%s\" for IPSC %s. Reset timeout to %s', _network, target_rule['NAME'], _target, rule['TIMER'])
+                            logger.info('(%s) Reciprocal group transmission match for rule \"%s\" on IPSC \"%s\". Reset timeout to %s', _network, target_rule['NAME'], _target, rule['TIMER'])
                 
                 # TGID matches an ACTIVATION trigger
                 if _dst_group in rule['ON']:
