@@ -1,0 +1,18 @@
+[Unit]
+Description=DMRlink bridge Service
+# Description=Place this file in /lib/systemd/system
+# Description=N4IRS 7/10/2016 
+
+[Service]
+Type=simple
+StandardOutput=null
+WorkingDirectory=/opt/dmrlink/bridge
+Restart=always
+RestartSec=3
+ExecStart=/opt/dmrlink/bridge/
+ExecReload=/bin/kill -2 $MAINPID
+KillMode=process
+
+[Install]
+WantedBy=network-online.target
+
