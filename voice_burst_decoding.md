@@ -1,0 +1,150 @@
+VOICE HEADER 1:   80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.dd  3b.01  3b.eb.3c.e0  00.00.00.00  |  01  **80000a800a0060000000**  00.00.02  2f.7c.ca  **92af7000113532**
+VOICE HEADER 2:   80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.5d  3b.02  3b.eb.3e.c0  00.00.00.00  |  01  **80000a800a0060000000**  00.00.02  2f.7c.ca  **92af7000113530**
+VOICE HEADER 3:   80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.5d  3b.03  3b.eb.40.a0  00.00.00.00  |  01  **80000a800a0060000000**  00.00.02  2f.7c.ca  **92af7000113531**
+VOICE BURST A:    80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.5d  3b.04  3b.eb.42.80  00.00.00.00  |  8a  14  **40**  f8.01.a9.9f.8c.e0.be.00.6a.67.e3.38.2f.80.1a.99.f8.ce.08
+VOICE BURST B:    80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.5d  3b.05  3b.eb.44.60  00.00.00.00  |  8a  19  **06**  f8.01.a9.9f.8c.e0.be.00.6a.67.e3.38.2f.80.1a.99.f8.ce.08  **0505060612**
+VOICE BURST C:    80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.5d  3b.06  3b.eb.46.40  00.00.00.00  |  8a  19  **06**  f8.01.a9.9f.8c.e0.be.00.6a.67.e3.38.2f.80.1a.99.f8.ce.08  **0905060516**
+VOICE BURST D:    80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.5d  3b.07  3b.eb.48.20  00.00.00.00  |  8a  19  **06**  98.02.b9.4f.a4.d3.bb.b7.96.c7.83.d8.ee.81.19.41.e4.4a.68  **0f05060f16**
+VOICE BURST E:    80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.5d  3b.08  3b.eb.4a.00  00.00.00.00  |  8a  22  **16**  e8.1a.62.d6.8c.6b.ba.06.3d.0d.eb.04.e9.81.dd.f1.04.86.c8  **000a0a0c000000**  00.00.02  2f.7c.ca  **14**
+VOICE BURST F:    80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  20  |  80.5d  3b.09  3b.eb.4b.e0  00.00.00.00  |  8a  19  **06**  98.22.d3.d9.00.b4.a6.05.6d.29.a2.17.a8.82.75.14.f8.10.08  **0000000010**
+VOICE TERMINATOR: 80  00.04.bf.fd  08  2f.7c.ca  00.00.02  02  **00.00.30.ac**  60  |  80.5e  3e.76  3b.f1.b8.40  00.00.00.00  |  02  80  00.0a  80  0a  00.60  00  00  00  00.00.02  2f.7c.ca  **9da07f00123535**
+
+ 
+VOICE HEADER: 54 Bytes (0-53) (sent 3 times, see notes):
+    IPSC:
+        PACKET_TYPE[0]
+        PEER_ID[1-4]
+        IPSC_SEQ[5]
+        SRC_SUB[6-9]
+        DST_SUB[9-11]
+        CALL_TYPE[12]
+        CALL_CONTROL[13-16]  (use a random number)
+        CALL_INFO[17]
+            RTP:
+                RTP_HEAD[18-19]
+                RTP_SEQ[20-21]
+                RTP_TIMESTMP[22-25]
+                RTP_SSID[26-29]
+                    RTP PAYLOAD:
+                        BURST_TYPE[30]
+                        ???[31-40]
+                        VOICE_PDU_DST[41-43]
+                        VOICE_PDU_SRC[44-46]
+                        ???[46-53]
+
+VOICE BURST A: 52 Bytes (0-51):
+    IPSC:
+        PACKET_TYPE[0]
+        PEER_ID[1-4]
+        IPSC_SEQ[5]
+        SRC_SUB[6-9]
+        DST_SUB[9-11]
+        CALL_TYPE[12]
+        CALL_CONTROL[13-16]  (use a random number)
+        CALL_INFO[17]
+            RTP:
+                RTP_HEAD[18-19]
+                RTP_SEQ[20-21]
+                RTP_TIMESTMP[22-25]
+                RTP_SSID[26-29]
+                    RTP PAYLOAD:
+                        BURST_TYPE[30]
+                        LENGTH[31]  (bytes left after this one)
+                        ???[32]
+                        AMBE_DATA[33-51]
+
+VOICE BURST B-D and maybe F: 57 Bytes (0-56):
+    IPSC:
+        PACKET_TYPE[0]
+        PEER_ID[1-4]
+        IPSC_SEQ[5]
+        SRC_SUB[6-9]
+        DST_SUB[9-11]
+        CALL_TYPE[12]
+        CALL_CONTROL[13-16]  (use a random number)
+        CALL_INFO[17]
+            RTP:
+                RTP_HEAD[18-19]
+                RTP_SEQ[20-21]
+                RTP_TIMESTMP[22-25]
+                RTP_SSID[26-29]
+                    RTP PAYLOAD:
+                        BURST_TYPE[30]
+                        LENGTH[31]  (bytes left after this one)
+                        ???[32]
+                        AMBE_DATA[33-51]
+                        ???[52-56]
+                        
+VOICE BURST E: 66 Bytes (0-65):
+    IPSC:
+        PACKET_TYPE[0]
+        PEER_ID[1-4]
+        IPSC_SEQ[5]
+        SRC_SUB[6-9]
+        DST_SUB[9-11]
+        CALL_TYPE[12]
+        CALL_CONTROL[13-16]  (use a random number)
+        CALL_INFO[17]
+            RTP:
+                RTP_HEAD[18-19]
+                RTP_SEQ[20-21]
+                RTP_TIMESTMP[22-25]
+                RTP_SSID[26-29]
+                    RTP PAYLOAD:
+                        BURST_TYPE[30]
+                        LENGTH[31]  (bytes left after this one)
+                        ???[32]
+                        AMBE_DATA[33-51]
+                        ???[52-64]
+                        VOICE_PDU_DST[59-61]
+                        VOICE_PDU_SRC[62-64]
+                        ???[65]
+
+VOICE BURST F, Same as B-D???: 57 Bytes (0-56): 
+
+VOICE TERMINATOR: 54 Bytes (0-53)
+    IPSC:
+        PACKET_TYPE[0]
+        PEER_ID[1-4]
+        IPSC_SEQ[5]
+        SRC_SUB[6-9]
+        DST_SUB[9-11]
+        CALL_TYPE[12]
+        CALL_CONTROL[13-16]  (use a random number)
+        CALL_INFO[17]
+            RTP:
+                RTP_HEAD[18-19]
+                RTP_SEQ[20-21]
+                RTP_TIMESTMP[22-25]
+                RTP_SSID[26-29]
+                    RTP PAYLOAD:
+                        BURST_TYPE[30]
+                        RSSI_THRESH_PARITY[31]
+                        LENGTH_TO_FOLLOW[32-33]
+                        RSSI_STATUS[34]
+                        SLOT_TYPE_SYNC[35]
+                        DATA_SIZE[36-37]
+                        IPSC_DATA { [38] to (LENGTH_TO_FOLLOW *2)-4 }
+                        FULL_LC_BYTE1[38]
+                        FULL_LC_FID[39]
+                        VOICE_PDU_SVC_OPT[40]
+                        VOICE_PDU_DST[41-43]
+                        VOICE_PDU_SRC[44-46]
+                        ???[47-53]
+
+
+ A is a sync burst
+ B,C,D are the ame
+ E has extra data -- EMB?
+ F is the same length as B,C,D, but has a lot of zeros near the end.
+
+Send a wakeup before starting a call (type 0x85)
+
+IPSC Sequence Number - incremented with each call made
+
+RTP Header - Marker set for 1st voide header - 0x80DD, not for anything else 0x805D except terminator 0x80DE, which is the payload type and use is proprietary.
+I've decoded the bits in the RTP header, it's going to be ok to use this recipe. Nothing else is going on.
+
+RTP Sequence number -- increment with each packet
+
+RTP timestamp - assumed currently to be 32 bit fixed point number 16bit.16bit seconds. Which would place these packets at 4.8ms apart... seems wrong.
