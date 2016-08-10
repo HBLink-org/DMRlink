@@ -1,0 +1,17 @@
+[Unit]
+Description=DMRlink bridge Service
+# Description=Place this file in /lib/systemd/system
+
+[Service]
+Type=simple
+StandardOutput=null
+WorkingDirectory=/opt/dmrlink/bridge
+Restart=always
+RestartSec=3
+ExecStart=/usr/bin/python /opt/dmrlink/bridge/bridge.py
+ExecReload=/bin/kill -2 $MAINPID
+KillMode=process
+
+[Install]
+WantedBy=network-online.target
+
