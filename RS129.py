@@ -1,6 +1,17 @@
+'''
+This file is a python translation of:
+    https://github.com/g4klx/MMDVMHost/blob/master/RS129.cpp
+    Copyright (C) 2015 by Jonathan Naylor G4KLX
+         *   This program is free software; you can redistribute it and/or modify
+         *   it under the terms of the GNU General Public License as published by
+         *   the Free Software Foundation; either version 2 of the License, or
+         *   (at your option) any later version.
+'''
+
 from __future__ import print_function
 
 MASK = [0x96, 0x96, 0x96]
+NUM_BYTES = 9
 PARITY_BYTES = 3;
 MAXDEG = PARITY_BYTES * 2;
 POLY= [64, 56, 14, 1, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -58,40 +69,51 @@ LOG_TABLE = [
 	0xCB, 0x59, 0x5F, 0xB0, 0x9C, 0xA9, 0xA0, 0x51, 0x0B, 0xF5, 0x16, 0xEB, 0x7A, 0x75, 0x2C, 0xD7,
 	0x4F, 0xAE, 0xD5, 0xE9, 0xE6, 0xE7, 0xAD, 0xE8, 0x74, 0xD6, 0xF4, 0xEA, 0xA8, 0x50, 0x58, 0xAF
     ]
-    
+
+# For testing the code
+def print_hex(_list):
+    print('[{}]'.format(', '.join(hex(x) for x in _list)))
+       
 # multiplication using logarithms
 def log_mult(a, b):
     if a == 0 or b == 0:
 	    return 0
     return EXP_TABLE[LOG_TABLE[a] + LOG_TABLE[b]];
 
-def RS129_encode(msg):
-    nbytes = 9
-    parity = [0x00,0x00,0x00]
+# Reed-Solomon (12,9) encoder
+def RS129_encode(_msg):
+    assert len(_msg) == 9, 'RS129_encode error: Message not 9 bytes: %s' % print_hex(_msg)
+    
+    parity = [0x00, 0x00, 0x00]
 
-    for i in range(nbytes):
-        dbyte = msg[i] ^ parity[PARITY_BYTES - 1]
+    for i in range(NUM_BYTES):
+        dbyte = _msg[i] ^ parity[PARITY_BYTES - 1]
 
-        for j in range(PARITY_BYTES-1,0,-1):
-		    parity[j] = parity[j - 1] ^ log_mult(POLY[j], dbyte)
-
-        parity[0] = log_mult(POLY[0], dbyte)
+        for j in range(PARITY_BYTES-1, 0, -1):
+            parity[j] = parity[j - 1] ^ log_mult(POLY[j], dbyte)
+            parity[0] = log_mult(POLY[0], dbyte)
     return parity
 
-'''
-// Reed-Solomon (12,9) check
-bool CRS129::check(const unsigned char* in)
-{
-	assert(in != NULL);
 
-	unsigned char parity[4U];
-	encode(in, 9U, parity);
+# Reed-Solomon (12,9) check
+def RS129_check(_msg):
+    assert len(_msg) == 12, 'RS129_check error: Message not 12 bytes: %s' % print_hex(_msg)
+    
+    parity = RS129_encode(_msg[:9])
+    return _msg[9] == parity[2] and msg[10] == parity[1] and msg[11] == parity[0];
 
-	return in[9U] == parity[2U] && in[10U] == parity[1U] && in[11U] == parity[0U];
-}
-'''
+
+# For testing the code
+def print_hex(_list):
+    print('[{}]'.format(', '.join(hex(x) for x in _list)))
 
 # 00 00 00  00.00.01  00.00.02  82.65.6d
-parity = RS129_encode((0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x02))
-for i in range(3):
-    print(hex(parity[i]|MASK[i]))
+
+message = [0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x02]
+parity = RS129_encode(message)
+
+print_hex(message+parity)
+    
+print(RS129_check(message+parity))
+    
+
