@@ -73,7 +73,7 @@ cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/doc
 cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/ambe_audio.py /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/ambe_audio/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/ambe_audio/dmrlink.cfg
+cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/
 cp /srv/DMRlink/template.bin /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/ambe_audio/
 
@@ -81,34 +81,34 @@ cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/bridge.py /opt/dmrlink/bridge/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/bridge/
 cp /srv/DMRlink/bridge_rules_SAMPLE.py /opt/dmrlink/bridge/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/bridge/dmrlink.cfg
-cp /srv/DMRlink/known_bridges_SAMPLE.py /opt/dmrlink/bridge/known_bridges.py
+cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/bridge/
+cp /srv/DMRlink/known_bridges_SAMPLE.py /opt/dmrlink/bridge/
 
 # Log app
 cp /srv/DMRlink/log.py /opt/dmrlink/log/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/log/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/log/dmrlink.cfg
+cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/log/
 
 # Playback (Parrot)
 cp /srv/DMRlink/playback.py /opt/dmrlink/playback/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/playback/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/playback/dmrlink.cfg
-cp /srv/DMRlink/playback_config_SAMPLE.py /opt/dmrlink/playback/playback_config_SAMPLE.py
+cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/playback/
+cp /srv/DMRlink/playback_config_SAMPLE.py /opt/dmrlink/playback/
 
 # Play Group app
 cp /srv/DMRlink/play_group.py /opt/dmrlink/play_group/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/play_group/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/play_group/dmrlink.cfg
+cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/play_group/
 
 # record app
 cp /srv/DMRlink/record.py /opt/dmrlink/record/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/record/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/record/dmrlink.cfg
+cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/record/
 
 # rcm app
 cp /srv/DMRlink/rcm_db_log.py /opt/dmrlink/rcm/
 cp /srv/DMRlink/rcm.py /opt/dmrlink/rcm/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/rcm/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/rcm/dmrlink.cfg
+cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/rcm/
 cp /srv/DMRlink/pickle_stat_reader.py /opt/dmrlink/rcm/
 
