@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 #################################################
 #                                               #
@@ -6,43 +6,49 @@
 #                                               #
 #################################################
 
-apt-get install unzip -y
-apt-get install python-twisted -y
+if [ ! -f /opt/dmrlink/get_ids.sh ]; then
+	apt-get install unzip -y
+	apt-get install python-twisted -y
 
 # To allow multiple instances of DMRlink to run
 # You need multiple ipsc directories, dmrlink.py and dmrlink.cfg
 # The needed files are copied to /opt/dmrlink
 
 # Make needed directories
-mkdir -p /opt/dmrlink/ambe_audio/ipsc
-mkdir -p /opt/dmrlink/bridge/ipsc
-mkdir -p /opt/dmrlink/log/ipsc
-mkdir -p /opt/dmrlink/playback/ipsc
-mkdir -p /opt/dmrlink/play_group/ipsc
-mkdir -p /opt/dmrlink/record/ipsc
-mkdir -p /opt/dmrlink/rcm/ipsc
-mkdir -p /opt/dmrlink/doc
-mkdir -p /opt/dmrlink/samples
-mkdir -p /var/log/dmrlink
+	mkdir -p /opt/dmrlink/ambe_audio/ipsc
+	mkdir -p /opt/dmrlink/bridge/ipsc
+	mkdir -p /opt/dmrlink/log/ipsc
+	mkdir -p /opt/dmrlink/playback/ipsc
+	mkdir -p /opt/dmrlink/play_group/ipsc
+	mkdir -p /opt/dmrlink/record/ipsc
+	mkdir -p /opt/dmrlink/rcm/ipsc
+	mkdir -p /opt/dmrlink/doc
+	mkdir -p /opt/dmrlink/samples
+	mkdir -p /var/log/dmrlink
+
+# bitstring install
+	cd /opt/dmrlink
+	wget https://pypi.python.org/packages/f3/e5/dfe4c49c93d174a5fd807ed307d3a3f38c6b3e140972945f81a5f5578ca7/bitstring-3.1.5.zip
+	unzip bitstring-3.1.5.zip
+	cd bitstring-3.1.5
+	python setup.py install
+
+echo "Required programs installed, continuing"
+
+fi
+
+cd /opt/dmrlink
 
 # Put scripts in /opt/dmrlink
 cp /srv/DMRlink/get_ids.sh /opt/dmrlink # should be linked to /etc/cron.daily
 cp /srv/DMRlink/init.d/bridge /opt/dmrlink/rc.bridge
-
-# bitstring install
-cd /opt/dmrlink
-wget https://pypi.python.org/packages/f3/e5/dfe4c49c93d174a5fd807ed307d3a3f38c6b3e140972945f81a5f5578ca7/bitstring-3.1.5.zip
-unzip bitstring-3.1.5.zip
-cd bitstring-3.1.5
-python setup.py install
-cd /opt/dmrlink
-# rm bitstring-3.1.3.zip
 
 # Put common files in /opt/dmrlink
 cp /srv/DMRlink/subscriber_ids.csv /opt/dmrlink
 cp /srv/DMRlink/talkgroup_ids.csv /opt/dmrlink
 cp /srv/DMRlink/peer_ids.csv /opt/dmrlink
 cp /srv/DMRlink/get_ids.sh /opt/dmrlink
+cp /srv/DMRlink/RS129.py /opt/dmrlink
 
 # Copy ipsc directory into each app directory
 cp /srv/DMRlink/ipsc/* /opt/dmrlink/ambe_audio/ipsc
@@ -68,6 +74,8 @@ cp /srv/DMRlink/LICENSE.txt /opt/dmrlink/doc
 cp /srv/DMRlink/README.md /opt/dmrlink/doc
 cp /srv/DMRlink/requirements.txt /opt/dmrlink/doc
 cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/doc
+cp /srv/DMRlink/internal_data_decode.txt /opt/dmrlink/doc
+cp /srv/DMRlink/voice_burst_decoding.txt /opt/dmrlink/doc
 
 # ambe_audio
 cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/ambe_audio/
