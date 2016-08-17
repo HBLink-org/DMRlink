@@ -49,6 +49,7 @@ cp /srv/DMRlink/talkgroup_ids.csv /opt/dmrlink
 cp /srv/DMRlink/peer_ids.csv /opt/dmrlink
 cp /srv/DMRlink/get_ids.sh /opt/dmrlink
 cp /srv/DMRlink/RS129.py /opt/dmrlink
+cp /srv/DMRlink/template.py /opt/dmrlink
 
 # Copy ipsc directory into each app directory
 cp /srv/DMRlink/ipsc/* /opt/dmrlink/ambe_audio/ipsc
