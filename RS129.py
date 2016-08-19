@@ -13,7 +13,7 @@ from __future__ import print_function
 MASK = [0x96, 0x96, 0x96]
 NUM_BYTES = 9
 PARITY_BYTES = 3;
-MAXDEG = PARITY_BYTES * 2;
+#MAXDEG = PARITY_BYTES * 2;
 POLY= [64, 56, 14, 1, 0, 0, 0, 0, 0, 0, 0, 0]
 
 EXP_TABLE = [
