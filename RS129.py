@@ -13,7 +13,6 @@ from __future__ import print_function
 MASK = [0x96, 0x96, 0x96]
 NUM_BYTES = 9
 PARITY_BYTES = 3;
-#MAXDEG = PARITY_BYTES * 2;
 POLY= [64, 56, 14, 1, 0, 0, 0, 0, 0, 0, 0, 0]
 
 EXP_TABLE = [
@@ -73,7 +72,14 @@ LOG_TABLE = [
 # For testing the code
 def print_hex(_list):
     print('[{}]'.format(', '.join(hex(x) for x in _list)))
-       
+   
+# XOR parity bytes
+def xor_parity(_parity):
+    _return = [0,0,0]
+    for i in range(3):
+        _return[i] = _parity[i] ^ MASK[i]
+    return _return
+      
 # multiplication using logarithms
 def log_mult(a, b):
     if a == 0 or b == 0:
@@ -107,13 +113,15 @@ def RS129_check(_msg):
 def print_hex(_list):
     print('[{}]'.format(', '.join(hex(x) for x in _list)))
 
-# 00 00 00  00.00.01  00.00.02  82.65.6d
-
-message = [0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x02]
+# 00 10 20  00.0c.30  2f.9b.e5  da.d4.5a
+expectp = [0xda,0x4d,0x5a]
+message = [0x00,0x10,0x20,0x00,0x0c,0x30,0x2f,0x9b,0xe5]
 parity = RS129_encode(message)
+xorparity = xor_parity(parity)
+
+print_hex(xorparity)
 
 print_hex(message+parity)
-    
-print(RS129_check(message+parity))
+
     
 
