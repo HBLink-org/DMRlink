@@ -843,7 +843,7 @@ class IPSC(DatagramProtocol):
         NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
         if len(_data) > 18:
             process_peer_list(_data, self._network)
-        logger.debug('(%s) Peer List Reply Recieved From Master %s, %s:%s', self._network, int_id(_peerid), self._master['IP'], self._master['PORT'])
+        logger.debug('(%s) Peer List Reply Received From Master %s, %s:%s', self._network, int_id(_peerid), self._master['IP'], self._master['PORT'])
     
     # OUR MASTER HAS ANSWERED OUR REQUEST TO REGISTER - LOTS OF INFORMATION TO TRACK
     def master_reg_reply(self, _data, _peerid):
