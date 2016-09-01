@@ -92,6 +92,7 @@ cp /srv/DMRlink/dmrlink.py /opt/dmrlink/bridge/
 cp /srv/DMRlink/bridge_rules_SAMPLE.py /opt/dmrlink/bridge/
 cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/bridge/
 cp /srv/DMRlink/known_bridges_SAMPLE.py /opt/dmrlink/bridge/
+cp /srv/DMRlink/sub_acl_SAMPLE.py /opt/dmrlink/bridge/
 
 # Log app
 cp /srv/DMRlink/log.py /opt/dmrlink/log/
