@@ -82,7 +82,7 @@ cp /srv/DMRlink/voice_burst_decoding.txt /opt/dmrlink/doc
 cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/ambe_audio.py /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/dmrlink.py /opt/dmrlink/ambe_audio/
-cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/
+cp /srv/DMRlink/dmrlink_SAMPLE.cfg /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/template.bin /opt/dmrlink/ambe_audio/
 cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/ambe_audio/
 
