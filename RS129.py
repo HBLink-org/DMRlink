@@ -6,13 +6,17 @@ This file is a python translation of:
          *   it under the terms of the GNU General Public License as published by
          *   the Free Software Foundation; either version 2 of the License, or
          *   (at your option) any later version.
+
+Slight gratuitous modifications were made to match functionality with HBlink and DMRlink
 '''
 
 from __future__ import print_function
+from binascii import b2a_hex as h
+from binascii import a2b_hex as a2b
 
 MASK = [0x96, 0x96, 0x96]
 NUM_BYTES = 9
-PARITY_BYTES = 3;
+NPAR = 3;
 POLY= [64, 56, 14, 1, 0, 0, 0, 0, 0, 0, 0, 0]
 
 EXP_TABLE = [
@@ -68,23 +72,15 @@ LOG_TABLE = [
 	0xCB, 0x59, 0x5F, 0xB0, 0x9C, 0xA9, 0xA0, 0x51, 0x0B, 0xF5, 0x16, 0xEB, 0x7A, 0x75, 0x2C, 0xD7,
 	0x4F, 0xAE, 0xD5, 0xE9, 0xE6, 0xE7, 0xAD, 0xE8, 0x74, 0xD6, 0xF4, 0xEA, 0xA8, 0x50, 0x58, 0xAF
     ]
-
-# For testing the code
-def print_hex(_list):
-    print('[{}]'.format(', '.join(hex(x) for x in _list)))
-   
-# XOR parity bytes
-def xor_parity(_parity):
-    _return = [0,0,0]
-    for i in range(3):
-        _return[i] = _parity[i] ^ MASK[i]
-    return _return
       
 # multiplication using logarithms
 def log_mult(a, b):
     if a == 0 or b == 0:
 	    return 0
-    return EXP_TABLE[LOG_TABLE[a] + LOG_TABLE[b]];
+    x = LOG_TABLE[a]
+    y = LOG_TABLE[b]
+    z = EXP_TABLE[x + y]
+    return z
 
 # Reed-Solomon (12,9) encoder
 def RS129_encode(_msg):
@@ -93,35 +89,43 @@ def RS129_encode(_msg):
     parity = [0x00, 0x00, 0x00]
 
     for i in range(NUM_BYTES):
-        dbyte = _msg[i] ^ parity[PARITY_BYTES - 1]
-
-        for j in range(PARITY_BYTES-1, 0, -1):
+        dbyte = _msg[i] ^ parity[NPAR - 1]        
+        for j in range(NPAR - 1, 0, -1):
             parity[j] = parity[j - 1] ^ log_mult(POLY[j], dbyte)
-            parity[0] = log_mult(POLY[0], dbyte)
-    return parity
+        parity[0] = log_mult(POLY[0], dbyte)
 
+    return parity
+    
 
 # Reed-Solomon (12,9) check
 def RS129_check(_msg):
     assert len(_msg) == 12, 'RS129_check error: Message not 12 bytes: %s' % print_hex(_msg)
-    
     parity = RS129_encode(_msg[:9])
     return _msg[9] == parity[2] and msg[10] == parity[1] and msg[11] == parity[0];
 
+# Apply DMR XOR MASK
+def xor_mask(_parity):
+    xor = [0,0,0]
+    for i in range(len(_parity)):
+        xor[i] = _parity[i] ^ MASK[i]
+    return xor
 
+# All Inclusive function to take an LC string and provide the RS129 string to append
+def DMR_RS129_LC_FEC(_message):
+    bin_message = bytearray(_message)
+    parity = RS129_encode(bin_message)
+    xor_parity = xor_mask(parity)
+    return chr(xor_parity[2]) + chr(xor_parity[1]) + chr(xor_parity[0])
+    
+    
 # For testing the code
 def print_hex(_list):
     print('[{}]'.format(', '.join(hex(x) for x in _list)))
 
-# 00 10 20  00.0c.30  2f.9b.e5  da.d4.5a
-expectp = [0xda,0x4d,0x5a]
-message = [0x00,0x10,0x20,0x00,0x0c,0x30,0x2f,0x9b,0xe5]
-parity = RS129_encode(message)
-xorparity = xor_parity(parity)
+if __name__ == '__main__':
 
-print_hex(xorparity)
+    message = '\x00\x10\x20\x00\x0c\x30\x2f\x9b\xe5'
 
-print_hex(message+parity)
-
+    parity = DMR_RS129_LC_FEC(message)
     
-
+    print(h(parity))
