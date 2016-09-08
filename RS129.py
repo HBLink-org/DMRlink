@@ -96,7 +96,7 @@ def RS129_encode(_msg):
     return [parity[2], parity[1], parity[0]]
 
 # Apply DMR XOR MASK
-def xor_mask(_parity):
+def RS129_mask(_parity):
     xor = [0,0,0]
     for i in range(len(_parity)):
         xor[i] = _parity[i] ^ MASK[i]
@@ -106,8 +106,8 @@ def xor_mask(_parity):
 def DMR_RS129_LC_FEC(_message):
     bin_message = bytearray(_message)
     parity = RS129_encode(bin_message)
-    xor_parity = xor_mask(parity)
-    return chr(xor_parity[0]) + chr(xor_parity[1]) + chr(xor_parity[2])
+    masked_parity = RS129_mask(parity)
+    return chr(masked_parity[0]) + chr(masked_parity[1]) + chr(masked_parity[2])
     
     
 # For testing the code
