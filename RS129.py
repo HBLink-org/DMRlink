@@ -93,15 +93,7 @@ def RS129_encode(_msg):
         for j in range(NPAR - 1, 0, -1):
             parity[j] = parity[j - 1] ^ log_mult(POLY[j], dbyte)
         parity[0] = log_mult(POLY[0], dbyte)
-
-    return parity
-    
-
-# Reed-Solomon (12,9) check
-def RS129_check(_msg):
-    assert len(_msg) == 12, 'RS129_check error: Message not 12 bytes: %s' % print_hex(_msg)
-    parity = RS129_encode(_msg[:9])
-    return _msg[9] == parity[2] and msg[10] == parity[1] and msg[11] == parity[0];
+    return [parity[2], parity[1], parity[0]]
 
 # Apply DMR XOR MASK
 def xor_mask(_parity):
@@ -115,7 +107,7 @@ def DMR_RS129_LC_FEC(_message):
     bin_message = bytearray(_message)
     parity = RS129_encode(bin_message)
     xor_parity = xor_mask(parity)
-    return chr(xor_parity[2]) + chr(xor_parity[1]) + chr(xor_parity[0])
+    return chr(xor_parity[0]) + chr(xor_parity[1]) + chr(xor_parity[2])
     
     
 # For testing the code
@@ -123,9 +115,10 @@ def print_hex(_list):
     print('[{}]'.format(', '.join(hex(x) for x in _list)))
 
 if __name__ == '__main__':
-
-    message = '\x00\x10\x20\x00\x0c\x30\x2f\x9b\xe5'
-
-    parity = DMR_RS129_LC_FEC(message)
     
-    print(h(parity))
+    # Validation Example
+    message = '\x00\x10\x20\x00\x0c\x30\x2f\x9b\xe5'
+    parity_should_be = '\xda\x4d\x5a'
+    parity = DMR_RS129_LC_FEC(message)
+    print('Masked Parity Should be:     {}'.format(h(parity_should_be)))
+    print('Calculated Masked Parity is: {}'.format(h(parity)))
