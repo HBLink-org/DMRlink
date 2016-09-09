@@ -1138,7 +1138,7 @@ class IPSC(DatagramProtocol):
         # AUTHENTICATE THE PACKET
         if not self.validate_auth(self._local['AUTH_KEY'], data):
             logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer: %s, %s:%s', self._network, h(_packettype), int_id(_peerid), host, port)
-        #            return
+            return
             
         # REMOVE SHA-1 AUTHENTICATION HASH: WE NO LONGER NEED IT
         else:
