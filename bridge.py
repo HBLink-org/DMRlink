@@ -333,8 +333,8 @@ class bridgeIPSC(IPSC):
         
         # Action happens on key up
         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-            if self.last_seq_id != seq_id:
-                self.last_seq_id = seq_id
+            if self.last_seq_id != _seq_id:
+                self.last_seq_id = _seq_id
                 logger.info('(%s) GROUP VOICE START: PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group))
         
         # Action happens on un-key
