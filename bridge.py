@@ -175,7 +175,7 @@ class bridgeIPSC(IPSC):
             'TS2': {'RX_GROUP':'\x00', 'TX_GROUP':'\x00', 'RX_TIME':0, 'TX_TIME':0, 'RX_SRC_SUB':'\x00', 'TX_SRC_SUB':'\x00'}
         }
         
-        last_seq_id = ''
+        self.last_seq_id = '\x00'
         
     # Setup the backup/polite bridging maintenance loop (based on keep-alive timer)
     
@@ -333,8 +333,8 @@ class bridgeIPSC(IPSC):
         
         # Action happens on key up
         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-            if last_seq_id != seq_id:
-                last_seq_id = seq_id
+            if last_seq_id != self.seq_id:
+                last_seq_id = self.seq_id
                 logger.info('(%s) GROUP VOICE START: PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group))
         
         # Action happens on un-key
