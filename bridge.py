@@ -175,6 +175,9 @@ class bridgeIPSC(IPSC):
             'TS2': {'RX_GROUP':'\x00', 'TX_GROUP':'\x00', 'RX_TIME':0, 'TX_TIME':0, 'RX_SRC_SUB':'\x00', 'TX_SRC_SUB':'\x00'}
         }
         
+        self.last_seq_id = '\x00'
+        self.call_start = 0
+        
     # Setup the backup/polite bridging maintenance loop (based on keep-alive timer)
     
     if BRIDGES:
@@ -219,6 +222,7 @@ class bridgeIPSC(IPSC):
         # Process the packet
         logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
         _burst_data_type = _data[30] # Determine the type of voice packet this is (see top of file for possible types)
+        _seq_id = _data[5]
         if _ts == 0:
             _TS = 'TS1'
         elif _ts == 1:
@@ -303,10 +307,7 @@ class bridgeIPSC(IPSC):
                     elif rule['DST_TS'] == 1:
                         _burst_data_type = BURST_DATA_TYPE['SLOT2_VOICE']
                     _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
-            
-                # Calculate and append the authentication hash for the target network... if necessary
-                if NETWORK[_target]['LOCAL']['AUTH_ENABLED']:
-                    _tmp_data = self.auth_hashed_packet(NETWORK[_target]['LOCAL']['AUTH_KEY'], _tmp_data)
+
                 # Send the packet to all peers in the target IPSC
                 networks[_target].send_to_ipsc(_tmp_data)
                 #
@@ -333,18 +334,25 @@ class bridgeIPSC(IPSC):
         
         # Action happens on key up
         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-            logger.info('(%s) GROUP VOICE START: PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group))
+            if self.last_seq_id != _seq_id:
+                self.last_seq_id = _seq_id
+                self.call_start = time()
+                logger.info('(%s) GROUP VOICE START: CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group))
         
         # Action happens on un-key
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
-            logger.info('(%s) GROUP VOICE END:   PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group))
+            if self.last_seq_id == _seq_id:
+                self.call_duration = time() - self.call_start
+                logger.info('(%s) GROUP VOICE END:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s Duration: %.2fs', _network, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group), self.call_duration)
+            else:
+                logger.warning('(%s) GROUP VOICE END WITHOUT MATCHING START:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group),)
             
             # Iterate the rules dictionary
             for rule in RULES[_network]['GROUP_VOICE']:
                 _target = rule['DST_NET']
                 
                 # TGID matches a rule source, reset its timer
-                if _ts == rule['SRC_TS'] and _dst_group == rule['SRC_GROUP']:
+                if _ts == rule['SRC_TS'] and _dst_group == rule['SRC_GROUP'] and (rule['TO_TYPE'] == 'ON' or rule['TO_TYPE'] == 'OFF'):
                     rule['TIMER'] = now + rule['TIMEOUT']
                     logger.info('(%s) Source group transmission match for rule \"%s\". Reset timeout to %s', _network, rule['NAME'], rule['TIMER'])
                     
@@ -395,9 +403,6 @@ class bridgeIPSC(IPSC):
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[target]['LOCAL']['RADIO_ID'])
 
-                # Calculate and append the authentication hash for the target network... if necessary
-                if NETWORK[target]['LOCAL']['AUTH_ENABLED']:
-                    _tmp_data = self.auth_hashed_packet(NETWORK[target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 networks[target].send_to_ipsc(_tmp_data)
 
@@ -411,9 +416,6 @@ class bridgeIPSC(IPSC):
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[target]['LOCAL']['RADIO_ID'])
 
-                # Calculate and append the authentication hash for the target network... if necessary
-                if NETWORK[target]['LOCAL']['AUTH_ENABLED']:
-                    _tmp_data = self.auth_hashed_packet(NETWORK[target]['LOCAL']['AUTH_KEY'], _tmp_data)
                 # Send the packet to all peers in the target IPSC
                 networks[target].send_to_ipsc(_tmp_data)
 

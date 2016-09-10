@@ -202,8 +202,6 @@ class ambeIPSC(IPSC):
             elif _newSlot == 2:
                 _burst_data_type = BURST_DATA_TYPE['SLOT2_VOICE']
             _frame = _frame[:30] + _burst_data_type + _frame[31:]
-
-        _frame = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _frame)
         
         if (time() - self._busy_slots[_newSlot]) >= 0.10 :          # slot is not busy so it is safe to transmit
             # Send the packet to all peers in the target IPSC
