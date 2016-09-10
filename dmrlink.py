@@ -785,7 +785,7 @@ class IPSC(DatagramProtocol):
         # Send to each connected Peer
         for peer in self._peers.keys():
             if self._peers[peer]['STATUS']['CONNECTED']:
-                self.transport_write(_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
+                self.transport.write(_packet, (self._peers[peer]['IP'], self._peers[peer]['PORT']))
         
     
     # FUNTIONS FOR IPSC MAINTENANCE ACTIVITIES WE RESPOND TO
