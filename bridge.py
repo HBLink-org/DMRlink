@@ -341,7 +341,7 @@ class bridgeIPSC(IPSC):
                 _target = rule['DST_NET']
                 
                 # TGID matches a rule source, reset its timer
-                if _ts == rule['SRC_TS'] and _dst_group == rule['SRC_GROUP']:
+                if _ts == rule['SRC_TS'] and _dst_group == rule['SRC_GROUP'] and (rule['TO_TYPE'] == 'ON' or rule['TO_TYPE'] == 'OFF'):::
                     rule['TIMER'] = now + rule['TIMEOUT']
                     logger.info('(%s) Source group transmission match for rule \"%s\". Reset timeout to %s', _network, rule['NAME'], rule['TIMER'])
                     
