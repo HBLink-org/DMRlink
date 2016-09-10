@@ -118,8 +118,7 @@ class playIPSC(IPSC):
                     elif _ts == 1:
                         _burst_data_type = BURST_DATA_TYPE['SLOT2_VOICE']
                     _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
-                
-                _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
+
                 # Send the packet to all peers in the target IPSC
                 self.send_to_ipsc(_tmp_data)
                 time.sleep(0.06)

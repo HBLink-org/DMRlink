@@ -65,7 +65,6 @@ class playbackIPSC(IPSC):
                         _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
                         if GROUP_SRC_SUB:
                             _tmp_data = _tmp_data.replace(_src_sub, HEX_GRP_SUB)
-                        _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
                         # Send the packet to all peers in the target IPSC
                         self.send_to_ipsc(_tmp_data)
                         time.sleep(0.06)
@@ -92,7 +91,6 @@ class playbackIPSC(IPSC):
                         _tmp_data = _tmp_data.replace(_dst_sub, BOGUS_SUB)
                         _tmp_data = _tmp_data.replace(_src_sub, _orig_dst)
                         _tmp_data = _tmp_data.replace(BOGUS_SUB, _orig_src)
-                        _tmp_data = self.hashed_packet(NETWORK[_network]['LOCAL']['AUTH_KEY'], _tmp_data)
                         # Send the packet to all peers in the target IPSC
                         self.send_to_ipsc(_tmp_data)
                         time.sleep(0.06)
