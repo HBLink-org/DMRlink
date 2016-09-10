@@ -343,7 +343,7 @@ class bridgeIPSC(IPSC):
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
             if self.last_seq_id == _seq_id:
                 self.call_duration = time() - self.call_start
-                logger.info('(%s) GROUP VOICE END:   PEER: %s, SUB: %s, TS: %s, TGID: %s Duration: %ss', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group), self.call_duration)
+                logger.info('(%s) GROUP VOICE END:   PEER: %s, SUB: %s, TS: %s, TGID: %s Duration: %.2fs', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group), self.call_duration)
             else:
                 logger.warning('(%s) GROUP VOICE END WITHOUT MATCHING START:   PEER: %s, SUB: %s, TS: %s, TGID: %s', _network, int_id(_peerid), int_id(_src_sub), _ts+1, int_id(_dst_group),)
             
