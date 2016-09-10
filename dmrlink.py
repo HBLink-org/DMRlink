@@ -1098,13 +1098,14 @@ class IPSC(DatagramProtocol):
         _ipsc_seq   = data[5:6]
     
         # AUTHENTICATE THE PACKET
-        if not self.validate_auth(self._local['AUTH_KEY'], data):
-            logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer: %s, %s:%s', self._network, h(_packettype), int_id(_peerid), host, port)
-            return
+        if self._local['AUTH_ENABLED']:
+            if not self.validate_auth(self._local['AUTH_KEY'], data):
+                logger.warning('(%s) AuthError: IPSC packet failed authentication. Type %s: Peer: %s, %s:%s', self._network, h(_packettype), int_id(_peerid), host, port)
+                return
             
-        # REMOVE SHA-1 AUTHENTICATION HASH: WE NO LONGER NEED IT
-        else:
-            data = self.strip_hash(data)
+            # REMOVE SHA-1 AUTHENTICATION HASH: WE NO LONGER NEED IT
+            else:
+                data = self.strip_hash(data)
 
         # PACKETS THAT WE RECEIVE FROM ANY VALID PEER OR VALID MASTER
         if _packettype in ANY_PEER_REQUIRED:
