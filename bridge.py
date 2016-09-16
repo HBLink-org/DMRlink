@@ -143,7 +143,7 @@ else:
 
 # Run this every minute for rule timer updates
 def rule_timer_loop():
-    logger.debug('Rule timer loop started')
+    logger.debug('(ALL IPSC) Rule timer loop started')
     _now = time()
     for _network in RULES:
         for _rule in RULES[_network]['GROUP_VOICE']:
@@ -152,11 +152,17 @@ def rule_timer_loop():
                     if _rule['TIMER'] < _now:
                         _rule['ACTIVE'] = False
                         logger.info('(%s) Rule timout DEACTIVATE: Rule name: %s, Target IPSC: %s, TS: %s, TGID: %s', _network, _rule['NAME'], _rule['DST_NET'], _rule['DST_TS']+1, int_id(_rule['DST_GROUP']))
+                    else:
+                        timeout_in = _rule['TIMER'] - _now
+                        logger.info('(%s) Rule ACTIVE with ON timer running: Timeout eligible in: %ds, Rule name: %s, Target IPSC: %s, TS: %s, TGID: %s', _network, timeout_in, _rule['NAME'], _rule['DST_NET'], _rule['DST_TS']+1, int_id(_rule['DST_GROUP']))
             elif _rule['TO_TYPE'] == 'OFF':
                 if _rule['ACTIVE'] == False:
                     if _rule['TIMER'] < _now:
                         _rule['ACTIVE'] = True
                         logger.info('(%s) Rule timout ACTIVATE: Rule name: %s, Target IPSC: %s, TS: %s, TGID: %s', _network, _rule['NAME'], _rule['DST_NET'], _rule['DST_TS']+1, int_id(_rule['DST_GROUP']))
+                    else:
+                        timeout_in = _rule['TIMER'] - _now
+                        logger.info('(%s) Rule DEACTIVE with OFF timer running: Timeout eligible in: %ds, Rule name: %s, Target IPSC: %s, TS: %s, TGID: %s', _network, timeout_in, _rule['NAME'], _rule['DST_NET'], _rule['DST_TS']+1, int_id(_rule['DST_GROUP']))
             else:
                 logger.debug('Rule timer loop made no rule changes')
 
@@ -434,6 +440,6 @@ if __name__ == '__main__':
         
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
     rule_timer = task.LoopingCall(rule_timer_loop)
-    rule_timer.start(10)
+    rule_timer.start(60)
        
     reactor.run()
