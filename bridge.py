@@ -234,9 +234,7 @@ class bridgeIPSC(IPSC):
             _target = rule['DST_NET']               # Shorthand to reduce length and make it easier to read
             _status = networks[_target].IPSC_STATUS # Shorthand to reduce length and make it easier to read
 
-            # Matching for rules is against the Destination Group in the SOURCE packet (SRC_GROUP)
-            # if rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts:
-            # if BRIDGES:
+            # This is the primary rule match to determine if the call will be routed.
             if (rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and rule['ACTIVE'] == True) and (self.BRIDGE == True or networks[_target].BRIDGE == True):
                 
                 #
@@ -352,7 +350,7 @@ class bridgeIPSC(IPSC):
                 _target = rule['DST_NET']
                 
                 # TGID matches a rule source, reset its timer
-                if _ts == rule['SRC_TS'] and _dst_group == rule['SRC_GROUP'] and (rule['TO_TYPE'] == 'ON' or rule['TO_TYPE'] == 'OFF'):
+                if _ts == rule['SRC_TS'] and _dst_group == rule['SRC_GROUP'] and ((rule['TO_TYPE'] == 'ON' and (rule['ACTIVE'] == True)) or (rule['TO_TYPE'] == 'OFF' and rule['ACTIVE'] == False)):
                     rule['TIMER'] = now + rule['TIMEOUT']
                     logger.info('(%s) Source group transmission match for rule \"%s\". Reset timeout to %s', _network, rule['NAME'], rule['TIMER'])
                     
@@ -436,6 +434,6 @@ if __name__ == '__main__':
         
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
     rule_timer = task.LoopingCall(rule_timer_loop)
-    rule_timer.start(60)
+    rule_timer.start(10)
        
     reactor.run()
