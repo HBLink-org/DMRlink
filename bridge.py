@@ -28,6 +28,8 @@
 # While this file is listed as Beta status, K0USY Group depends on this code
 # for the bridigng of it's many repeaters. We consider it reliable, but you
 # get what you pay for... as usual, no guarantees.
+#
+# Use to make test strings: #print('PKT:', "\\x".join("{:02x}".format(ord(c)) for c in _data))
 
 from __future__ import print_function
 from twisted.internet import reactor
@@ -219,7 +221,6 @@ class bridgeIPSC(IPSC):
     #************************************************
     #
     def group_voice(self, _network, _src_sub, _dst_group, _ts, _end, _peerid, _data):
-        
         # Check for ACL match, and return if the subscriber is not allowed
         if allow_sub(_src_sub) == False:
             logger.warning('(%s) Group Voice Packet ***REJECTED BY ACL*** From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
