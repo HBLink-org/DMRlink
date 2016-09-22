@@ -12,9 +12,9 @@ Slight gratuitous modifications were made to match functionality with HBlink and
 
 from __future__ import print_function
 from binascii import b2a_hex as h
-from binascii import a2b_hex as a2b
 
-MASK = [0x96, 0x96, 0x96]
+START_MASK = [0x96, 0x96, 0x96]
+END_MASK = [0x99, 0x99, 0x99]
 NUM_BYTES = 9
 NPAR = 3;
 POLY= [64, 56, 14, 1, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -83,7 +83,7 @@ def log_mult(a, b):
     return z
 
 # Reed-Solomon (12,9) encoder
-def RS129_encode(_msg):
+def encode(_msg):
     assert len(_msg) == 9, 'RS129_encode error: Message not 9 bytes: %s' % print_hex(_msg)
     
     parity = [0x00, 0x00, 0x00]
@@ -95,30 +95,45 @@ def RS129_encode(_msg):
         parity[0] = log_mult(POLY[0], dbyte)
     return [parity[2], parity[1], parity[0]]
 
-# Apply DMR XOR MASK
-def RS129_mask(_parity):
+# Apply DMR XOR LC start MASK
+def lc_start_mask(_parity):
     xor = [0,0,0]
     for i in range(len(_parity)):
-        xor[i] = _parity[i] ^ MASK[i]
+        xor[i] = _parity[i] ^ START_MASK[i]
+    return xor
+    
+# Apply DMR XOR LC end MASK
+def lc_end_mask(_parity):
+    xor = [0,0,0]
+    for i in range(len(_parity)):
+        xor[i] = _parity[i] ^ END_MASK[i]
     return xor
 
 # All Inclusive function to take an LC string and provide the RS129 string to append
-def DMR_RS129_LC_FEC(_message):
+def lc_start_encode(_message):
     bin_message = bytearray(_message)
-    parity = RS129_encode(bin_message)
-    masked_parity = RS129_mask(parity)
+    parity = encode(bin_message)
+    masked_parity = lc_start_mask(parity)
+    return chr(masked_parity[0]) + chr(masked_parity[1]) + chr(masked_parity[2])
+    
+# All Inclusive function to take an LC string and provide the RS129 string to append
+def lc_end_encode(_message):
+    bin_message = bytearray(_message)
+    parity = encode(bin_message)
+    masked_parity = lc_end_mask(parity)
     return chr(masked_parity[0]) + chr(masked_parity[1]) + chr(masked_parity[2])
     
     
-# For testing the code
-def print_hex(_list):
-    print('[{}]'.format(', '.join(hex(x) for x in _list)))
+
 
 if __name__ == '__main__':
+    # For testing the code
+    def print_hex(_list):
+        print('[{}]'.format(', '.join(hex(x) for x in _list)))
     
     # Validation Example
     message = '\x00\x10\x20\x00\x0c\x30\x2f\x9b\xe5'
     parity_should_be = '\xda\x4d\x5a'
-    parity = DMR_RS129_LC_FEC(message)
+    parity = lc_start_encode(message)
     print('Masked Parity Should be:     {}'.format(h(parity_should_be)))
     print('Calculated Masked Parity is: {}'.format(h(parity)))
