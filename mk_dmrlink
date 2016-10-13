@@ -77,6 +77,7 @@ cp /srv/DMRlink/requirements.txt /opt/dmrlink/doc
 cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/doc
 cp /srv/DMRlink/internal_data_decode.txt /opt/dmrlink/doc
 cp /srv/DMRlink/voice_burst_decoding.txt /opt/dmrlink/doc
+cp /srv/DMRlink/voice_packets.txt /opt/dmrlink/doc
 
 # ambe_audio
 cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/ambe_audio/
