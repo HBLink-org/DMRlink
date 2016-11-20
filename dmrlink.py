@@ -339,7 +339,8 @@ def get_subscriber_info(_src_sub):
 #
 def hex_str_2(_int_id):
     try:
-        return hex(_int_id)[2:].rjust(4,'0').decode('hex')
+        #return hex(_int_id)[2:].rjust(4,'0').decode('hex')
+        return format(_int_id,'x').rjust(4,'0').decode('hex')
     except TypeError:
         logger.error('hex_str_2: invalid integer length')
      
@@ -347,7 +348,8 @@ def hex_str_2(_int_id):
 #
 def hex_str_3(_int_id):
     try:
-        return hex(_int_id)[2:].rjust(6,'0').decode('hex')
+        #return hex(_int_id)[2:].rjust(6,'0').decode('hex')
+        return format(_int_id,'x').rjust(6,'0').decode('hex')
     except TypeError:
         logger.error('hex_str_3: invalid integer length')
 
@@ -355,7 +357,8 @@ def hex_str_3(_int_id):
 #
 def hex_str_4(_int_id):
     try:
-        return hex(_int_id)[2:].rjust(8,'0').decode('hex')
+        #return hex(_int_id)[2:].rjust(8,'0').decode('hex')
+        return format(_int_id,'x').rjust(8,'0').decode('hex')
     except TypeError:
         logger.error('hex_str_4: invalid integer length')
 
