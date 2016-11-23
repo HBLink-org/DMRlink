@@ -55,9 +55,10 @@ from pprint import pprint
 import sys
 from dmrlink import IPSC, systems, reporting_loop, dmr_nat, logger, hex_str_3, hex_str_4, int_id
 from dmrlink import CONFIG
+from ipsc.ipsc_const import BURST_DATA_TYPE
 
-NETWORKS = CONFIG['SYSTEMS']
-REPORTS = CONFIG['REPORTS']
+#NETWORKS = CONFIG['SYSTEMS']
+#REPORTS = CONFIG['REPORTS']
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -98,9 +99,9 @@ for _ipsc in RULES_FILE:
             _rule['OFF'][i] = hex_str_3(_rule['OFF'][i])
         _rule['TIMEOUT']= _rule['TIMEOUT']*60
         _rule['TIMER']      = time() + _rule['TIMEOUT']
-    if _ipsc not in NETWORKS:
+    if _ipsc not in CONFIG['SYSTEMS']:
         sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
-for _ipsc in NETWORKS:
+for _ipsc in CONFIG['SYSTEMS']:
     if _ipsc not in RULES_FILE:
         sys.exit('ERROR: Bridge rules not found for all IPSC network configured')
 
@@ -432,15 +433,15 @@ if __name__ == '__main__':
     logger.info('DMRlink \'bridge.py\' (c) 2013-2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
     # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    for ipsc_network in NETWORKS:
-        if NETWORKS[ipsc_network]['LOCAL']['ENABLED']:
+    for ipsc_network in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['ENABLED']:
             systems[ipsc_network] = bridgeIPSC(ipsc_network)
-            reactor.listenUDP(NETWORKS[ipsc_network]['LOCAL']['PORT'], systems[ipsc_network], interface=NETWORKS[ipsc_network]['LOCAL']['IP'])
+            reactor.listenUDP(CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['PORT'], systems[ipsc_network], interface=CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['IP'])
     
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-    if REPORTS['REPORT_NETWORKS']:
+    if CONFIG['REPORTS']['REPORT_NETWORKS']:
         reporting = task.LoopingCall(reporting_loop)
-        reporting.start(REPORTS['REPORT_INTERVAL'])
+        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
         
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
     rule_timer = task.LoopingCall(rule_timer_loop)

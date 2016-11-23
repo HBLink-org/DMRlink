@@ -612,19 +612,19 @@ def print_peer_list(_network):
 #
 def print_master(_network):
     if CONFIG['SYSTEMS'][_network]['LOCAL']['MASTER_PEER']:
-        print('DMRlink is the Master for %s' % _network)
+        print('DMRlink is the Master for %s'.format(_network))
     else:
         _master = CONFIG['SYSTEMS'][_network]['MASTER']
         print('Master for %s' % _network)
-        print('\tRADIO ID: {}' .format(int(h(_master['RADIO_ID']), 16)))
+        print('\tRADIO ID: {}'.format(int(h(_master['RADIO_ID']), 16)))
         if _master['MODE_DECODE'] and CONFIG['REPORTS']['PRINT_PEERS_INC_MODE']:
             print('\t\tMode Values:')
             for name, value in _master['MODE_DECODE'].items():
-                print('\t\t\t{}: {}' .format(name, value))
+                print('\t\t\t{}: {}'.format(name, value))
         if _master['FLAGS_DECODE'] and CONFIG['REPORTS']['PRINT_PEERS_INC_FLAGS']:
             print('\t\tService Flags:')
             for name, value in _master['FLAGS_DECODE'].items():
-                print('\t\t\t{}: {}' .format(name, value))
+                print('\t\t\t{}: {}'.format(name, value))
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
         print('\t\t                KeepAlives Received: {},  Last KeepAlive Received at: {}' .format(_master['STATUS']['KEEP_ALIVES_RECEIVED'], _master['STATUS']['KEEP_ALIVE_RX_TIME']))
     
@@ -645,8 +645,9 @@ if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
 elif CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
     def reporting_loop():      
         logger.debug('Periodic Reporting Loop Started (PRINT)')
-        print_master(CONFIG['SYSTEMS'])
-        print_peer_list(CONFIG['SYSTEMS'])
+        for system in CONFIG['SYSTEMS']:
+            print_master(system)
+            print_peer_list(system)
 
 else:
     def reporting_loop():
