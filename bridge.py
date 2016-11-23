@@ -18,18 +18,18 @@
 #   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 ###############################################################################
 
-# This is a sample application to bridge traffic between IPSC networks. it uses
+# This is a sample application to bridge traffic between IPSC systems. it uses
 # one required (bridge_rules.py) and one optional (known_bridges.py) additional
 # configuration files. Both files have their own documentation for use.
 #
 # "bridge_rules" contains the IPSC network, Timeslot and TGID matching rules to
-# determine which voice calls are bridged between IPSC networks and which are
+# determine which voice calls are bridged between IPSC systems and which are
 # not.
 #
 # "known_bridges" contains DMR radio ID numbers of known bridges. This file is
 # used when you want bridge.py to be "polite" or serve as a backup bridge. If
 # a known bridge exists in either a source OR target IPSC network, then no
-# bridging between those IPSC networks will take place. This behavior is
+# bridging between those IPSC systems will take place. This behavior is
 # dynamic and updates each keep-alive interval (main configuration file).
 # For faster failover, configure a short keep-alive time and a low number of
 # missed keep-alives before timout. I recommend 5 sec keep-alive and 3 missed.
@@ -53,7 +53,11 @@ from time import time
 from pprint import pprint
 
 import sys
-from dmrlink import IPSC, NETWORK, networks, REPORTS, reporting_loop, dmr_nat, logger, hex_str_3, hex_str_4, int_id
+from dmrlink import IPSC, systems, reporting_loop, dmr_nat, logger, hex_str_3, hex_str_4, int_id
+from dmrlink import CONFIG
+
+NETWORKS = CONFIG['SYSTEMS']
+REPORTS = CONFIG['REPORTS']
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -62,15 +66,6 @@ __license__     = 'GNU GPLv3'
 __maintainer__  = 'Cort Buffington, N0MJS'
 __email__       = 'n0mjs@me.com'
 
-
-# Constants for this application
-#
-BURST_DATA_TYPE = {
-    'VOICE_HEAD':  '\x01',
-    'VOICE_TERM':  '\x02',
-    'SLOT1_VOICE': '\x0A',
-    'SLOT2_VOICE': '\x8A'   
-}
 
 # Minimum time between different subscribers transmitting on the same TGID
 #
@@ -103,9 +98,9 @@ for _ipsc in RULES_FILE:
             _rule['OFF'][i] = hex_str_3(_rule['OFF'][i])
         _rule['TIMEOUT']= _rule['TIMEOUT']*60
         _rule['TIMER']      = time() + _rule['TIMEOUT']
-    if _ipsc not in NETWORK:
+    if _ipsc not in NETWORKS:
         sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
-for _ipsc in NETWORK:
+for _ipsc in NETWORKS:
     if _ipsc not in RULES_FILE:
         sys.exit('ERROR: Bridge rules not found for all IPSC network configured')
 
@@ -247,10 +242,10 @@ class bridgeIPSC(IPSC):
         
         for rule in RULES[_network]['GROUP_VOICE']:
             _target = rule['DST_NET']               # Shorthand to reduce length and make it easier to read
-            _status = networks[_target].IPSC_STATUS # Shorthand to reduce length and make it easier to read
+            _status = systems[_target].IPSC_STATUS # Shorthand to reduce length and make it easier to read
 
             # This is the primary rule match to determine if the call will be routed.
-            if (rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and rule['ACTIVE'] == True) and (self.BRIDGE == True or networks[_target].BRIDGE == True):
+            if (rule['SRC_GROUP'] == _dst_group and rule['SRC_TS'] == _ts and rule['ACTIVE'] == True) and (self.BRIDGE == True or systems[_target].BRIDGE == True):
                 
                 #
                 # BEGIN CONTENTION HANDLING
@@ -322,7 +317,7 @@ class bridgeIPSC(IPSC):
                     _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
 
                 # Send the packet to all peers in the target IPSC
-                networks[_target].send_to_ipsc(_tmp_data)
+                systems[_target].send_to_ipsc(_tmp_data)
                 #
                 # END FRAME FORWARDING
                 #
@@ -411,36 +406,36 @@ class bridgeIPSC(IPSC):
         
         for target in RULES[_network]['GROUP_DATA']:
             
-            if self.BRIDGE == True or networks[target].BRIDGE == True:
+            if self.BRIDGE == True or systems[target].BRIDGE == True:
                 _tmp_data = _data
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[target]['LOCAL']['RADIO_ID'])
 
                 # Send the packet to all peers in the target IPSC
-                networks[target].send_to_ipsc(_tmp_data)
+                systems[target].send_to_ipsc(_tmp_data)
 
     def private_data(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):    
         logger.debug('(%s) Private Data Packet Received From: %s, IPSC Peer %s, Destination %s', _network, int_id(_src_sub), int_id(_peerid), int_id(_dst_sub))
         
         for target in RULES[_network]['PRIVATE_DATA']:
                    
-            if self.BRIDGE == True or networks[target].BRIDGE == True:
+            if self.BRIDGE == True or systems[target].BRIDGE == True:
                 _tmp_data = _data
                 # Re-Write the IPSC SRC to match the target network's ID
                 _tmp_data = _tmp_data.replace(_peerid, NETWORK[target]['LOCAL']['RADIO_ID'])
 
                 # Send the packet to all peers in the target IPSC
-                networks[target].send_to_ipsc(_tmp_data)
+                systems[target].send_to_ipsc(_tmp_data)
 
 
 if __name__ == '__main__':
     logger.info('DMRlink \'bridge.py\' (c) 2013-2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
     # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    for ipsc_network in NETWORK:
-        if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
-            networks[ipsc_network] = bridgeIPSC(ipsc_network)
-            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
+    for ipsc_network in NETWORKS:
+        if NETWORKS[ipsc_network]['LOCAL']['ENABLED']:
+            systems[ipsc_network] = bridgeIPSC(ipsc_network)
+            reactor.listenUDP(NETWORKS[ipsc_network]['LOCAL']['PORT'], systems[ipsc_network], interface=NETWORKS[ipsc_network]['LOCAL']['IP'])
     
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
     if REPORTS['REPORT_NETWORKS']:

@@ -45,6 +45,14 @@ IPSC_VER_22           = '\x04'
 # Link Type Values - assumed that cap+, etc. are different, this is all I can confirm
 LINK_TYPE_IPSC        = '\x04'
 
+# Burst Data Types
+BURST_DATA_TYPE = {
+    'VOICE_HEAD':  '\x01',
+    'VOICE_TERM':  '\x02',
+    'SLOT1_VOICE': '\x0A',
+    'SLOT2_VOICE': '\x8A'   
+}
+
 # IPSC Version and Link Type are Used for a 4-byte version field in registration packets
 IPSC_VER              = LINK_TYPE_IPSC + IPSC_VER_17 + LINK_TYPE_IPSC + IPSC_VER_16
 

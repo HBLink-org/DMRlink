@@ -40,13 +40,14 @@ from binascii import b2a_hex as h
 from hashlib import sha1
 from socket import inet_ntoa as IPAddr
 from socket import inet_aton as IPHexStr
+from random import randint
+from time import time
+from cPickle import dump as pickle_dump
+
 from socket import gethostbyname 
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
-from random import randint
-from time import time
-from cPickle import dump as pickle_dump
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -58,220 +59,231 @@ __email__       = 'n0mjs@me.com'
 # Change the current directory to the location of the application
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
+# CLI argument parser - handles picking up the config file from the command line, and sending a "help" message
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
-
 cli_args = parser.parse_args()
+
+if not cli_args.CFG_FILE:
+    cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
 
 #************************************************
 #     PARSE THE CONFIG FILE AND BUILD STRUCTURE
 #************************************************
 
-NETWORK = {}
-networks = {}
-config = ConfigParser.ConfigParser()
+systems = {}
 
-if not cli_args.CFG_FILE:
-    cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
-try:
-    if not config.read(cli_args.CFG_FILE):
-        sys.exit('Configuration file \''+cli_args.CFG_FILE+'\' is not a valid configuration file! Exiting...')        
-except:    
-    sys.exit('Configuration file \''+cli_args.CFG_FILE+'\' is not a valid configuration file! Exiting...')
+def build_config(_config_file):
+    config = ConfigParser.ConfigParser()
 
-try:
-    for section in config.sections():
-        if section == 'GLOBAL':
-            # Process GLOBAL items in the configuration
-            PATH = config.get(section, 'PATH')
+    if not config.read(_config_file):
+            sys.exit('Configuration file \''+_config_file+'\' is not a valid configuration file! Exiting...')        
 
-        elif section == 'REPORTS':
-            # Process REPORTS items in the configuration
-            REPORTS = {
-                'REPORT_NETWORKS': config.get(section, 'REPORT_NETWORKS'),
-                'REPORT_INTERVAL': config.getint(section, 'REPORT_INTERVAL'),
-                'REPORT_PATH': config.get(section, 'REPORT_PATH'),
-                'PRINT_PEERS_INC_MODE': config.getboolean(section, 'PRINT_PEERS_INC_MODE'),
-                'PRINT_PEERS_INC_FLAGS': config.getboolean(section, 'PRINT_PEERS_INC_FLAGS')
-            }
-
-        elif section == 'LOGGER':
-            # Process LOGGER items in the configuration
-            LOGGER = {
-                'LOG_FILE': config.get(section, 'LOG_FILE'),
-                'LOG_HANDLERS': config.get(section, 'LOG_HANDLERS'),
-                'LOG_LEVEL': config.get(section, 'LOG_LEVEL'),
-                'LOG_NAME': config.get(section, 'LOG_NAME')
-            }
-        elif config.getboolean(section, 'ENABLED'):
-            # All other sections define indiviual IPSC Networks we connect to
-            # Each IPSC network config will contain the following three sections
-            NETWORK.update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': {}}})
-            # LOCAL means we need to know this stuff to be a peer in the network
-            NETWORK[section]['LOCAL'].update({
-                # In case we want to keep config, but not actually connect to the network
-                'ENABLED':      config.getboolean(section, 'ENABLED'),
-                
-                # These items are used to create the MODE byte
-                'PEER_OPER':    config.getboolean(section, 'PEER_OPER'),
-                'IPSC_MODE':    config.get(section, 'IPSC_MODE'),
-                'TS1_LINK':     config.getboolean(section, 'TS1_LINK'),
-                'TS2_LINK':     config.getboolean(section, 'TS2_LINK'),
-                'MODE': '',
-                
-                # These items are used to create the multi-byte FLAGS field
-                'AUTH_ENABLED': config.getboolean(section, 'AUTH_ENABLED'),
-                'CSBK_CALL':    config.getboolean(section, 'CSBK_CALL'),
-                'RCM':          config.getboolean(section, 'RCM'),
-                'CON_APP':      config.getboolean(section, 'CON_APP'),
-                'XNL_CALL':     config.getboolean(section, 'XNL_CALL'),
-                'XNL_MASTER':   config.getboolean(section, 'XNL_MASTER'),
-                'DATA_CALL':    config.getboolean(section, 'DATA_CALL'),
-                'VOICE_CALL':   config.getboolean(section, 'VOICE_CALL'),
-                'MASTER_PEER':  config.getboolean(section, 'MASTER_PEER'),
-                'FLAGS': '',
-                
-                # Things we need to know to connect and be a peer in this IPSC
-                'RADIO_ID':     hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
-                'IP':           gethostbyname(config.get(section, 'IP')),
-                'PORT':         config.getint(section, 'PORT'),
-                'ALIVE_TIMER':  config.getint(section, 'ALIVE_TIMER'),
-                'MAX_MISSED':   config.getint(section, 'MAX_MISSED'),
-                'AUTH_KEY':     (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
-                'NUM_PEERS': 0,
+    CONFIG = {}
+    CONFIG['GLOBAL'] = {}
+    CONFIG['REPORTS'] = {}
+    CONFIG['LOGGER'] = {}
+    CONFIG['SYSTEMS'] = {}    
+    
+    try:
+        for section in config.sections():
+            if section == 'GLOBAL':
+                CONFIG['GLOBAL'].update({
+                    'PATH': config.get(section, 'PATH')
                 })
-            # Master means things we need to know about the master peer of the network
-            NETWORK[section]['MASTER'].update({
-                'RADIO_ID': '\x00\x00\x00\x00',
-                'MODE': '\x00',
-                'MODE_DECODE': '',
-                'FLAGS': '\x00\x00\x00\x00',
-                'FLAGS_DECODE': '',
-                'STATUS': {
-                    'CONNECTED':               False,
-                    'PEER_LIST':               False,
-                    'KEEP_ALIVES_SENT':        0,
-                    'KEEP_ALIVES_MISSED':      0,
-                    'KEEP_ALIVES_OUTSTANDING': 0,
-                    'KEEP_ALIVES_RECEIVED':    0,
-                    'KEEP_ALIVE_RX_TIME':      0
-                    },
-                'IP': '',
-                'PORT': ''
+
+            elif section == 'REPORTS':
+                CONFIG['REPORTS'].update({
+                    'REPORT_NETWORKS': config.get(section, 'REPORT_NETWORKS'),
+                    'REPORT_INTERVAL': config.getint(section, 'REPORT_INTERVAL'),
+                    'REPORT_PATH': config.get(section, 'REPORT_PATH'),
+                    'PRINT_PEERS_INC_MODE': config.getboolean(section, 'PRINT_PEERS_INC_MODE'),
+                    'PRINT_PEERS_INC_FLAGS': config.getboolean(section, 'PRINT_PEERS_INC_FLAGS')
                 })
-            if not NETWORK[section]['LOCAL']['MASTER_PEER']:
-                NETWORK[section]['MASTER'].update({
-                    'IP': gethostbyname(config.get(section, 'MASTER_IP')),
-                    'PORT': config.getint(section, 'MASTER_PORT')
+
+            elif section == 'LOGGER':
+                CONFIG['LOGGER'].update({
+                    'LOG_FILE': config.get(section, 'LOG_FILE'),
+                    'LOG_HANDLERS': config.get(section, 'LOG_HANDLERS'),
+                    'LOG_LEVEL': config.get(section, 'LOG_LEVEL'),
+                    'LOG_NAME': config.get(section, 'LOG_NAME')
                 })
+                
+            elif config.getboolean(section, 'ENABLED'):
+                CONFIG['SYSTEMS'].update({section: {'LOCAL': {}, 'MASTER': {}, 'PEERS': {}}})
+                    
+                CONFIG['SYSTEMS'][section]['LOCAL'].update({
+                    # In case we want to keep config, but not actually connect to the network
+                    'ENABLED':      config.getboolean(section, 'ENABLED'),
+                
+                    # These items are used to create the MODE byte
+                    'PEER_OPER':    config.getboolean(section, 'PEER_OPER'),
+                    'IPSC_MODE':    config.get(section, 'IPSC_MODE'),
+                    'TS1_LINK':     config.getboolean(section, 'TS1_LINK'),
+                    'TS2_LINK':     config.getboolean(section, 'TS2_LINK'),
+                    'MODE': '',
+                
+                    # These items are used to create the multi-byte FLAGS field
+                    'AUTH_ENABLED': config.getboolean(section, 'AUTH_ENABLED'),
+                    'CSBK_CALL':    config.getboolean(section, 'CSBK_CALL'),
+                    'RCM':          config.getboolean(section, 'RCM'),
+                    'CON_APP':      config.getboolean(section, 'CON_APP'),
+                    'XNL_CALL':     config.getboolean(section, 'XNL_CALL'),
+                    'XNL_MASTER':   config.getboolean(section, 'XNL_MASTER'),
+                    'DATA_CALL':    config.getboolean(section, 'DATA_CALL'),
+                    'VOICE_CALL':   config.getboolean(section, 'VOICE_CALL'),
+                    'MASTER_PEER':  config.getboolean(section, 'MASTER_PEER'),
+                    'FLAGS': '',
+                
+                    # Things we need to know to connect and be a peer in this IPSC
+                    'RADIO_ID':     hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
+                    'IP':           gethostbyname(config.get(section, 'IP')),
+                    'PORT':         config.getint(section, 'PORT'),
+                    'ALIVE_TIMER':  config.getint(section, 'ALIVE_TIMER'),
+                    'MAX_MISSED':   config.getint(section, 'MAX_MISSED'),
+                    'AUTH_KEY':     (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
+                    'NUM_PEERS': 0,
+                    })
+                # Master means things we need to know about the master peer of the network
+                CONFIG['SYSTEMS'][section]['MASTER'].update({
+                    'RADIO_ID': '\x00\x00\x00\x00',
+                    'MODE': '\x00',
+                    'MODE_DECODE': '',
+                    'FLAGS': '\x00\x00\x00\x00',
+                    'FLAGS_DECODE': '',
+                    'STATUS': {
+                        'CONNECTED':               False,
+                        'PEER_LIST':               False,
+                        'KEEP_ALIVES_SENT':        0,
+                        'KEEP_ALIVES_MISSED':      0,
+                        'KEEP_ALIVES_OUTSTANDING': 0,
+                        'KEEP_ALIVES_RECEIVED':    0,
+                        'KEEP_ALIVE_RX_TIME':      0
+                        },
+                    'IP': '',
+                    'PORT': ''
+                    })
+                if not CONFIG['SYSTEMS'][section]['LOCAL']['MASTER_PEER']:
+                    CONFIG['SYSTEMS'][section]['MASTER'].update({
+                        'IP': gethostbyname(config.get(section, 'MASTER_IP')),
+                        'PORT': config.getint(section, 'MASTER_PORT')
+                    })
             
-            # Temporary locations for building MODE and FLAG data
-            MODE_BYTE = 0
-            FLAG_1 = 0
-            FLAG_2 = 0
+                # Temporary locations for building MODE and FLAG data
+                MODE_BYTE = 0
+                FLAG_1 = 0
+                FLAG_2 = 0
             
-            # Construct and store the MODE field
-            if NETWORK[section]['LOCAL']['PEER_OPER']:
-                MODE_BYTE |= 1 << 6
-            if NETWORK[section]['LOCAL']['IPSC_MODE'] == 'ANALOG':
-                MODE_BYTE |= 1 << 4
-            elif NETWORK[section]['LOCAL']['IPSC_MODE'] == 'DIGITAL':
-                MODE_BYTE |= 1 << 5
-            if NETWORK[section]['LOCAL']['TS1_LINK']:
-                MODE_BYTE |= 1 << 3
-            else:
-                MODE_BYTE |= 1 << 2
-            if NETWORK[section]['LOCAL']['TS2_LINK']:
-                MODE_BYTE |= 1 << 1
-            else:
-                MODE_BYTE |= 1 << 0
-            NETWORK[section]['LOCAL']['MODE'] = chr(MODE_BYTE)
+                # Construct and store the MODE field
+                if CONFIG['SYSTEMS'][section]['LOCAL']['PEER_OPER']:
+                    MODE_BYTE |= 1 << 6
+                if CONFIG['SYSTEMS'][section]['LOCAL']['IPSC_MODE'] == 'ANALOG':
+                    MODE_BYTE |= 1 << 4
+                elif CONFIG['SYSTEMS'][section]['LOCAL']['IPSC_MODE'] == 'DIGITAL':
+                    MODE_BYTE |= 1 << 5
+                if CONFIG['SYSTEMS'][section]['LOCAL']['TS1_LINK']:
+                    MODE_BYTE |= 1 << 3
+                else:
+                    MODE_BYTE |= 1 << 2
+                if CONFIG['SYSTEMS'][section]['LOCAL']['TS2_LINK']:
+                    MODE_BYTE |= 1 << 1
+                else:
+                    MODE_BYTE |= 1 << 0
+                CONFIG['SYSTEMS'][section]['LOCAL']['MODE'] = chr(MODE_BYTE)
 
-            # Construct and store the FLAGS field
-            if NETWORK[section]['LOCAL']['CSBK_CALL']:
-                FLAG_1 |= 1 << 7  
-            if NETWORK[section]['LOCAL']['RCM']:
-                FLAG_1 |= 1 << 6
-            if NETWORK[section]['LOCAL']['CON_APP']:
-                FLAG_1 |= 1 << 5
-            if NETWORK[section]['LOCAL']['XNL_CALL']:
-                FLAG_2 |= 1 << 7    
-            if NETWORK[section]['LOCAL']['XNL_CALL'] and NETWORK[section]['LOCAL']['XNL_MASTER']:
-                FLAG_2 |= 1 << 6
-            elif NETWORK[section]['LOCAL']['XNL_CALL'] and not NETWORK[section]['LOCAL']['XNL_MASTER']:
-                FLAG_2 |= 1 << 5
-            if NETWORK[section]['LOCAL']['AUTH_ENABLED']:
-                FLAG_2 |= 1 << 4
-            if NETWORK[section]['LOCAL']['DATA_CALL']:
-                FLAG_2 |= 1 << 3
-            if NETWORK[section]['LOCAL']['VOICE_CALL']:
-                FLAG_2 |= 1 << 2
-            if NETWORK[section]['LOCAL']['MASTER_PEER']:
-                FLAG_2 |= 1 << 0
-            NETWORK[section]['LOCAL']['FLAGS'] = '\x00\x00'+chr(FLAG_1)+chr(FLAG_2)
-except:
-    sys.exit('Could not parse configuration file, exiting...')
+                # Construct and store the FLAGS field
+                if CONFIG['SYSTEMS'][section]['LOCAL']['CSBK_CALL']:
+                    FLAG_1 |= 1 << 7  
+                if CONFIG['SYSTEMS'][section]['LOCAL']['RCM']:
+                    FLAG_1 |= 1 << 6
+                if CONFIG['SYSTEMS'][section]['LOCAL']['CON_APP']:
+                    FLAG_1 |= 1 << 5
+                if CONFIG['SYSTEMS'][section]['LOCAL']['XNL_CALL']:
+                    FLAG_2 |= 1 << 7    
+                if CONFIG['SYSTEMS'][section]['LOCAL']['XNL_CALL'] and CONFIG['SYSTEMS'][section]['LOCAL']['XNL_MASTER']:
+                    FLAG_2 |= 1 << 6
+                elif CONFIG['SYSTEMS'][section]['LOCAL']['XNL_CALL'] and not CONFIG['SYSTEMS'][section]['LOCAL']['XNL_MASTER']:
+                    FLAG_2 |= 1 << 5
+                if CONFIG['SYSTEMS'][section]['LOCAL']['AUTH_ENABLED']:
+                    FLAG_2 |= 1 << 4
+                if CONFIG['SYSTEMS'][section]['LOCAL']['DATA_CALL']:
+                    FLAG_2 |= 1 << 3
+                if CONFIG['SYSTEMS'][section]['LOCAL']['VOICE_CALL']:
+                    FLAG_2 |= 1 << 2
+                if CONFIG['SYSTEMS'][section]['LOCAL']['MASTER_PEER']:
+                    FLAG_2 |= 1 << 0
+                CONFIG['SYSTEMS'][section]['LOCAL']['FLAGS'] = '\x00\x00'+chr(FLAG_1)+chr(FLAG_2)
+    
+    except ConfigParser.Error, err:
+        sys.exit('Could not parse configuration file, exiting...')
+        
+    return CONFIG
+
+CONFIG = build_config(cli_args.CFG_FILE)
 
 
 #************************************************
 #     CONFIGURE THE SYSTEM LOGGER
 #************************************************
 
-dictConfig({
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-    },
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+def config_logging(_logger):
+    dictConfig({
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
         },
-        'timed': {
-            'format': '%(levelname)s %(asctime)s %(message)s'
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'timed': {
+                'format': '%(levelname)s %(asctime)s %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+            'syslog': {
+                'format': '%(name)s (%(process)d): %(levelname)s %(message)s'
+            }
         },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+        'handlers': {
+            'null': {
+                'class': 'logging.NullHandler'
+            },
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            },
+            'console-timed': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'timed'
+            },
+            'file': {
+                'class': 'logging.FileHandler',
+                'formatter': 'simple',
+                'filename': CONFIG['LOGGER']['LOG_FILE'],
+            },
+            'file-timed': {
+                'class': 'logging.FileHandler',
+                'formatter': 'timed',
+                'filename': CONFIG['LOGGER']['LOG_FILE'],
+            },
+            'syslog': {
+                'class': 'logging.handlers.SysLogHandler',
+                'formatter': 'syslog',
+            }
         },
-        'syslog': {
-            'format': '%(name)s (%(process)d): %(levelname)s %(message)s'
+        'loggers': {
+            CONFIG['LOGGER']['LOG_NAME']: {
+                'handlers': CONFIG['LOGGER']['LOG_HANDLERS'].split(','),
+                'level': CONFIG['LOGGER']['LOG_LEVEL'],
+                'propagate': True,
+            }
         }
-    },
-    'handlers': {
-        'null': {
-            'class': 'logging.NullHandler'
-        },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-        'console-timed': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'timed'
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'formatter': 'simple',
-            'filename': LOGGER['LOG_FILE'],
-        },
-        'file-timed': {
-            'class': 'logging.FileHandler',
-            'formatter': 'timed',
-            'filename': LOGGER['LOG_FILE'],
-        },
-        'syslog': {
-            'class': 'logging.handlers.SysLogHandler',
-            'formatter': 'syslog',
-        }
-    },
-    'loggers': {
-        LOGGER['LOG_NAME']: {
-            'handlers': LOGGER['LOG_HANDLERS'].split(','),
-            'level': LOGGER['LOG_LEVEL'],
-            'propagate': True,
-        }
-    }
-})
-logger = logging.getLogger(LOGGER['LOG_NAME'])
+    })
+    return logging.getLogger(CONFIG['LOGGER']['LOG_NAME'])
+    
+logger = config_logging(CONFIG['LOGGER'])
 
 
 #************************************************
@@ -281,7 +293,7 @@ logger = logging.getLogger(LOGGER['LOG_NAME'])
 # Import IPSC message types and version information
 #
 try:
-    from ipsc.ipsc_message_types import *
+    from ipsc.ipsc_const import *
 except ImportError:
     sys.exit('IPSC message types file not found or invalid')
 
@@ -303,7 +315,7 @@ talkgroup_ids = {}
 def reread_peers():
     global peer_ids
     try:
-        with open(PATH+'peer_ids.csv', 'rU') as peer_ids_csv:
+        with open(CONFIG['GLOBAL']['PATH']+'peer_ids.csv', 'rU') as peer_ids_csv:
             peers = csv.reader(peer_ids_csv, dialect='excel', delimiter=',')
             peer_ids = {}
             for row in peers:
@@ -314,7 +326,7 @@ def reread_peers():
 def reread_talkgroups():
     global talkgroup_ids
     try:
-        with open(PATH+'talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
+        with open(CONFIG['GLOBAL']['PATH']+'talkgroup_ids.csv', 'rU') as talkgroup_ids_csv:
             talkgroups = csv.reader(talkgroup_ids_csv, dialect='excel', delimiter=',')
             talkgroup_ids = {}
             for row in talkgroups:
@@ -326,7 +338,7 @@ def reread_talkgroups():
 def reread_subscribers():
     global subscriber_ids
     try:
-        with open(PATH+'subscriber_ids.csv', 'rU') as subscriber_ids_csv:
+        with open(CONFIG['GLOBAL']['PATH']+'subscriber_ids.csv', 'rU') as subscriber_ids_csv:
             subscribers = csv.reader(subscriber_ids_csv, dialect='excel', delimiter=',')
             subscriber_ids = {}
             for row in subscribers:
@@ -350,7 +362,6 @@ def get_subscriber_info(_src_sub):
 #
 def hex_str_2(_int_id):
     try:
-        #return hex(_int_id)[2:].rjust(4,'0').decode('hex')
         return format(_int_id,'x').rjust(4,'0').decode('hex')
     except TypeError:
         logger.error('hex_str_2: invalid integer length')
@@ -359,7 +370,6 @@ def hex_str_2(_int_id):
 #
 def hex_str_3(_int_id):
     try:
-        #return hex(_int_id)[2:].rjust(6,'0').decode('hex')
         return format(_int_id,'x').rjust(6,'0').decode('hex')
     except TypeError:
         logger.error('hex_str_3: invalid integer length')
@@ -368,7 +378,6 @@ def hex_str_3(_int_id):
 #
 def hex_str_4(_int_id):
     try:
-        #return hex(_int_id)[2:].rjust(8,'0').decode('hex')
         return format(_int_id,'x').rjust(8,'0').decode('hex')
     except TypeError:
         logger.error('hex_str_4: invalid integer length')
@@ -402,7 +411,7 @@ def valid_peer(_peer_list, _peerid):
 # Determine if the provided master ID is valid for the provided network
 #
 def valid_master(_network, _peerid):
-    if NETWORK[_network]['MASTER']['RADIO_ID'] == _peerid:
+    if CONFIG['SYSTEMS'][_network]['MASTER']['RADIO_ID'] == _peerid:
         return True     
     else:
         return False
@@ -412,8 +421,8 @@ def valid_master(_network, _peerid):
 #
 def de_register_peer(_network, _peerid):
     # Iterate for the peer in our data
-    if _peerid in NETWORK[_network]['PEERS'].keys():
-        del NETWORK[_network]['PEERS'][_peerid]
+    if _peerid in CONFIG['SYSTEMS'][_network]['PEERS'].keys():
+        del CONFIG['SYSTEMS'][_network]['PEERS'][_peerid]
         logger.info('(%s) Peer De-Registration Requested for: %s', _network, int_id(_peerid))
         return
     else:
@@ -491,8 +500,8 @@ def process_peer_list(_data, _network):
     # Determine the length of the peer list for the parsing iterator
     _peer_list_length = int(h(_data[5:7]), 16)
     # Record the number of peers in the data structure... we'll use it later (11 bytes per peer entry)
-    NETWORK[_network]['LOCAL']['NUM_PEERS'] = _peer_list_length/11
-    logger.info('(%s) Peer List Received from Master: %s peers in this IPSC', _network, NETWORK[_network]['LOCAL']['NUM_PEERS'])
+    CONFIG['SYSTEMS'][_network]['LOCAL']['NUM_PEERS'] = _peer_list_length/11
+    logger.info('(%s) Peer List Received from Master: %s peers in this IPSC', _network, CONFIG['SYSTEMS'][_network]['LOCAL']['NUM_PEERS'])
     
     # Iterate each peer entry in the peer list. Skip the header, then pull the next peer, the next, etc.
     for i in range(7, _peer_list_length +7, 11):
@@ -512,18 +521,18 @@ def process_peer_list(_data, _network):
 
         # If this entry WAS already in our list, update everything except the stats
         # in case this was a re-registration with a different mode, flags, etc.
-        if _hex_radio_id in NETWORK[_network]['PEERS'].keys():
-            NETWORK[_network]['PEERS'][_hex_radio_id]['IP'] = _ip_address
-            NETWORK[_network]['PEERS'][_hex_radio_id]['PORT'] = _port
-            NETWORK[_network]['PEERS'][_hex_radio_id]['MODE'] = _hex_mode
-            NETWORK[_network]['PEERS'][_hex_radio_id]['MODE_DECODE'] = _decoded_mode
-            NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS'] = ''
-            NETWORK[_network]['PEERS'][_hex_radio_id]['FLAGS_DECODE'] = ''
-            logger.debug('(%s) Peer Updated: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+        if _hex_radio_id in CONFIG['SYSTEMS'][_network]['PEERS'].keys():
+            CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id]['IP'] = _ip_address
+            CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id]['PORT'] = _port
+            CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id]['MODE'] = _hex_mode
+            CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id]['MODE_DECODE'] = _decoded_mode
+            CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id]['FLAGS'] = ''
+            CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id]['FLAGS_DECODE'] = ''
+            logger.debug('(%s) Peer Updated: %s', _network, CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id])
 
         # If this entry was NOT already in our list, add it.
-        if _hex_radio_id not in NETWORK[_network]['PEERS'].keys():
-            NETWORK[_network]['PEERS'][_hex_radio_id] = {
+        if _hex_radio_id not in CONFIG['SYSTEMS'][_network]['PEERS'].keys():
+            CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id] = {
                 'IP':          _ip_address, 
                 'PORT':        _port, 
                 'MODE':        _hex_mode,            
@@ -539,11 +548,11 @@ def process_peer_list(_data, _network):
                     'KEEP_ALIVE_RX_TIME':      0
                     }
                 }
-            logger.debug('(%s) Peer Added: %s', _network, NETWORK[_network]['PEERS'][_hex_radio_id])
+            logger.debug('(%s) Peer Added: %s', _network, CONFIG['SYSTEMS'][_network]['PEERS'][_hex_radio_id])
     
     # Finally, check to see if there's a peer already in our list that was not in this peer list
     # and if so, delete it.
-    for peer in NETWORK[_network]['PEERS'].keys():
+    for peer in CONFIG['SYSTEMS'][_network]['PEERS'].keys():
         if peer not in _temp_peers:
             de_register_peer(_network, peer)
             logger.warning('(%s) Peer Deleted (not in new peer list): %s', _network, int_id(peer))
@@ -564,12 +573,12 @@ def build_peer_list(_peers):
 # Gratuitous print-out of the peer list.. Pretty much debug stuff.
 #
 def print_peer_list(_network):
-    _peers = NETWORK[_network]['PEERS']
+    _peers = CONFIG['SYSTEMS'][_network]['PEERS']
     
-    _status = NETWORK[_network]['MASTER']['STATUS']['PEER_LIST']
+    _status = CONFIG['SYSTEMS'][_network]['MASTER']['STATUS']['PEER_LIST']
     #print('Peer List Status for {}: {}' .format(_network, _status))
     
-    if _status and not NETWORK[_network]['PEERS']:
+    if _status and not CONFIG['SYSTEMS'][_network]['PEERS']:
         print('We are the only peer for: %s' % _network)
         print('')
         return
@@ -579,18 +588,18 @@ def print_peer_list(_network):
         _this_peer = _peers[peer]
         _this_peer_stat = _this_peer['STATUS']
         
-        if peer == NETWORK[_network]['LOCAL']['RADIO_ID']:
+        if peer == CONFIG['SYSTEMS'][_network]['LOCAL']['RADIO_ID']:
             me = '(self)'
         else:
             me = ''
              
         print('\tRADIO ID: {} {}' .format(int_id(peer), me))
         print('\t\tIP Address: {}:{}' .format(_this_peer['IP'], _this_peer['PORT']))
-        if _this_peer['MODE_DECODE'] and REPORTS['PRINT_PEERS_INC_MODE']:
+        if _this_peer['MODE_DECODE'] and CONFIG['REPORTS']['PRINT_PEERS_INC_MODE']:
             print('\t\tMode Values:')
             for name, value in _this_peer['MODE_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
-        if _this_peer['FLAGS_DECODE'] and REPORTS['PRINT_PEERS_INC_FLAGS']:
+        if _this_peer['FLAGS_DECODE'] and CONFIG['REPORTS']['PRINT_PEERS_INC_FLAGS']:
             print('\t\tService Flags:')
             for name, value in _this_peer['FLAGS_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
@@ -602,17 +611,17 @@ def print_peer_list(_network):
 # Gratuitous print-out of Master info.. Pretty much debug stuff.
 #
 def print_master(_network):
-    if NETWORK[_network]['LOCAL']['MASTER_PEER']:
+    if CONFIG['SYSTEMS'][_network]['LOCAL']['MASTER_PEER']:
         print('DMRlink is the Master for %s' % _network)
     else:
-        _master = NETWORK[_network]['MASTER']
+        _master = CONFIG['SYSTEMS'][_network]['MASTER']
         print('Master for %s' % _network)
         print('\tRADIO ID: {}' .format(int(h(_master['RADIO_ID']), 16)))
-        if _master['MODE_DECODE'] and REPORTS['PRINT_PEERS_INC_MODE']:
+        if _master['MODE_DECODE'] and CONFIG['REPORTS']['PRINT_PEERS_INC_MODE']:
             print('\t\tMode Values:')
             for name, value in _master['MODE_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
-        if _master['FLAGS_DECODE'] and REPORTS['PRINT_PEERS_INC_FLAGS']:
+        if _master['FLAGS_DECODE'] and CONFIG['REPORTS']['PRINT_PEERS_INC_FLAGS']:
             print('\t\tService Flags:')
             for name, value in _master['FLAGS_DECODE'].items():
                 print('\t\t\t{}: {}' .format(name, value))
@@ -623,21 +632,21 @@ def print_master(_network):
 # Timed loop used for reporting IPSC status
 #
 # REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
-if REPORTS['REPORT_NETWORKS'] == 'PICKLE':
+if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
     def reporting_loop():  
         logger.debug('Periodic Reporting Loop Started (PICKLE)')
         try:
-            with open(REPORTS['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
-                pickle_dump(NETWORK, file, 2)
+            with open(CONFIG['REPORTS']['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
+                pickle_dump(CONFIG['SYSTEMS'], file, 2)
                 file.close()
         except IOError as detail:
             logger.error('I/O Error: %s', detail)
      
-elif REPORTS['REPORT_NETWORKS'] == 'PRINT':
+elif CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
     def reporting_loop():      
         logger.debug('Periodic Reporting Loop Started (PRINT)')
-        print_master(NETWORK)
-        print_peer_list(NETWORK)
+        print_master(CONFIG['SYSTEMS'])
+        print_peer_list(CONFIG['SYSTEMS'])
 
 else:
     def reporting_loop():
@@ -649,9 +658,9 @@ else:
 def handler(_signal, _frame):
     logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
     
-    for network in networks:
-        this_ipsc = networks[network]
-        logger.info('De-Registering from IPSC %s', network)
+    for system in systems:
+        this_ipsc = systems[system]
+        logger.info('De-Registering from IPSC %s', system)
         de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
         this_ipsc.send_to_ipsc(de_reg_req_pkt)
     
@@ -660,27 +669,14 @@ def handler(_signal, _frame):
 # Set signal handers so that we can gracefully exit if need be
 for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
     signal.signal(sig, handler)
+    
+    
 
 #************************************************
-#********                             ***********
-#********    IPSC Network 'Engine'    ***********
-#********                             ***********
+#     IPSC CLASS
 #************************************************
-
-#************************************************
-#     Base Class (used nearly all of the time)
-#************************************************
-
 
 class IPSC(DatagramProtocol):
-    
-    #************************************************
-    #     IPSC INSTANCE INSTANTIATION
-    #************************************************
-    
-    # Modify the initializer to set up our environment and build the packets
-    # we need to maintain connections
-    #
     def __init__(self, *args, **kwargs):
         if len(args) == 1:
             # Housekeeping: create references to the configuration and status data for this IPSC instance.
@@ -689,7 +685,7 @@ class IPSC(DatagramProtocol):
             # Note that many of them reference each other... this is the Pythonic way.
             #
             self._network = args[0]
-            self._config = NETWORK[self._network]
+            self._config = CONFIG['SYSTEMS'][self._network]
             #
             self._local = self._config['LOCAL']
             self._local_id = self._local['RADIO_ID']
@@ -847,7 +843,7 @@ class IPSC(DatagramProtocol):
     
     # OUR MASTER HAS SENT US A PEER LIST - PROCESS IT
     def peer_list_reply(self, _data, _peerid):
-        NETWORK[self._network]['MASTER']['STATUS']['PEER_LIST'] = True
+        CONFIG['SYSTEMS'][self._network]['MASTER']['STATUS']['PEER_LIST'] = True
         if len(_data) > 18:
             process_peer_list(_data, self._network)
         logger.debug('(%s) Peer List Reply Received From Master %s, %s:%s', self._network, int_id(_peerid), self._master['IP'], self._master['PORT'])
@@ -1157,11 +1153,6 @@ class IPSC(DatagramProtocol):
                 if _packettype == GROUP_VOICE:
                     self.reset_keep_alive(_peerid)
                     self.group_voice(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
-                    
-                    # Loop timing test, uncomment the next two lines. Use for testing only.
-                    #_pkt_proc_time = (time() - _pkt_time) * 1000
-                    #logger.info('TIMING: Group voice packet ID %s took %s ms', _pkt_id, _pkt_proc_time)
-                    
                     return
             
                 elif _packettype == PVT_VOICE:
@@ -1305,15 +1296,14 @@ if __name__ == '__main__':
     logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
     # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    networks = {}
-    for ipsc_network in NETWORK:
-        if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
-            networks[ipsc_network] = IPSC(ipsc_network)
-            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
+    for ipsc_network in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['ENABLED']:
+            systems[ipsc_network] = IPSC(ipsc_network)
+            reactor.listenUDP(CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['PORT'], systems[ipsc_network], interface=CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['IP'])
   
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-    if REPORTS['REPORT_NETWORKS']:
+    if CONFIG['REPORTS']['REPORT_NETWORKS']:
         reporting = task.LoopingCall(reporting_loop)
-        reporting.start(REPORTS['REPORT_INTERVAL'])
+        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
   
     reactor.run()
