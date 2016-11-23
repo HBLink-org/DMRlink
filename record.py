@@ -1,10 +1,23 @@
 #!/usr/bin/env python
 #
-# This work is licensed under the Creative Commons Attribution-ShareAlike
-# 3.0 Unported License.To view a copy of this license, visit
-# http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to
-# Creative Commons, 444 Castro Street, Suite 900, Mountain View,
-# California, 94041, USA.
+###############################################################################
+# hb_router.py -- a call routing applicaiton for hblink.py
+#   Copyright (C) 2016  Cortney T. Buffington, N0MJS <n0mjs@me.com>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software Foundation,
+#   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+###############################################################################
 
 # This is a sample application that "records" voice transmissions to
 # a datafile... presumably to be played back later.
@@ -17,13 +30,12 @@ import sys
 import cPickle as pickle
 from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3
 
-__author__ = 'Cortney T. Buffington, N0MJS'
-__copyright__ = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
-__credits__ = 'Adam Fast, KC0YLK; Dave Kierzkowski KD8EYF'
-__license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__maintainer__ = 'Cort Buffington, N0MJS'
-__email__ = 'n0mjs@me.com'
-__status__ = 'beta'
+__author__      = 'Cortney T. Buffington, N0MJS'
+__copyright__   = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
+__credits__     = 'Adam Fast, KC0YLK; Dave Kierzkowski KD8EYF'
+__license__     = 'GNU GPLv3'
+__maintainer__  = 'Cort Buffington, N0MJS'
+__email__       = 'n0mjs@me.com'
 
 
 print('This program will record the first matching voice call and exit.\n')

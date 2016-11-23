@@ -1,10 +1,23 @@
 #!/usr/bin/env python
 #
-# This work is licensed under the Creative Commons Attribution-ShareAlike
-# 3.0 Unported License.To view a copy of this license, visit
-# http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to
-# Creative Commons, 444 Castro Street, Suite 900, Mountain View,
-# California, 94041, USA.
+###############################################################################
+# hb_router.py -- a call routing applicaiton for hblink.py
+#   Copyright (C) 2016  Cortney T. Buffington, N0MJS <n0mjs@me.com>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software Foundation,
+#   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+###############################################################################
 
 #NOTE: This program uses a configuration file specified on the command line
 #      if none is specified, then dmrlink.cfg in the same directory as this
@@ -36,13 +49,12 @@ from random import randint
 from time import time
 from cPickle import dump as pickle_dump
 
-__author__ = 'Cortney T. Buffington, N0MJS'
-__copyright__ = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
-__credits__ = 'Adam Fast, KC0YLK; Dave Kierzkowski, KD8EYF; Steve Zingman, N4IRS; Mike Zingman, N4IRR'
-__license__ = 'Creative Commons Attribution-ShareAlike 3.0 Unported'
-__maintainer__ = 'Cort Buffington, N0MJS'
-__email__ = 'n0mjs@me.com'
-__status__ = 'beta'
+__author__      = 'Cortney T. Buffington, N0MJS'
+__copyright__   = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
+__credits__     = 'Adam Fast, KC0YLK; Dave Kierzkowski, KD8EYF; Steve Zingman, N4IRS; Mike Zingman, N4IRR'
+__license__     = 'GNU GPLv3'
+__maintainer__  = 'Cort Buffington, N0MJS'
+__email__       = 'n0mjs@me.com'
 
 # Change the current directory to the location of the application
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))

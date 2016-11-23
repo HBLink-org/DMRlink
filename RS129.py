@@ -1,14 +1,24 @@
-'''
-This file is a python translation of:
-    https://github.com/g4klx/MMDVMHost/blob/master/RS129.cpp
-    Copyright (C) 2015 by Jonathan Naylor G4KLX
-         *   This program is free software; you can redistribute it and/or modify
-         *   it under the terms of the GNU General Public License as published by
-         *   the Free Software Foundation; either version 2 of the License, or
-         *   (at your option) any later version.
-
-Slight gratuitous modifications were made to match functionality with HBlink and DMRlink
-'''
+#!/usr/bin/env python
+#
+###############################################################################
+# hb_router.py -- a call routing applicaiton for hblink.py
+#   Copyright (C) 2016  Cortney T. Buffington, N0MJS <n0mjs@me.com>
+#   Copyright (C) 2015 by Jonathan Naylor G4KLX
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software Foundation,
+#   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+###############################################################################
 
 from __future__ import print_function
 from binascii import b2a_hex as h
@@ -19,7 +29,7 @@ NUM_BYTES = 9
 NPAR = 3;
 POLY= [64, 56, 14, 1, 0, 0, 0, 0, 0, 0, 0, 0]
 
-EXP_TABLE = [
+EXP_TABLE = (
 	0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1D, 0x3A, 0x74, 0xE8, 0xCD, 0x87, 0x13, 0x26,
 	0x4C, 0x98, 0x2D, 0x5A, 0xB4, 0x75, 0xEA, 0xC9, 0x8F, 0x03, 0x06, 0x0C, 0x18, 0x30, 0x60, 0xC0,
 	0x9D, 0x27, 0x4E, 0x9C, 0x25, 0x4A, 0x94, 0x35, 0x6A, 0xD4, 0xB5, 0x77, 0xEE, 0xC1, 0x9F, 0x23,
@@ -52,9 +62,9 @@ EXP_TABLE = [
 	0xA2, 0x59, 0xB2, 0x79, 0xF2, 0xF9, 0xEF, 0xC3, 0x9B, 0x2B, 0x56, 0xAC, 0x45, 0x8A, 0x09, 0x12,
 	0x24, 0x48, 0x90, 0x3D, 0x7A, 0xF4, 0xF5, 0xF7, 0xF3, 0xFB, 0xEB, 0xCB, 0x8B, 0x0B, 0x16, 0x2C,
 	0x58, 0xB0, 0x7D, 0xFA, 0xE9, 0xCF, 0x83, 0x1B, 0x36, 0x6C, 0xD8, 0xAD, 0x47, 0x8E, 0x01, 0x00
-    ]
+    )
 
-LOG_TABLE = [
+LOG_TABLE = (
 	0x00, 0x00, 0x01, 0x19, 0x02, 0x32, 0x1A, 0xC6, 0x03, 0xDF, 0x33, 0xEE, 0x1B, 0x68, 0xC7, 0x4B,
 	0x04, 0x64, 0xE0, 0x0E, 0x34, 0x8D, 0xEF, 0x81, 0x1C, 0xC1, 0x69, 0xF8, 0xC8, 0x08, 0x4C, 0x71,
 	0x05, 0x8A, 0x65, 0x2F, 0xE1, 0x24, 0x0F, 0x21, 0x35, 0x93, 0x8E, 0xDA, 0xF0, 0x12, 0x82, 0x45,
@@ -71,7 +81,7 @@ LOG_TABLE = [
 	0x6C, 0xA1, 0x3B, 0x52, 0x29, 0x9D, 0x55, 0xAA, 0xFB, 0x60, 0x86, 0xB1, 0xBB, 0xCC, 0x3E, 0x5A,
 	0xCB, 0x59, 0x5F, 0xB0, 0x9C, 0xA9, 0xA0, 0x51, 0x0B, 0xF5, 0x16, 0xEB, 0x7A, 0x75, 0x2C, 0xD7,
 	0x4F, 0xAE, 0xD5, 0xE9, 0xE6, 0xE7, 0xAD, 0xE8, 0x74, 0xD6, 0xF4, 0xEA, 0xA8, 0x50, 0x58, 0xAF
-    ]
+    )
       
 # multiplication using logarithms
 def log_mult(a, b):
@@ -95,32 +105,32 @@ def encode(_msg):
         parity[0] = log_mult(POLY[0], dbyte)
     return [parity[2], parity[1], parity[0]]
 
-# Apply DMR XOR LC start MASK
-def lc_start_mask(_parity):
+# Apply DMR XOR LC Header MASK
+def lc_header_mask(_parity):
     xor = [0,0,0]
     for i in range(len(_parity)):
         xor[i] = _parity[i] ^ START_MASK[i]
     return xor
     
-# Apply DMR XOR LC end MASK
-def lc_end_mask(_parity):
+# Apply DMR XOR LC Terminator MASK
+def lc_terminator_mask(_parity):
     xor = [0,0,0]
     for i in range(len(_parity)):
         xor[i] = _parity[i] ^ END_MASK[i]
     return xor
 
 # All Inclusive function to take an LC string and provide the RS129 string to append
-def lc_start_encode(_message):
+def lc_header_encode(_message):
     bin_message = bytearray(_message)
     parity = encode(bin_message)
-    masked_parity = lc_start_mask(parity)
+    masked_parity = lc_header_mask(parity)
     return chr(masked_parity[0]) + chr(masked_parity[1]) + chr(masked_parity[2])
     
 # All Inclusive function to take an LC string and provide the RS129 string to append
-def lc_end_encode(_message):
+def lc_terminator_encode(_message):
     bin_message = bytearray(_message)
     parity = encode(bin_message)
-    masked_parity = lc_end_mask(parity)
+    masked_parity = lc_terminator_mask(parity)
     return chr(masked_parity[0]) + chr(masked_parity[1]) + chr(masked_parity[2])
     
     
@@ -133,7 +143,10 @@ if __name__ == '__main__':
     
     # Validation Example
     message = '\x00\x10\x20\x00\x0c\x30\x2f\x9b\xe5'
+    message = bytearray(message)
     parity_should_be = '\xda\x4d\x5a'
-    parity = lc_start_encode(message)
+    print('Original Message:            {}'.format(h(message)))
     print('Masked Parity Should be:     {}'.format(h(parity_should_be)))
+    
+    parity = lc_header_encode(message)
     print('Calculated Masked Parity is: {}'.format(h(parity)))
