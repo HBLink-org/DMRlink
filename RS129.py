@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #
 ###############################################################################
-# hb_router.py -- a call routing applicaiton for hblink.py
 #   Copyright (C) 2016  Cortney T. Buffington, N0MJS <n0mjs@me.com>
 #   Copyright (C) 2015 by Jonathan Naylor G4KLX
 #
