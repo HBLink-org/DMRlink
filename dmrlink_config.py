@@ -23,6 +23,7 @@ import sys
 
 from socket import gethostbyname 
 
+<<<<<<< HEAD
 # Does anybody read this stuff? There's a PEP somewhere that says I should do this.
 __author__     = 'Cortney T. Buffington, N0MJS'
 __copyright__  = 'Copyright (c) 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -30,6 +31,14 @@ __license__    = 'GNU GPLv3'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__      = 'n0mjs@me.com'
 
+=======
+__author__      = 'Cortney T. Buffington, N0MJS'
+__copyright__   = 'Copyright (c) 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
+__credits__     = 'Adam Fast, KC0YLK; Dave Kierzkowski, KD8EYF; Steve Zingman, N4IRS; Mike Zingman, N4IRR'
+__license__     = 'GNU GPLv3'
+__maintainer__  = 'Cort Buffington, N0MJS'
+__email__       = 'n0mjs@me.com'
+>>>>>>> origin/modularization
 
 def build_config(_config_file):
     config = ConfigParser.ConfigParser()
@@ -178,6 +187,7 @@ def build_config(_config_file):
     return CONFIG
 
 
+<<<<<<< HEAD
 # Used to run this file direclty and print the config,
 # which might be useful for debugging
 if __name__ == '__main__':
@@ -201,3 +211,7 @@ if __name__ == '__main__':
     
     
     pprint(build_config(cli_args.CONFIG_FILE))
+=======
+if __name__ == '__main__':
+    pass
+>>>>>>> origin/modularization

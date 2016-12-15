@@ -48,11 +48,16 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
 
+<<<<<<< HEAD
 from ipsc.ipsc_const import *
 from ipsc.ipsc_mask import *
 from dmrlink_config import build_config
 from dmrlink_log import config_logging
 
+=======
+from dmr_utils import hex_str_2, hex_str_3, hex_str_4, int_id
+from dmrlink_config import build_config
+>>>>>>> origin/modularization
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -61,6 +66,7 @@ __license__     = 'GNU GPLv3'
 __maintainer__  = 'Cort Buffington, N0MJS'
 __email__       = 'n0mjs@me.com'
 
+<<<<<<< HEAD
 # Global variables used whether we are a module or __main__
 systems = {}
 
@@ -92,6 +98,95 @@ def config_reporting_loop(_type):
         def reporting_loop():
             logger.debug('Periodic Reporting Loop Started (NULL)')
 
+=======
+# Global variables for all class instances
+systems = {}
+
+#************************************************
+#     CONFIGURE THE SYSTEM LOGGER
+#************************************************
+
+def config_logging(_logger):
+    dictConfig({
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+        },
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'timed': {
+                'format': '%(levelname)s %(asctime)s %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+            'syslog': {
+                'format': '%(name)s (%(process)d): %(levelname)s %(message)s'
+            }
+        },
+        'handlers': {
+            'null': {
+                'class': 'logging.NullHandler'
+            },
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            },
+            'console-timed': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'timed'
+            },
+            'file': {
+                'class': 'logging.FileHandler',
+                'formatter': 'simple',
+                'filename': _logger['LOG_FILE'],
+            },
+            'file-timed': {
+                'class': 'logging.FileHandler',
+                'formatter': 'timed',
+                'filename': _logger['LOG_FILE'],
+            },
+            'syslog': {
+                'class': 'logging.handlers.SysLogHandler',
+                'formatter': 'syslog',
+            }
+        },
+        'loggers': {
+            _logger['LOG_NAME']: {
+                'handlers': _logger['LOG_HANDLERS'].split(','),
+                'level': _logger['LOG_LEVEL'],
+                'propagate': True,
+            }
+        }
+    })
+    return logging.getLogger(_logger['LOG_NAME'])
+
+
+#************************************************
+#     IMPORTING OTHER FILES - '#include'
+#************************************************
+
+# Import IPSC message types and version information
+#
+try:
+    from ipsc.ipsc_const import *
+except ImportError:
+    sys.exit('IPSC message types file not found or invalid')
+
+# Import IPSC flag mask values
+#
+try:
+    from ipsc.ipsc_mask import *
+except ImportError:
+    sys.exit('IPSC mask values file not found or invalid')
+
+
+#************************************************
+#     UTILITY FUNCTIONS FOR INTERNAL USE
+#************************************************
+>>>>>>> origin/modularization
 
 # Determine if the provided peer ID is valid for the provided network 
 #
@@ -321,6 +416,56 @@ def print_master(_network):
         print('\t\tStatus: {},  KeepAlives Sent: {},  KeepAlives Outstanding: {},  KeepAlives Missed: {}' .format(_master['STATUS']['CONNECTED'], _master['STATUS']['KEEP_ALIVES_SENT'], _master['STATUS']['KEEP_ALIVES_OUTSTANDING'], _master['STATUS']['KEEP_ALIVES_MISSED']))
         print('\t\t                KeepAlives Received: {},  Last KeepAlive Received at: {}' .format(_master['STATUS']['KEEP_ALIVES_RECEIVED'], _master['STATUS']['KEEP_ALIVE_RX_TIME']))
     
+<<<<<<< HEAD
+=======
+    
+# Timed loop used for reporting IPSC status
+#
+# REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
+def config_reports(_config):
+    global reporting_loop
+    
+    if _config['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
+        def reporting_loop():  
+            logger.debug('Periodic Reporting Loop Started (PICKLE)')
+            try:
+                with open(_config['REPORTS']['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
+                    pickle_dump(_config['SYSTEMS'], file, 2)
+                    file.close()
+            except IOError as detail:
+                logger.error('I/O Error: %s', detail)
+     
+    elif _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
+        def reporting_loop():      
+            logger.debug('Periodic Reporting Loop Started (PRINT)')
+            for system in _config['SYSTEMS']:
+                print_master(system)
+                print_peer_list(system)
+
+    else:
+        def reporting_loop():
+            logger.debug('Periodic Reporting Loop Started (NULL)')
+
+
+# Shut ourselves down gracefully with the IPSC peers.
+#
+def handler(_signal, _frame):
+    logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
+    
+    for system in systems:
+        this_ipsc = systems[system]
+        logger.info('De-Registering from IPSC %s', system)
+        de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+        this_ipsc.send_to_ipsc(de_reg_req_pkt)
+    
+    reactor.stop()
+
+# Set signal handers so that we can gracefully exit if need be
+for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+    signal.signal(sig, handler)
+    
+    
+>>>>>>> origin/modularization
 
 #************************************************
 #     IPSC CLASS
@@ -815,12 +960,14 @@ class IPSC(DatagramProtocol):
                     self.private_data(self._network, _src_sub, _dst_sub, _ts, _end, _peerid, data)
                     return
                 return
-                
+
+
             # MOTOROLA XCMP/XNL CONTROL PROTOCOL: We don't process these (yet)   
             elif _packettype == XCMP_XNL:
                 self.xcmp_xnl(self._network, data)
                 return
-            
+
+
             # ORIGINATED BY PEERS, NOT IPSC MAINTENANCE: Call monitoring is all we've found here so far 
             elif _packettype == CALL_MON_STATUS:
                 self.call_mon_status(self._network, data)
@@ -833,7 +980,8 @@ class IPSC(DatagramProtocol):
             elif _packettype == CALL_MON_NACK:
                 self.call_mon_nack(self._network, data)
                 return
-                
+            
+            
             # IPSC CONNECTION MAINTENANCE MESSAGES
             elif _packettype == DE_REG_REQ:
                 de_register_peer(self._network, _peerid)
@@ -850,9 +998,8 @@ class IPSC(DatagramProtocol):
                 return
             return
 
-        #
+
         # THE FOLLOWING PACKETS ARE RECEIVED ONLY IF WE ARE OPERATING AS A PEER
-        #
         
         # ONLY ACCEPT FROM A PREVIOUSLY VALIDATED PEER
         if _packettype in PEER_REQUIRED:
@@ -881,7 +1028,7 @@ class IPSC(DatagramProtocol):
             
         
         # PACKETS ONLY ACCEPTED FROM OUR MASTER
-        
+
         # PACKETS WE ONLY ACCEPT IF WE HAVE FINISHED REGISTERING WITH OUR MASTER
         if _packettype in MASTER_REQUIRED:
             if not valid_master(self._network, _peerid):
@@ -898,15 +1045,13 @@ class IPSC(DatagramProtocol):
                 return
             return
             
-        
         # THIS MEANS WE HAVE SUCCESSFULLY REGISTERED TO OUR MASTER - RECORD MASTER INFORMATION
         elif _packettype == MASTER_REG_REPLY:
             self.master_reg_reply(data, _peerid)
             return
         
-
-        # THE FOLLOWING PACKETS ARE RECEIVED ONLLY IF WE ARE OPERATING AS A MASTER
         
+        # THE FOLLOWING PACKETS ARE RECEIVED ONLLY IF WE ARE OPERATING AS A MASTER
         # REQUESTS FROM PEERS: WE MUST REPLY IMMEDIATELY FOR IPSC MAINTENANCE
         
         # REQUEST TO REGISTER TO THE IPSC
@@ -924,7 +1069,10 @@ class IPSC(DatagramProtocol):
             self.peer_list_req(_peerid)
             return
             
+<<<<<<< HEAD
         
+=======
+>>>>>>> origin/modularization
         # PACKET IS OF AN UNKNOWN TYPE. LOG IT AND IDENTTIFY IT!
         else:
             self.unknown_message(self._network, _packettype, _peerid, data)
@@ -949,11 +1097,20 @@ if __name__ == '__main__':
     if not cli_args.CFG_FILE:
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
     
+<<<<<<< HEAD
     # Call the external routine to build the configuration dictionary
     CONFIG = build_config(cli_args.CFG_FILE)
     
     # Call the external routing to start the system logger
     logger = config_logging(CONFIG['LOGGER'])
+=======
+    
+    CONFIG = build_config(cli_args.CFG_FILE)
+    logger = config_logging(CONFIG['LOGGER'])
+    config_reports(CONFIG)
+    
+    
+>>>>>>> origin/modularization
     logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
     # Shut ourselves down gracefully with the IPSC peers.
