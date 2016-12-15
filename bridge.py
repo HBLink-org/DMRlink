@@ -46,19 +46,16 @@
 from __future__ import print_function
 from twisted.internet import reactor
 from twisted.internet import task
-from binascii import b2a_hex as h
+from binascii import b2a_hex as ahex
 from time import time
 
-# For debugging
-from pprint import pprint
-
 import sys
-from dmrlink import IPSC, systems, reporting_loop, dmr_nat, logger, hex_str_3, hex_str_4, int_id
-from dmrlink import CONFIG
+
+from dmr_utils.utils import hex_str_3, hex_str_4, int_id
+
+from dmrlink import IPSC, systems
 from ipsc.ipsc_const import BURST_DATA_TYPE
 
-#NETWORKS = CONFIG['SYSTEMS']
-#REPORTS = CONFIG['REPORTS']
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -428,23 +425,60 @@ class bridgeIPSC(IPSC):
                 # Send the packet to all peers in the target IPSC
                 systems[target].send_to_ipsc(_tmp_data)
 
-
+    
 if __name__ == '__main__':
+    
+    # Change the current directory to the location of the application
+    os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
+
+    # CLI argument parser - handles picking up the config file from the command line, and sending a "help" message
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
+    cli_args = parser.parse_args()
+
+    if not cli_args.CFG_FILE:
+        cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
+    
+    # Call the external routine to build the configuration dictionary
+    CONFIG = build_config(cli_args.CFG_FILE)
+    
+    # Call the external routing to start the system logger
+    logger = config_logging(CONFIG['LOGGER'])
+    
+    config_reports(CONFIG)
+    
+
     logger.info('DMRlink \'bridge.py\' (c) 2013-2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
-    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    for ipsc_network in CONFIG['SYSTEMS']:
-        if CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['ENABLED']:
-            systems[ipsc_network] = bridgeIPSC(ipsc_network)
-            reactor.listenUDP(CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['PORT'], systems[ipsc_network], interface=CONFIG['SYSTEMS'][ipsc_network]['LOCAL']['IP'])
+    # Shut ourselves down gracefully with the IPSC peers.
+    def sig_handler(_signal, _frame):
+        logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
     
+        for system in systems:
+            this_ipsc = systems[system]
+            logger.info('De-Registering from IPSC %s', system)
+            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+            this_ipsc.send_to_ipsc(de_reg_req_pkt)
+        reactor.stop()
+
+    # Set signal handers so that we can gracefully exit if need be
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+        signal.signal(sig, sig_handler)
+    
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
+            systems[system] = IPSC(system, CONFIG, logger)
+            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
+  
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
     if CONFIG['REPORTS']['REPORT_NETWORKS']:
+        config_reporting_loop(CONFIG['REPORTS']['REPORT_NETWORKS'])
         reporting = task.LoopingCall(reporting_loop)
         reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
         
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
     rule_timer = task.LoopingCall(rule_timer_loop)
     rule_timer.start(60)
-       
+  
     reactor.run()
