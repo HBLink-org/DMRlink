@@ -48,6 +48,7 @@ from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as ahex
 from time import time
+from importlib import import_module
 
 import sys
 
@@ -74,35 +75,38 @@ TS_CLEAR_TIME = .2
 # configuration file and listed as "active". It can be empty, 
 # but it has to exist.
 #
-try:
-    from bridge_rules import RULES as RULES_FILE
-    logger.info('Bridge rules file found and rules imported')
-except ImportError:
-    sys.exit('Bridging rules file not found or invalid')
+def make_rules(_dmrlink_routing_rules):
+    
+    
+    try:
+        from bridge_rules import RULES as RULES_FILE
+        logger.info('Bridge rules file found and rules imported')
+    except ImportError:
+        sys.exit('Bridging rules file not found or invalid')
 
-# Convert integer GROUP ID numbers from the config into hex strings
-# we need to send in the actual data packets.
-#
+    # Convert integer GROUP ID numbers from the config into hex strings
+    # we need to send in the actual data packets.
+    #
 
-for _ipsc in RULES_FILE:
-    for _rule in RULES_FILE[_ipsc]['GROUP_VOICE']:
-        _rule['SRC_GROUP']  = hex_str_3(_rule['SRC_GROUP'])
-        _rule['DST_GROUP']  = hex_str_3(_rule['DST_GROUP'])
-        _rule['SRC_TS']     = _rule['SRC_TS']
-        _rule['DST_TS']     = _rule['DST_TS']
-        for i, e in enumerate(_rule['ON']):
-            _rule['ON'][i]  = hex_str_3(_rule['ON'][i])
-        for i, e in enumerate(_rule['OFF']):
-            _rule['OFF'][i] = hex_str_3(_rule['OFF'][i])
-        _rule['TIMEOUT']= _rule['TIMEOUT']*60
-        _rule['TIMER']      = time() + _rule['TIMEOUT']
-    if _ipsc not in CONFIG['SYSTEMS']:
-        sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
-for _ipsc in CONFIG['SYSTEMS']:
-    if _ipsc not in RULES_FILE:
-        sys.exit('ERROR: Bridge rules not found for all IPSC network configured')
+    for _ipsc in RULES_FILE:
+        for _rule in RULES_FILE[_ipsc]['GROUP_VOICE']:
+            _rule['SRC_GROUP']  = hex_str_3(_rule['SRC_GROUP'])
+            _rule['DST_GROUP']  = hex_str_3(_rule['DST_GROUP'])
+            _rule['SRC_TS']     = _rule['SRC_TS']
+            _rule['DST_TS']     = _rule['DST_TS']
+            for i, e in enumerate(_rule['ON']):
+                _rule['ON'][i]  = hex_str_3(_rule['ON'][i])
+            for i, e in enumerate(_rule['OFF']):
+                _rule['OFF'][i] = hex_str_3(_rule['OFF'][i])
+            _rule['TIMEOUT']= _rule['TIMEOUT']*60
+            _rule['TIMER']      = time() + _rule['TIMEOUT']
+        if _ipsc not in CONFIG['SYSTEMS']:
+            sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
+    for _ipsc in CONFIG['SYSTEMS']:
+        if _ipsc not in RULES_FILE:
+            sys.exit('ERROR: Bridge rules not found for all IPSC network configured')
 
-RULES = RULES_FILE
+    RULES = RULES_FILE
 
 # Import List of Bridges
 # This is how we identify known bridges. If one of these is present
