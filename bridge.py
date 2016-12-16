@@ -54,7 +54,7 @@ import sys
 
 from dmr_utils.utils import hex_str_3, hex_str_4, int_id
 
-from dmrlink import IPSC, systems
+from dmrlink import IPSC, systems, config_reports
 from ipsc.ipsc_const import BURST_DATA_TYPE
 
 
@@ -75,11 +75,9 @@ TS_CLEAR_TIME = .2
 # configuration file and listed as "active". It can be empty, 
 # but it has to exist.
 #
-def make_rules(_dmrlink_routing_rules):
-    
-    
+def build_rules(_bridge_rules):
     try:
-        from bridge_rules import RULES as RULES_FILE
+        rule_file = import_module(_bridge_rules)
         logger.info('Bridge rules file found and rules imported')
     except ImportError:
         sys.exit('Bridging rules file not found or invalid')
@@ -88,8 +86,8 @@ def make_rules(_dmrlink_routing_rules):
     # we need to send in the actual data packets.
     #
 
-    for _ipsc in RULES_FILE:
-        for _rule in RULES_FILE[_ipsc]['GROUP_VOICE']:
+    for _ipsc in rule_file.RULES:
+        for _rule in rule_file.RULES[_ipsc]['GROUP_VOICE']:
             _rule['SRC_GROUP']  = hex_str_3(_rule['SRC_GROUP'])
             _rule['DST_GROUP']  = hex_str_3(_rule['DST_GROUP'])
             _rule['SRC_TS']     = _rule['SRC_TS']
@@ -103,54 +101,60 @@ def make_rules(_dmrlink_routing_rules):
         if _ipsc not in CONFIG['SYSTEMS']:
             sys.exit('ERROR: Bridge rules found for an IPSC network not configured in main configuration')
     for _ipsc in CONFIG['SYSTEMS']:
-        if _ipsc not in RULES_FILE:
+        if _ipsc not in rule_file.RULES:
             sys.exit('ERROR: Bridge rules not found for all IPSC network configured')
 
-    RULES = RULES_FILE
+    return rule_file.RULES
 
 # Import List of Bridges
 # This is how we identify known bridges. If one of these is present
 # and it's mode byte is set to bridge, we don't
 #
-try:
-    from known_bridges import BRIDGES
-    logger.info('Known bridges file found and bridge ID list imported ')
-except ImportError:
-    logger.critical('\'known_bridges.py\' not found - backup bridge service will not be enabled')
-    BRIDGES = []
+def build_bridges(_known_bridges):
+    try:
+        bridges_file = import_module(_known_bridges)
+        logger.info('Known bridges file found and bridge ID list imported ')
+    except ImportError:
+        logger.critical('\'known_bridges.py\' not found - backup bridge service will not be enabled')
+        bridges_file = []
+    return bridges_file
 
 # Import subscriber ACL
 # ACL may be a single list of subscriber IDs
 # Global action is to allow or deny them. Multiple lists with different actions and ranges
 # are not yet implemented.
-try:
-    from sub_acl import ACL_ACTION, ACL
-    # uses more memory to build hex strings, but processes MUCH faster when checking for matches
-    for i, e in enumerate(ACL):
-        ACL[i] = hex_str_3(ACL[i])
-    logger.info('Subscriber access control file found, subscriber ACL imported')
-except ImportError:
-    logger.critical('\'sub_acl.py\' not found - all subscriber IDs are valid')
-    ACL_ACTION = 'NONE'
+def build_acl(_sub_acl):
+    try:
+        acl_file = import_module(_sub_acl)
+        for i, e in enumerate(acl_file.ACL):
+            acl_file.ACL[i] = hex_str_3(acl_file.ACL[i])
+        logger.info('ACL file found and ACL entries imported')
+    except ImportError:
+        logger.info('ACL file not found or invalid - all subscriber IDs are valid')
+        ACL_ACTION = 'NONE'
 
-# Depending on which type of ACL is used (PERMIT, DENY... or there isn't one)
-# define a differnet function to be used to check the ACL
-if ACL_ACTION == 'PERMIT':
-    def allow_sub(_sub):
-        if _sub in ACL:
+    # Depending on which type of ACL is used (PERMIT, DENY... or there isn't one)
+    # define a differnet function to be used to check the ACL
+    global allow_sub
+    if acl_file.ACL_ACTION == 'PERMIT':
+        def allow_sub(_sub):
+            if _sub in ACL:
+                return True
+            else:
+                return False
+    elif acl_file.ACL_ACTION == 'DENY':
+        def allow_sub(_sub):
+            if _sub not in ACL:
+                return True
+            else:
+                return False
+    else:
+        def allow_sub(_sub):
             return True
-        else:
-            return False
-elif ACL_ACTION == 'DENY':
-    def allow_sub(_sub):
-        if _sub not in ACL:
-            return True
-        else:
-            return False
-else:
-    def allow_sub(_sub):
-        return True
-
+    
+    return acl_file.ACL
+    
+    
 # Run this every minute for rule timer updates
 def rule_timer_loop():
     logger.debug('(ALL IPSC) Rule timer loop started')
@@ -177,9 +181,10 @@ def rule_timer_loop():
                 logger.debug('Rule timer loop made no rule changes')
 
 class bridgeIPSC(IPSC):
-    def __init__(self, *args, **kwargs):
-        IPSC.__init__(self, *args, **kwargs)
-        if BRIDGES:
+    def __init__(self, _name, _config, _logger, _bridges):
+        IPSC.__init__(self, _name, _config, _logger, _bridges)
+        self.BRIDGES = _bridges
+        if self.BRIDGES:
             logger.info('Initializing backup/polite bridging')
             self.BRIDGE = False
         else:
@@ -194,14 +199,14 @@ class bridgeIPSC(IPSC):
         self.last_seq_id = '\x00'
         self.call_start = 0
         
-    # Setup the backup/polite bridging maintenance loop (based on keep-alive timer)
+        # Setup the backup/polite bridging maintenance loop (based on keep-alive timer)
     
-    if BRIDGES:
-        def startProtocol(self):
-            IPSC.startProtocol(self)
+        if self.BRIDGES:
+            def startProtocol(self):
+                IPSC.startProtocol(self)
 
-            self._bridge_presence = task.LoopingCall(self.bridge_presence_loop)
-            self._bridge_presence_loop = self._bridge_presence.start(self._local['ALIVE_TIMER'])
+                self._bridge_presence = task.LoopingCall(self.bridge_presence_loop)
+                self._bridge_presence_loop = self._bridge_presence.start(self._local['ALIVE_TIMER'])
 
     # This is the backup/polite bridge maintenance loop
     def bridge_presence_loop(self):
@@ -432,6 +437,14 @@ class bridgeIPSC(IPSC):
     
 if __name__ == '__main__':
     
+    import argparse
+    import os
+    import signal
+    from dmr_utils.utils import try_download, mk_id_dict
+    
+    import dmrlink_log
+    import dmrlink_config
+    
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -444,13 +457,12 @@ if __name__ == '__main__':
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
     
     # Call the external routine to build the configuration dictionary
-    CONFIG = build_config(cli_args.CFG_FILE)
+    CONFIG = dmrlink_config.build_config(cli_args.CFG_FILE)
     
     # Call the external routing to start the system logger
-    logger = config_logging(CONFIG['LOGGER'])
+    logger = dmrlink_log.config_logging(CONFIG['LOGGER'])
     
     config_reports(CONFIG)
-    
 
     logger.info('DMRlink \'bridge.py\' (c) 2013-2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
@@ -468,6 +480,16 @@ if __name__ == '__main__':
     # Set signal handers so that we can gracefully exit if need be
     for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
         signal.signal(sig, sig_handler)
+    
+    # Build the routing rules file
+    RULES = build_rules('bridge_rules')
+    
+    # Build list of known bridge IDs
+    BRIDGES = build_bridges('known_bridges')
+    
+    # Build the Access Control List
+    ACL = build_acl('sub_acl')
+    
     
     # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
     for system in CONFIG['SYSTEMS']:
