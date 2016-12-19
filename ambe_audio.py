@@ -28,7 +28,10 @@ from bitstring import BitArray
 
 import sys, socket, ConfigParser, thread, traceback
 import cPickle as pickle
-from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3, hex_str_4, get_info, talkgroup_ids, peer_ids, PATH, get_subscriber_info, reread_subscribers
+
+from dmrlink import IPSC, systems
+from dmr_utils.utils import int_id, hex_str_3, hex_str_4, get_alias
+
 from time import time, sleep, clock, localtime, strftime
 import csv
 import struct
@@ -90,8 +93,8 @@ class ambeIPSC(IPSC):
     #_d = None
     ###### DEBUGDEBUGDEBUG
     
-    def __init__(self, *args, **kwargs):
-        IPSC.__init__(self, *args, **kwargs)
+    def __init__(self, _name, _config, _logger):
+        IPSC.__init__(self, _name, _config, _logger)
         self.CALL_DATA = []
         
         #
@@ -99,7 +102,7 @@ class ambeIPSC(IPSC):
         #
 
         self._currentTG = self._no_tg
-        self._currentNetwork = str(args[0])
+        self._currentNetwork = str(_name)
         self.readConfigFile(self._configFile, None, self._currentNetwork)
     
         logger.info('DMRLink ambe server')
@@ -121,7 +124,7 @@ class ambeIPSC(IPSC):
     
         try:
             thread.start_new_thread( self.remote_control, (self._remote_control_port, ) )       # Listen for remote control commands
-            thread.start_new_thread( self.launchUDP, (args[0], ) )                              # Package AMBE into IPSC frames and send to all peers
+            thread.start_new_thread( self.launchUDP, (_name, ) )                              # Package AMBE into IPSC frames and send to all peers
         except:
             traceback.print_exc()
             logger.error( "Error: unable to start thread" )
@@ -178,7 +181,7 @@ class ambeIPSC(IPSC):
             traceback.print_exc()
             sys.exit('Configuration file \''+configFileName+'\' is not a valid configuration file! Exiting...')
 
-    def rewriteFrame( self, _frame, _network, _newSlot, _newGroup, _newSouceID, _newPeerID ):
+    def rewriteFrame( self, _frame, _newSlot, _newGroup, _newSouceID, _newPeerID ):
         
         _peerid         = _frame[1:5]                 # int32 peer who is sending us a packet
         _src_sub        = _frame[6:9]                 # int32 Id of source
@@ -266,7 +269,7 @@ class ambeIPSC(IPSC):
         return _ambeAll.tobytes()           # Return the 49 * 3 as an array of bytes
 
     # Set up the socket and run the method to gather the AMBE.  Sending it to all peers
-    def launchUDP(self, _network):
+    def launchUDP(self):
         s = socket.socket()                 # Create a socket object
         s.bind(('', self._ambeRxPort))      # Bind to the port
 
@@ -274,16 +277,16 @@ class ambeIPSC(IPSC):
             s.listen(5)                     # Now wait for client connection.
             _sock, addr = s.accept()        # Establish connection with client.
             if int_id(self._tx_tg) > 0:     # Test if we are allowed to transmit
-                self.playbackFromUDP(_sock, _network)
+                self.playbackFromUDP(_sock, self._system)
             else:
-                self.transmitDisabled(_sock, _network)    #tg is zero, so just eat the network trafic
+                self.transmitDisabled(_sock, self._system)    #tg is zero, so just eat the network trafic
             _sock.close()
 
     # This represents a full transmission (HEAD, VOICE and TERM)
-    def playbackFromUDP(self, _sock, _network):
+    def playbackFromUDP(self, _sock):
         _delay = 0.055                                      # Yes, I know it should be 0.06, but there seems to be some latency, so this is a hack
         _src_sub = hex_str_3(self._gateway_dmr_id)          # DMR ID to sign this transmission with
-        _src_peer = NETWORK[_network]['LOCAL']['RADIO_ID']  # Use this peers ID as the source repeater
+        _src_peer = NETWORK[self._system]['LOCAL']['RADIO_ID']  # Use this peers ID as the source repeater
 
         logger.info('Transmit from gateway to TG {}:'.format(int_id(self._tx_tg)) )
         try:
@@ -310,8 +313,8 @@ class ambeIPSC(IPSC):
             self._seq = randint(0,32767)                    # A transmission uses a random number to begin its sequence (16 bit)
 
             for i in range(0, 3):                           # Output the 3 HEAD frames to our peers
-                self.rewriteFrame(_tempHead[i], _network, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
-                #self.group_voice(_network, _src_sub, self._tx_tg, True, '', hex_str_3(0), _tempHead[i])
+                self.rewriteFrame(_tempHead[i], self._system, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
+                #self.group_voice(self._system, _src_sub, self._tx_tg, True, '', hex_str_3(0), _tempHead[i])
                 sleep(_delay)
 
             i = 0                                           # Initialize the VOICE template index
@@ -321,21 +324,21 @@ class ambeIPSC(IPSC):
                     i = (i + 1) % 6                         # Round robbin with the 6 VOICE templates
                     _frame = _tempVoice[i][:33] + _ambe + _tempVoice[i][52:]    # Insert the 3 49 bit AMBE frames
                     
-                    self.rewriteFrame(_frame, _network, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
-                    #self.group_voice(_network, _src_sub, self._tx_tg, True, '', hex_str_3(0), _frame)
+                    self.rewriteFrame(_frame, self._system, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
+                    #self.group_voice(self._system, _src_sub, self._tx_tg, True, '', hex_str_3(0), _frame)
 
                     sleep(_delay)                           # Since this comes from a file we have to add delay between IPSC frames
                 else:
                     _eof = True                             # There are no more AMBE frames, so terminate the loop
 
-            self.rewriteFrame(_tempTerm, _network, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
-            #self.group_voice(_network, _src_sub, self._tx_tg, True, '', hex_str_3(0), _tempTerm)
+            self.rewriteFrame(_tempTerm, self._system, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
+            #self.group_voice(self._system, _src_sub, self._tx_tg, True, '', hex_str_3(0), _tempTerm)
 
         except IOError:
             logger.error('Can not transmit to peers')
         logger.info('Transmit complete')
 
-    def transmitDisabled(self, _sock, _network):
+    def transmitDisabled(self, _sock):
         _eof = False
         logger.debug('Transmit disabled begin')
         while(_eof == False):
@@ -386,20 +389,19 @@ class ambeIPSC(IPSC):
     #************************************************
     #
 
-    def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+    def group_voice(self, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         
         #self.dumpIPSCFrame(_data)
         
         # THIS FUNCTION IS NOT COMPLETE!!!!
         _payload_type = _data[30:31]
         # _ambe_frames = _data[33:52]
-        _ambe_frames = BitArray('0x'+h(_data[33:52]))
+        _ambe_frames = BitArray('0x'+h(_data[33:52])) 
         _ambe_frame1 = _ambe_frames[0:49]
         _ambe_frame2 = _ambe_frames[50:99]
         _ambe_frame3 = _ambe_frames[100:149]
         
         _tg_id = int_id(_dst_sub)
-        _ts = 2 if _ts else 1
         
         self._busy_slots[_ts] = time()
         
@@ -409,12 +411,12 @@ class ambeIPSC(IPSC):
 #            self._d.write(struct.pack("i", __iLen))
 #            self._d.write(_data)
 #        else:
-#            self.rewriteFrame(_data, _network, 1, 9)
+#            self.rewriteFrame(_data, self._system, 1, 9)
         ###### DEBUGDEBUGDEBUG
        
         
         if _tg_id in self._tg_filter:    #All TGs
-            _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
+            _dst_sub    = get_alias(_dst_sub, talkgroup_ids)
             if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
                 if self._currentTG == self._no_tg:
                     _src_sub    = get_subscriber_info(_src_sub)
@@ -459,7 +461,7 @@ class ambeIPSC(IPSC):
     
         else:
             if _payload_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                _dst_sub    = get_info(int_id(_dst_sub), talkgroup_ids)
+                _dst_sub    = get_alias(_dst_sub, talkgroup_ids)
                 logger.warning('Ignored Voice Transmission Start on TS {} and TG {}'.format(_ts, _dst_sub))
 
     def outputFrames(self, _ambe_frames, _ambe_frame1, _ambe_frame2, _ambe_frame3):
@@ -479,7 +481,7 @@ class ambeIPSC(IPSC):
             self._sock.sendto(_ambe_frame2.tobytes(), (self._gateway, self._gateway_port))
             self._sock.sendto(_ambe_frame3.tobytes(), (self._gateway, self._gateway_port))
 
-    def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+    def private_voice(self, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
         print('private voice')
 #        __iLen = len(_data)
 #        self._d.write(struct.pack("i", __iLen))
@@ -528,7 +530,7 @@ class ambeIPSC(IPSC):
                     print('New gateway_dmr_id = ' + str(self._gateway_dmr_id))
                 elif _cmd == 'gateway_peer_id':
                     peerID = int(_tmp.split('=')[1])
-                    NETWORK[_network]['LOCAL']['RADIO_ID'] = hex_str_3(peerID)
+                    self._config['LOCAL']['RADIO_ID'] = hex_str_3(peerID)
                     print('New peer_id = ' + str(peerID))
                 elif _cmd == 'restart':
                     reactor.callFromThread(reactor.stop)
@@ -540,9 +542,9 @@ class ambeIPSC(IPSC):
                     logger.info( 'New TGs={}'.format(self._tg_filter) )
                 elif _cmd == 'dump_template':
                     self.dumpTemplate('PrivateVoice.bin')
-                elif _cmd == 'get_info':
+                elif _cmd == 'get_alias':
                     self._sock.sendto('reply dmr_info {} {} {} {}'.format(self._currentNetwork,
-                                                                          int_id(NETWORK[self._currentNetwork]['LOCAL']['RADIO_ID']),
+                                                                          int_id(self._CONFIG[self._currentNetwork]['LOCAL']['RADIO_ID']),
                                                                           self._gateway_dmr_id,
                                                                           get_subscriber_info(hex_str_3(self._gateway_dmr_id))), (self._dmrgui, 34003))
                 elif _cmd == 'eval':
@@ -614,11 +616,80 @@ class ambeIPSC(IPSC):
             _ambe           = _frame[33:52]
             print('SLOT2:', h(_frame))
         print("pt={:02X} pid={} seq={:02X} src={} dst={} ct={:02X} uk={} ci={} rsq={}".format(_packettype, _peerid,_ipsc_seq, _src_sub,_dst_sub,_call_type,_call_ctrl_info,_call_info,_rtp_seq))
+    
 
 if __name__ == '__main__':
+    import argparse
+    import os
+    import sys
+    import signal
+    from dmr_utils.utils import try_download, mk_id_dict
+    
+    import dmrlink_log
+    import dmrlink_config
+    
+    # Change the current directory to the location of the application
+    os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
+
+    # CLI argument parser - handles picking up the config file from the command line, and sending a "help" message
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
+    cli_args = parser.parse_args()
+
+    if not cli_args.CFG_FILE:
+        cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
+    
+    # Call the external routine to build the configuration dictionary
+    CONFIG = dmrlink_config.build_config(cli_args.CFG_FILE)
+    
+    # Call the external routing to start the system logger
+    logger = dmrlink_log.config_logging(CONFIG['LOGGER'])
+
     logger.info('DMRlink \'ambe_audio.py\' (c) 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
-    for ipsc_network in NETWORK:
-        if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
-            networks[ipsc_network] = ambeIPSC(ipsc_network)
-            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
+    
+    # ID ALIAS CREATION
+    # Download
+    if CONFIG['ALIASES']['TRY_DOWNLOAD'] == True:
+        # Try updating peer aliases file
+        result = try_download(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['PEER_FILE'], CONFIG['ALIASES']['PEER_URL'], CONFIG['ALIASES']['STALE_TIME'])
+        logger.info(result)
+        # Try updating subscriber aliases file
+        result = try_download(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['SUBSCRIBER_FILE'], CONFIG['ALIASES']['SUBSCRIBER_URL'], CONFIG['ALIASES']['STALE_TIME'])
+        logger.info(result)
+        
+    # Make Dictionaries
+    peer_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['PEER_FILE'])
+    if peer_ids:
+        logger.info('ID ALIAS MAPPER: peer_ids dictionary is available')
+        
+    subscriber_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['SUBSCRIBER_FILE'])
+    if subscriber_ids:
+        logger.info('ID ALIAS MAPPER: subscriber_ids dictionary is available')
+    
+    talkgroup_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['TGID_FILE'])
+    if talkgroup_ids:
+        logger.info('ID ALIAS MAPPER: talkgroup_ids dictionary is available')
+    
+    # Shut ourselves down gracefully with the IPSC peers.
+    def sig_handler(_signal, _frame):
+        logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
+    
+        for system in systems:
+            this_ipsc = systems[system]
+            logger.info('De-Registering from IPSC %s', system)
+            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+            this_ipsc.send_to_ipsc(de_reg_req_pkt)
+        reactor.stop()
+
+    # Set signal handers so that we can gracefully exit if need be
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+        signal.signal(sig, sig_handler)
+    
+    
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
+            systems[system] = ambeIPSC(system, CONFIG, logger)
+            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
+    
     reactor.run()

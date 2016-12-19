@@ -22,10 +22,11 @@
 
 from __future__ import print_function
 from twisted.internet import reactor
-from binascii import b2a_hex as h
+from binascii import b2a_hex as ahex
 
 import sys, time
-from dmrlink import IPSC, NETWORK, networks, logger, dmr_nat, int_id, hex_str_3
+from dmrlink import IPSC, systems
+from dmr_utils.utils import int_id, hex_str_3
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -43,62 +44,66 @@ except ImportError:
 HEX_TGID    = hex_str_3(TGID)
 HEX_SUB     = hex_str_3(SUB)
 BOGUS_SUB   = '\xFF\xFF\xFF'
-if GROUP_SRC_SUB:
-    logger.info('Playback: USING SUBSCRIBER ID: %s FOR GROUP REPEAT', GROUP_SRC_SUB)
-    HEX_GRP_SUB = hex_str_3(GROUP_SRC_SUB)
 
 class playbackIPSC(IPSC):
-    
-    def __init__(self, *args, **kwargs):
-        IPSC.__init__(self, *args, **kwargs)
+    def __init__(self, _name, _config, _logger):
+        IPSC.__init__(self, _name, _config, _logger)
         self.CALL_DATA = []
+        
+        if GROUP_SRC_SUB:
+            self._logger.info('Playback: USING SUBSCRIBER ID: %s FOR GROUP REPEAT', GROUP_SRC_SUB)
+            self.GROUP_SRC_SUB = hex_str_3(GROUP_SRC_SUB)
+        
+        if GROUP_REPEAT:
+            self._logger.info('Playback: GROUP REPEAT ENABLED')
+            
+        if PRIVATE_REPEAT:
+            self._logger.info('Playback: PRIVATE REPEAT ENABLED')
         
     #************************************************
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
     #
     if GROUP_REPEAT:
-	logger.info('Playback: DEFINING GROUP REPEAT FUNCTION')
-        def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+        def group_voice(self, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
             if HEX_TGID == _dst_sub and _ts in GROUP_TS:
                 if not _end:
                     if not self.CALL_DATA:
-                        logger.info('(%s) Receiving transmission to be played back from subscriber: %s', _network, int_id(_src_sub))
+                        self._logger.info('(%s) Receiving transmission to be played back from subscriber: %s', self._system, int_id(_src_sub))
                     _tmp_data = _data
-                    #_tmp_data = dmr_nat(_data, _src_sub, NETWORK[_network]['LOCAL']['RADIO_ID'])
+                    #_tmp_data = dmr_nat(_data, _src_sub, self._config['LOCAL']['RADIO_ID'])
                     self.CALL_DATA.append(_tmp_data)
                 if _end:
                     self.CALL_DATA.append(_data)
                     time.sleep(2)
-                    logger.info('(%s) Playing back transmission from subscriber: %s', _network, int_id(_src_sub))
+                    self._logger.info('(%s) Playing back transmission from subscriber: %s', self._system, int_id(_src_sub))
                     for i in self.CALL_DATA:
                         _tmp_data = i
-                        _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
+                        _tmp_data = _tmp_data.replace(_peerid, self._config['LOCAL']['RADIO_ID'])
                         if GROUP_SRC_SUB:
-                            _tmp_data = _tmp_data.replace(_src_sub, HEX_GRP_SUB)
+                            _tmp_data = _tmp_data.replace(_src_sub, self.GROUP_SRC_SUB)
                         # Send the packet to all peers in the target IPSC
                         self.send_to_ipsc(_tmp_data)
                         time.sleep(0.06)
                     self.CALL_DATA = []
                 
     if PRIVATE_REPEAT:
-	logger.info('Playback: DEFINING PRIVATE REPEAT FUNCTION')
-        def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+        def private_voice(self, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
             if HEX_SUB == _dst_sub and _ts in PRIVATE_TS:
                 if not _end:
                     if not self.CALL_DATA:
-                        logger.info('(%s) Receiving transmission to be played back from subscriber: %s, to subscriber: %s', _network, int_id(_src_sub), int_id(_dst_sub))
+                        self._logger.info('(%s) Receiving transmission to be played back from subscriber: %s, to subscriber: %s', self._system, int_id(_src_sub), int_id(_dst_sub))
                     _tmp_data = _data
                     self.CALL_DATA.append(_tmp_data)
                 if _end:
                     self.CALL_DATA.append(_data)
                     time.sleep(1)
-                    logger.info('(%s) Playing back transmission from subscriber: %s, to subscriber %s', _network, int_id(_src_sub), int_id(_dst_sub))
+                    self._logger.info('(%s) Playing back transmission from subscriber: %s, to subscriber %s', self._system, int_id(_src_sub), int_id(_dst_sub))
                     _orig_src = _src_sub
                     _orig_dst = _dst_sub
                     for i in self.CALL_DATA:
                         _tmp_data = i
-                        _tmp_data = _tmp_data.replace(_peerid, NETWORK[_network]['LOCAL']['RADIO_ID'])
+                        _tmp_data = _tmp_data.replace(_peerid, self._config['LOCAL']['RADIO_ID'])
                         _tmp_data = _tmp_data.replace(_dst_sub, BOGUS_SUB)
                         _tmp_data = _tmp_data.replace(_src_sub, _orig_dst)
                         _tmp_data = _tmp_data.replace(BOGUS_SUB, _orig_src)
@@ -107,10 +112,55 @@ class playbackIPSC(IPSC):
                         time.sleep(0.06)
                     self.CALL_DATA = []
         
+
 if __name__ == '__main__':
+    import argparse
+    import os
+    import sys
+    import signal
+    
+    import dmrlink_log
+    import dmrlink_config
+    
+    # Change the current directory to the location of the application
+    os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
+
+    # CLI argument parser - handles picking up the config file from the command line, and sending a "help" message
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
+    cli_args = parser.parse_args()
+
+    if not cli_args.CFG_FILE:
+        cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
+    
+    # Call the external routine to build the configuration dictionary
+    CONFIG = dmrlink_config.build_config(cli_args.CFG_FILE)
+    
+    # Call the external routing to start the system logger
+    logger = dmrlink_log.config_logging(CONFIG['LOGGER'])
+
     logger.info('DMRlink \'playback.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
-    for ipsc_network in NETWORK:
-        if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
-            networks[ipsc_network] = playbackIPSC(ipsc_network)
-            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
+    
+    # Shut ourselves down gracefully with the IPSC peers.
+    def sig_handler(_signal, _frame):
+        logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
+    
+        for system in systems:
+            this_ipsc = systems[system]
+            logger.info('De-Registering from IPSC %s', system)
+            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+            this_ipsc.send_to_ipsc(de_reg_req_pkt)
+        reactor.stop()
+
+    # Set signal handers so that we can gracefully exit if need be
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+        signal.signal(sig, sig_handler)
+    
+    
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
+            systems[system] = playbackIPSC(system, CONFIG, logger)
+            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
+    
     reactor.run()

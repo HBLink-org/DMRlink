@@ -41,6 +41,7 @@ def build_config(_config_file):
     CONFIG['GLOBAL'] = {}
     CONFIG['REPORTS'] = {}
     CONFIG['LOGGER'] = {}
+    CONFIG['ALIASES'] = {}
     CONFIG['SYSTEMS'] = {}    
     
     try:
@@ -65,6 +66,18 @@ def build_config(_config_file):
                     'LOG_HANDLERS': config.get(section, 'LOG_HANDLERS'),
                     'LOG_LEVEL': config.get(section, 'LOG_LEVEL'),
                     'LOG_NAME': config.get(section, 'LOG_NAME')
+                })
+                
+            elif section == 'ALIASES':
+                CONFIG['ALIASES'].update({
+                    'TRY_DOWNLOAD': config.getboolean(section, 'TRY_DOWNLOAD'),
+                    'PATH': config.get(section, 'PATH'),
+                    'PEER_FILE': config.get(section, 'PEER_FILE'),
+                    'SUBSCRIBER_FILE': config.get(section, 'SUBSCRIBER_FILE'),
+                    'TGID_FILE': config.get(section, 'TGID_FILE'),
+                    'PEER_URL': config.get(section, 'PEER_URL'),
+                    'SUBSCRIBER_URL': config.get(section, 'SUBSCRIBER_URL'),
+                    'STALE_TIME': config.getint(section, 'STALE_DAYS') * 86400,
                 })
                 
             elif config.getboolean(section, 'ENABLED'):
