@@ -1,5 +1,3 @@
 Twisted>=12.0.0
-
-For ambe_audio
-https://pypi.python.org/packages/source/b/bitstring/bitstring-3.1.3.zip
-
+dmr_utils>=0.1.2
+bitstring>=3.1.3
