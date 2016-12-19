@@ -27,7 +27,8 @@ from binascii import b2a_hex as h
 
 import sys
 import cPickle as pickle
-from dmrlink import IPSC, NETWORK, networks, logger, int_id, hex_str_3
+from dmrlink import IPSC, systems
+from dmr_utils.utils import hex_str_3, int_id
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -49,11 +50,11 @@ while True:
     ts = raw_input('Which timeslot (1, 2 or \'both\')? ')
     if ts == '1' or ts == '2' or ts =='both':
         if ts == '1':
-            ts = (0,)
-        if ts == '2':
             ts = (1,)
+        if ts == '2':
+            ts = (2,)
         if ts == 'both':
-            ts = (0,1)
+            ts = (1,2)
         break
     print('...input must be \'1\', \'2\' or \'both\'')
 
@@ -64,9 +65,8 @@ id = hex_str_3(id)
 filename = raw_input('Filename to use for this recording? ')
 
 class recordIPSC(IPSC):
-    
-    def __init__(self, *args, **kwargs):
-        IPSC.__init__(self, *args, **kwargs)
+    def __init__(self, _name, _config, _logger):
+        IPSC.__init__(self, _name, _config, _logger)
         self.CALL_DATA = []
         
     #************************************************
@@ -75,39 +75,83 @@ class recordIPSC(IPSC):
     #
     if tx_type == 'g':
 	print('Initializing to record GROUP VOICE transmission')
-        def group_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+        def group_voice(self, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
             if id == _dst_sub and _ts in ts:
                 if not _end:
                     if not self.CALL_DATA:
-                        print('({}) Recording transmission from subscriber: {}' .format(_network, int_id(_src_sub)))
+                        print('({}) Recording transmission from subscriber: {}' .format(self._system, int_id(_src_sub)))
                     self.CALL_DATA.append(_data)
                 if _end:
                     self.CALL_DATA.append(_data)
-                    print('({}) Transmission ended, writing to disk: {}' .format(_network, filename))
+                    print('({}) Transmission ended, writing to disk: {}' .format(self._system, filename))
                     pickle.dump(self.CALL_DATA, open(filename, 'wb'))
                     reactor.stop()
                     print('Recording created, program terminating')
                 
     if tx_type == 'p':
 	print('Initializing ro record PRIVATE VOICE transmission')
-        def private_voice(self, _network, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
+        def private_voice(self, _src_sub, _dst_sub, _ts, _end, _peerid, _data):
             if id == _dst_sub and _ts in ts:
                 if not _end:
                     if not self.CALL_DATA:
-                        print('({}) Recording transmission from subscriber: {}' .format(_network, int_id(_src_sub)))
+                        print('({}) Recording transmission from subscriber: {}' .format(self._system, int_id(_src_sub)))
                     self.CALL_DATA.append(_data)
                 if _end:
                     self.CALL_DATA.append(_data)
-                    print('({}) Transmission ended, writing to disk: {}' .format(_network, filename))
+                    print('({}) Transmission ended, writing to disk: {}' .format(self._system, filename))
                     pickle.dump(self.CALL_DATA, open(filename, 'wb'))
                     reactor.stop()
                     print('Recording created, program terminating')
 
-        
+
 if __name__ == '__main__':
+    import argparse
+    import os
+    import sys
+    import signal
+    
+    import dmrlink_log
+    import dmrlink_config
+    
+    # Change the current directory to the location of the application
+    os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
+
+    # CLI argument parser - handles picking up the config file from the command line, and sending a "help" message
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
+    cli_args = parser.parse_args()
+
+    if not cli_args.CFG_FILE:
+        cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
+    
+    # Call the external routine to build the configuration dictionary
+    CONFIG = dmrlink_config.build_config(cli_args.CFG_FILE)
+    
+    # Call the external routing to start the system logger
+    logger = dmrlink_log.config_logging(CONFIG['LOGGER'])
+
     logger.info('DMRlink \'record.py\' (c) 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
-    for ipsc_network in NETWORK:
-        if NETWORK[ipsc_network]['LOCAL']['ENABLED']:
-            networks[ipsc_network] = recordIPSC(ipsc_network)
-            reactor.listenUDP(NETWORK[ipsc_network]['LOCAL']['PORT'], networks[ipsc_network], interface=NETWORK[ipsc_network]['LOCAL']['IP'])
+    
+    # Shut ourselves down gracefully with the IPSC peers.
+    def sig_handler(_signal, _frame):
+        logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
+    
+        for system in systems:
+            this_ipsc = systems[system]
+            logger.info('De-Registering from IPSC %s', system)
+            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+            this_ipsc.send_to_ipsc(de_reg_req_pkt)
+        reactor.stop()
+
+    # Set signal handers so that we can gracefully exit if need be
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+        signal.signal(sig, sig_handler)
+    
+    
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
+            systems[system] = recordIPSC(system, CONFIG, logger)
+            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
+    
     reactor.run()
