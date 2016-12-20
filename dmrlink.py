@@ -308,10 +308,10 @@ class IPSC(DatagramProtocol):
         # Iterate for the peer in our data
         if _peerid in self._peers.keys():
             del self._peers[_peerid]
-            logger.info('(%s) Peer De-Registration Requested for: %s', self._system, int_id(_peerid))
+            self._logger.info('(%s) Peer De-Registration Requested for: %s', self._system, int_id(_peerid))
             return
         else:
-            logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', self._system, int_id(_peerid))
+            self._logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', self._system, int_id(_peerid))
             pass
 
     # Take a received peer list and the network it belongs to, process and populate the
