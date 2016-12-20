@@ -130,20 +130,23 @@ def build_acl(_sub_acl):
         for i, e in enumerate(acl_file.ACL):
             acl_file.ACL[i] = hex_str_3(acl_file.ACL[i])
         logger.info('ACL file found and ACL entries imported')
+        ACL_ACTION = acl_file.ACL_ACTION
+        ACL = acl_file.ACL_ACTION
     except ImportError:
         logger.info('ACL file not found or invalid - all subscriber IDs are valid')
         ACL_ACTION = 'NONE'
+        ACL = []
 
     # Depending on which type of ACL is used (PERMIT, DENY... or there isn't one)
     # define a differnet function to be used to check the ACL
     global allow_sub
-    if acl_file.ACL_ACTION == 'PERMIT':
+    if ACL_ACTION == 'PERMIT':
         def allow_sub(_sub):
             if _sub in ACL:
                 return True
             else:
                 return False
-    elif acl_file.ACL_ACTION == 'DENY':
+    elif ACL_ACTION == 'DENY':
         def allow_sub(_sub):
             if _sub not in ACL:
                 return True
@@ -153,7 +156,7 @@ def build_acl(_sub_acl):
         def allow_sub(_sub):
             return True
     
-    return acl_file.ACL
+    return ACL
     
     
 # Run this every minute for rule timer updates
