@@ -113,6 +113,7 @@ def build_config(_config_file):
                     'ALIVE_TIMER':  config.getint(section, 'ALIVE_TIMER'),
                     'MAX_MISSED':   config.getint(section, 'MAX_MISSED'),
                     'AUTH_KEY':     (config.get(section, 'AUTH_KEY').rjust(40,'0')).decode('hex'),
+                    'GROUP_HANGTIME': config.getint(section, 'GROUP_HANGTIME'),
                     'NUM_PEERS': 0,
                     })
                 # Master means things we need to know about the master peer of the network
