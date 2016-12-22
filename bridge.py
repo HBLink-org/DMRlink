@@ -272,7 +272,6 @@ class bridgeIPSC(IPSC):
                     #   From the same group as the last TX to this IPSC, but from a different subscriber, and it has been less than TS Clear Time
                     # The "continue" at the end of each means the next iteration of the for loop that tests for matching rules
                     #
-                    print(RULES[_target]['GROUP_HANGTIME'])
                     if ((rule['DST_GROUP'] != _status[rule['DST_TS']]['RX_GROUP']) and ((now - _status[rule['DST_TS']]['RX_TIME']) < RULES[_target]['GROUP_HANGTIME'])):
                         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                             self._logger.info('(%s) Call not bridged to TGID%s, target active or in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(rule['DST_GROUP']), _target, rule['DST_TS'], int_id(_status[rule['DST_TS']]['RX_GROUP']))
