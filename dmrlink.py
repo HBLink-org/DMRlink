@@ -761,7 +761,7 @@ class IPSC(DatagramProtocol):
 
         # PACKETS THAT WE RECEIVE FROM ANY VALID PEER OR VALID MASTER
         if _packettype in ANY_PEER_REQUIRED:
-            if not(self.valid_master(_peerid) == False or valid_peer(self._peers.keys(), _peerid) == False):
+            if not(self.valid_master(_peerid) == False or self.valid_peer(self._peers.keys(), _peerid) == False):
                 self._logger.warning('(%s) PeerError: Peer not in peer-list: %s, %s:%s', self._system, int_id(_peerid), host, port)
                 return
                 
