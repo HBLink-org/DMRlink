@@ -211,84 +211,86 @@ class confbridgeIPSC(IPSC):
                 if (_system['SYSTEM'] == self._system and _system['TGID'] == _dst_group and _system['TS'] == _ts and _system['ACTIVE'] == True):
                     
                     for _target in BRIDGES[_bridge]:
-                        if _target['SYSTEM'] != self._system:                                
-                            _target_status = systems[_target['SYSTEM']].STATUS
+                        if _target['SYSTEM'] != self._system:
+                            if _target['ACTIVE']:                          
+                                _target_status = systems[_target['SYSTEM']].STATUS
+                                _target_system = self._CONFIG['SYSTEMS'][_target['SYSTEM']]
                 
-                            # BEGIN CONTENTION HANDLING
-                            # 
-                            # The rules for each of the 4 "ifs" below are listed here for readability. The Frame To Send is:
-                            #   From a different group than last RX from this IPSC, but it has been less than Group Hangtime
-                            #   From a different group than last TX to this IPSC, but it has been less than Group Hangtime
-                            #   From the same group as the last RX from this IPSC, but from a different subscriber, and it has been less than TS Clear Time
-                            #   From the same group as the last TX to this IPSC, but from a different subscriber, and it has been less than TS Clear Time
-                            # The "continue" at the end of each means the next iteration of the for loop that tests for matching rules
-                            #                            
-                            if ((_target['TGID'] != _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < self._CONFIG['SYSTEMS'][_target['SYSTEM']]['LOCAL']['GROUP_HANGTIME'])):
-                                if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                    self._logger.info('(%s) Call not bridged to TGID%s, target active or in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['_TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
-                                continue    
-                            if ((_target['TGID'] != _target_status[_target['TS']]['TX_TGID']) and ((now - _target_status[_target['TS']]['TX_TIME']) < self._CONFIG['SYSTEMS'][_target['SYSTEM']]['LOCAL']['GROUP_HANGTIME'])):
-                                if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                    self._logger.info('(%s) Call not bridged to TGID%s, target in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['TX_TGID']))
-                                continue
-                            if (_target['TGID'] == _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < TS_CLEAR_TIME):
-                                if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                    self._logger.info('(%s) Call not bridged to TGID%s, matching call already active on target: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[rule['DST_TS']]['RX_TGID']))
-                                continue
-                            if (_target['TGID'] == _target_status[_target['TS']]['TX_TGID']) and (_src_sub != _target_status[_target['TS']]['TX_SRC_SUB']) and ((now - _target_status[_target['TS']]['TX_TIME']) < TS_CLEAR_TIME):
-                                if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                    self._logger.info('(%s) Call not bridged for subscriber %s, call bridge in progress on target: IPSC: %s, TS: %s, TGID: %s SUB: %s', self._system, int_id(_src_sub), _target['SYSTEM'], _target['TGID'], int_id(_target_status[_target['TS']]['TX_TGID']), int_id(_target_status[_target['TS']]['TX_SRC_SUB']))
-                                continue
-                            #
-                            # END CONTENTION HANDLING
-                            #
+                                # BEGIN CONTENTION HANDLING
+                                # 
+                                # The rules for each of the 4 "ifs" below are listed here for readability. The Frame To Send is:
+                                #   From a different group than last RX from this IPSC, but it has been less than Group Hangtime
+                                #   From a different group than last TX to this IPSC, but it has been less than Group Hangtime
+                                #   From the same group as the last RX from this IPSC, but from a different subscriber, and it has been less than TS Clear Time
+                                #   From the same group as the last TX to this IPSC, but from a different subscriber, and it has been less than TS Clear Time
+                                # The "continue" at the end of each means the next iteration of the for loop that tests for matching rules
+                                #                            
+                                if ((_target['TGID'] != _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
+                                    if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                        self._logger.info('(%s) Call not bridged to TGID%s, target active or in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['_TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
+                                    continue    
+                                if ((_target['TGID'] != _target_status[_target['TS']]['TX_TGID']) and ((now - _target_status[_target['TS']]['TX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
+                                    if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                        self._logger.info('(%s) Call not bridged to TGID%s, target in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['TX_TGID']))
+                                    continue
+                                if (_target['TGID'] == _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < TS_CLEAR_TIME):
+                                    if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                        self._logger.info('(%s) Call not bridged to TGID%s, matching call already active on target: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[rule['DST_TS']]['RX_TGID']))
+                                    continue
+                                if (_target['TGID'] == _target_status[_target['TS']]['TX_TGID']) and (_src_sub != _target_status[_target['TS']]['TX_SRC_SUB']) and ((now - _target_status[_target['TS']]['TX_TIME']) < TS_CLEAR_TIME):
+                                    if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                        self._logger.info('(%s) Call not bridged for subscriber %s, call bridge in progress on target: IPSC: %s, TS: %s, TGID: %s SUB: %s', self._system, int_id(_src_sub), _target['SYSTEM'], _target['TGID'], int_id(_target_status[_target['TS']]['TX_TGID']), int_id(_target_status[_target['TS']]['TX_SRC_SUB']))
+                                    continue
+                                #
+                                # END CONTENTION HANDLING
+                                #
                 
-                            #
-                            # BEGIN FRAME FORWARDING
-                            #     
-                            # Make a copy of the payload       
-                            _tmp_data = _data
+                                #
+                                # BEGIN FRAME FORWARDING
+                                #     
+                                # Make a copy of the payload       
+                                _tmp_data = _data
                 
-                            # Re-Write the IPSC SRC to match the target network's ID
-                            _tmp_data = _tmp_data.replace(_peerid, self._CONFIG['SYSTEMS'][_target['SYSTEM']]['LOCAL']['RADIO_ID'])
+                                # Re-Write the IPSC SRC to match the target network's ID
+                                _tmp_data = _tmp_data.replace(_peerid, _target_system['LOCAL']['RADIO_ID'])
                 
-                            # Re-Write the destination Group ID
-                            _tmp_data = _tmp_data.replace(_dst_group, _target['TGID'])
+                                # Re-Write the destination Group ID
+                                _tmp_data = _tmp_data.replace(_dst_group, _target['TGID'])
             
-                            # Re-Write IPSC timeslot value
-                            _call_info = int_id(_data[17:18])
-                            if _target['TS'] == 1:
-                                _call_info &= ~(1 << 5)
-                            elif _target['TS'] == 2:
-                                _call_info |= 1 << 5
-                            _call_info = chr(_call_info)
-                            _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:] 
-                
-                            # Re-Write DMR timeslot value
-                            # Determine if the slot is present, so we can translate if need be
-                            if _burst_data_type == BURST_DATA_TYPE['SLOT1_VOICE'] or _burst_data_type == BURST_DATA_TYPE['SLOT2_VOICE']:
-                                _slot_valid = True
-                            else:
-                                _slot_valid = False
-                            # Re-Write timeslot if necessary...
-                            if _slot_valid:
+                                # Re-Write IPSC timeslot value
+                                _call_info = int_id(_data[17:18])
                                 if _target['TS'] == 1:
-                                    _burst_data_type = BURST_DATA_TYPE['SLOT1_VOICE']
-                                elif _target['TS'] == 1:
-                                    _burst_data_type = BURST_DATA_TYPE['SLOT2_VOICE']
-                                _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
+                                    _call_info &= ~(1 << 5)
+                                elif _target['TS'] == 2:
+                                    _call_info |= 1 << 5
+                                _call_info = chr(_call_info)
+                                _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:] 
+                
+                                # Re-Write DMR timeslot value
+                                # Determine if the slot is present, so we can translate if need be
+                                if _burst_data_type == BURST_DATA_TYPE['SLOT1_VOICE'] or _burst_data_type == BURST_DATA_TYPE['SLOT2_VOICE']:
+                                    _slot_valid = True
+                                else:
+                                    _slot_valid = False
+                                # Re-Write timeslot if necessary...
+                                if _slot_valid:
+                                    if _target['TS'] == 1:
+                                        _burst_data_type = BURST_DATA_TYPE['SLOT1_VOICE']
+                                    elif _target['TS'] == 1:
+                                        _burst_data_type = BURST_DATA_TYPE['SLOT2_VOICE']
+                                    _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
 
-                            # Send the packet to all peers in the target IPSC
-                            systems[_target['SYSTEM']].send_to_ipsc(_tmp_data)
-                            #
-                            # END FRAME FORWARDING
-                            #
+                                # Send the packet to all peers in the target IPSC
+                                systems[_target['SYSTEM']].send_to_ipsc(_tmp_data)
+                                #
+                                # END FRAME FORWARDING
+                                #
                 
                 
-                            # Set values for the contention handler to test next time there is a frame to forward
-                            _target_status[_ts]['TX_GROUP'] = _target['TGID']
-                            _target_status[_ts]['TX_TIME'] = now
-                            _target_status[_ts]['TX_SRC_SUB'] = _src_sub
+                                # Set values for the contention handler to test next time there is a frame to forward
+                                _target_status[_target['TS']]['TX_TGID'] = _target['TGID']
+                                _target_status[_target['TS']]['TX_TIME'] = now
+                                _target_status[_target['TS']]['TX_SRC_SUB'] = _src_sub
                 
 
         # Mark the group and time that a packet was recieved for the contention handler to use later

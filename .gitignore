@@ -7,6 +7,7 @@ rcm.cfg
 stats.py
 pub*
 bridge_rules.py
+confbridge_rules.py
 playback_config.py
 known_bridges.py
 sub_acl.py
