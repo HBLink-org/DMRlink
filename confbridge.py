@@ -70,10 +70,7 @@ __email__       = 'n0mjs@me.com'
 #
 TS_CLEAR_TIME = .2
 
-# Import Bridging rules
-# Note: A stanza *must* exist for any IPSC configured in the main
-# configuration file and listed as "active". It can be empty, 
-# but it has to exist.
+# Build the conference bridging structure from the bridge file.
 #
 def make_bridges(_confbridge_rules):
     try:
@@ -85,11 +82,9 @@ def make_bridges(_confbridge_rules):
     # Convert integer GROUP ID numbers from the config into hex strings
     # we need to send in the actual data packets.
     #
-
     for _bridge in bridge_file.BRIDGES:
         for _system in bridge_file.BRIDGES[_bridge]:
             from pprint import pprint
-            #pprint(CONFIG['SYSTEMS'])
             if _system['SYSTEM'] not in CONFIG['SYSTEMS']:
                 print(_system['SYSTEM'])
                 sys.exit('ERROR: Conference bridges found for system not configured main configuration')
