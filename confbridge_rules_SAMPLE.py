@@ -9,7 +9,7 @@ each system must independently be activated on the bridge.
 
 The first level (e.g. "WORLDWIDE" or "STATEWIDE" in the examples) is the name of the conference
 bridge. This is any arbitrary ASCII text string you want to use. Under each conference bridge
-definition are the following items -- one line for each HBSystem as defined in the main HBlink
+definition are the following items -- one line for each HBSystem as defined in the main RMRlink
 configuration file.
 
     * SYSTEM - The name of the sytem as listed in the main dmrlink configuration file (e.g.dmrlink.cfg)

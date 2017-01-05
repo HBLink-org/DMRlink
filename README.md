@@ -5,15 +5,15 @@ Discussion Group at: https://groups.yahoo.com/neo/groups/k0usylink/info
 
 There are two ways to "install" DMRlink:
 
-1) Use the Makefile
+1) Use the mk-drmlink
 
 2) Don't
 
-The makefile will create a directory tree and copy all of the pertient files, making duplicates of some things so that each of the applications have a full set of all of the files they need, standalone.
+The mk-dmrlink script will create a directory tree and copy all of the pertient files, making duplicates of some things so that each of the applications have a full set of all of the files they need, standalone.
 
-Not using the makefile leaves the structure as it existis in the repo, which is fully functional. It trades the autonomy of the file tree and duplicates for a simpler installation, and the ability to sync to new versions more easily.
+Not using the mk-dmrlink leaves the structure as it existis in the repo, which is fully functional. It trades the autonomy of the file tree and duplicates for a simpler installation, and the ability to sync to new versions more easily.
 
-The one you use is up to you -- just please don't blindly go download it and type "make" becuase that's just what you always do. Please think about it.
+The one you use is up to you -- just please don't blindly go download it and type "./mk-dmrlink" becuase that's just what you always do. Please think about it.
 
 
 ##PROJECT: Open Source IPSC Client.
