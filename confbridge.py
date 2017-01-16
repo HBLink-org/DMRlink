@@ -222,7 +222,7 @@ class confbridgeIPSC(IPSC):
                                 #                            
                                 if ((_target['TGID'] != _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
                                     if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                        self._logger.info('(%s) Call not bridged to TGID%s, target active or in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['_TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
+                                        self._logger.info('(%s) Call not bridged to TGID%s, target active or in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
                                     continue    
                                 if ((_target['TGID'] != _target_status[_target['TS']]['TX_TGID']) and ((now - _target_status[_target['TS']]['TX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
                                     if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
