@@ -6,8 +6,7 @@
 # Application                                   #
 #################################################
 
-#Install the required support programs
-# if [ ! -f /opt/dmrlink/get_ids.sh ]; then
+# Install the required support programs
 	apt-get install unzip -y
         apt-get install python-dev -y
 	apt-get install python-pip -y
@@ -21,49 +20,11 @@
         cd dmr_utils/
 	pip install .
 
+echo "Required programs installed, continuing"
+
 # To allow multiple instances of DMRlink to run
 # You need multiple ipsc directories, dmrlink.py and dmrlink.cfg
 # The needed files are copied to /opt/dmrlink
-
-echo "Required programs installed, continuing"
-
-# fi
-
-#  ambe_audio.cfg
-#  ambe_audio_commands.txt
-#  ambe_audio.py
-#  bridge.py
-#  bridge_rules_SAMPLE.py
-#  confbridge.py
-#  confbridge_rules_SAMPLE.py
-#  dmrlink_config.py
-#  dmrlink_log.py
-#  dmrlink.py
-#  dmrlink_SAMPLE.cfg
-#  documents
-## get_ids.sh
-#  init.d
-#  ipsc
-#  known_bridges_SAMPLE.py
-#  LICENSE.txt
-#  log.py
-#  mk-dmrlink
-## peer_ids.csv
-#  pickle_stat_reader.py
-#  playback_config_SAMPLE.py
-#  playback.py
-#  play_group.py
-#  rcm_db_log.py
-#  rcm.py
-#  README.md
-#  record.py
-#  requirements.txt
-#  sub_acl_SAMPLE.py
-## subscriber_ids.csv
-## talkgroup_ids.csv
-#  template.bin
-#  template.py
-
 
 # Put scripts in /opt/dmrlink
 # cp /srv/DMRlink/get_ids.sh /opt/dmrlink # should be linked to /etc/cron.daily
