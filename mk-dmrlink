@@ -69,7 +69,7 @@ cp /srv/DMRlink/ambe_audio.cfg /opt/dmrlink/samples
 cp /srv/DMRlink/sub_acl_SAMPLE.py /opt/dmrlink/samples
 
 # Put the doc together for easy reference
-cp -rf /srv/DMRlink/documents /srv/dmrlink
+cp -rf /srv/DMRlink/documents /opt/dmrlink
 cp /srv/DMRlink/LICENSE.txt /opt/dmrlink/documents
 cp /srv/DMRlink/requirements.txt /opt/dmrlink/documents
 cp /srv/DMRlink/ambe_audio_commands.txt /opt/dmrlink/documents
