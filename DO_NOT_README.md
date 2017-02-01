@@ -210,3 +210,5 @@ Number of peers can be derived from PEER_LIST_LENGTH, as each peer entry is 11 b
 		
 		FULL_PAYLOAD = add_authentication(PAYLOAD, KEY)
 		print(binascii.b2a_hex(FULL_PAYLOAD))
+
+Copyright (C) 2013-2017  Cortney T. Buffington, N0MJS <n0mjs@me.com>
