@@ -275,27 +275,6 @@ Number of peers can be derived from PEER_LIST_LENGTH, as each peer entry is 11 b
 		FULL_PAYLOAD = add_authentication(PAYLOAD, KEY)
 		print(binascii.b2a_hex(FULL_PAYLOAD))
 
-**PREFERRED ATTRIBUTION**
-
-Attribution is requested to be given with the following information:
-
-    Title: "DMRlink"
-    Source: "http://github.com/n0mjs710/DMRlink"
-
-    Author: "K0USY Group"
-    Link: "http://k0usy.strikingly.com"
-
-    License: "CC BY-SA 3.0"
-    Link: "http://creativecommons.org/licenses/by-sa/3.0/"
-
-An example where Title, Author and License are hyperlinked:
-  ["DMRlink"](http://github.com/n0mjs710/DMRlink) by [K0USY Group](http://k0usy.strikingly.com is licensed under [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
-    
-An example where hyperlinks are not possible:
-  "DMRlink" (http://github.com/n0mjs710/DMRlink) by K0USY Group (http://k0usy.strikingly.com) is licensed under CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)
-    
-Attribution is requested to be made in any official public or private documentation about the use or derivative use of DMRlink in conjunction with whatever function(s), operation(s) or feature(s) employ DMRlink in whole or in part. Attribution need only be made once per any such "official" documentation and may be placed wherever deemed appropriate by the author of such documentation.
-
 **NOTE:**
 
 This is important: If you e-mail me asking about dmrlink and don't use the phrase "here I am, rock you like a hurricane" (at least initially), I will probably delete your e-mail without reading it. I need to be very clear. This software is NOT intended to be an out-of-box replacement for c-Bridge, SmartPTT, GenWatch, RDAC, etc. Please do not contact me with the express intent of wanting to know how to configure it to do the same thing as any of these fine products in a production environment, because it doesn't do all of the things that they do, and will likely never be something you can "just run" and peform those functions without more knowledge and patience. This is free software, shared with the world so that others can learn from it or do useful things with it. If you want something that is a c-Bridge or SmartPTT, then please go buy one of those products -- they work great, K0USY Group owns and uses both. If you're a tinkerer, or don't need a commercial grade solution, and want to get your "hands dirty", then DMRlink might be right for you. Using dmrlink requires only a very basic understanding of Python. If you have read this README.md, have looked for comments or other direction within the files themsleves, and still can't figure something out, then please e-mail me, and I'll try to help if I can.
