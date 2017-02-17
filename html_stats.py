@@ -66,7 +66,7 @@ def build_table():
     NETWORK = read_dict()
     if NETWORK != 'None':
         stuff = 'Last Update: {}'.format(ctime())
-        stuff += '<style>table, td, th {border: .5px solid black;} td, td {padding: 2px;}</style>'
+        stuff += '<style>table, td, th {border: .5px solid black; padding: 2px; border-collapse: collapse}</style>'
         
         for ipsc in NETWORK:
             stat = NETWORK[ipsc]['MASTER']['STATUS']
