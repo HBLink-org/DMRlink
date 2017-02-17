@@ -72,7 +72,17 @@ def build_table():
             stat = NETWORK[ipsc]['MASTER']['STATUS']
             master = NETWORK[ipsc]['LOCAL']['MASTER_PEER']
             
-            stuff += '<br><br><table style="width:100%">'
+            stuff += '<br><br><table style="width:90%">'
+            
+            stuff += '<colgroup>\
+                <col style="width: 10%" />\
+                <col style="width: 20%" />\
+                <col style="width: 20%" />\
+                <col style="width: 10%" />\
+                <col style="width: 15%" />\
+                <col style="width: 15%" />\
+                <col style="width: 10%" />\
+                </colgroup>'
             
             stuff += '<caption>{} '.format(ipsc)
             if master:
