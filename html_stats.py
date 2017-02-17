@@ -25,6 +25,7 @@ from time import ctime
 from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as h
+from dmr_utils.utils import int_id, get_alias
 
 __autdor__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2017 Cortney T. Buffington, N0MJS'
@@ -40,10 +41,6 @@ __email__       = 'n0mjs@me.com'
 stat_file = '../dmrlink_stats.pickle'
 html_table_file = '../stats.html'
 frequency = 30
-
-
-def int_id(_hex_string):
-    return int(h(_hex_string), 16)
 
 def read_dict():
     try:
