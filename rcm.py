@@ -31,6 +31,7 @@ from binascii import b2a_hex as ahex
 import datetime
 import binascii
 import dmrlink
+import sys
 from dmrlink import IPSC, systems
 from dmr_utils.utils import get_alias, int_id
 
@@ -43,7 +44,7 @@ __email__       = 'n0mjs@me.com'
 
 
 try:
-    from ipsc.ipsc_message_types import *
+    from ipsc.ipsc_const import *
 except ImportError:
     sys.exit('IPSC message types file not found or invalid')
 
@@ -91,11 +92,11 @@ class rcmIPSC(IPSC):
         try:
             print('Status:      ', STATUS[_status])
         except KeyError:
-            print('Status (unknown): ', h(_status))
+            print('Status (unknown): ', ahex(_status))
         try:
             print('Type:        ', TYPE[_type])
         except KeyError:
-            print('Type (unknown): ', h(_type))
+            print('Type (unknown): ', ahex(_type))
         print('Source Sub:  ', _rf_src)
         print('Target Sub:  ', _rf_tgt)
         print()
@@ -116,11 +117,11 @@ class rcmIPSC(IPSC):
         try:
             print('TS1 State:    ', REPEAT[_ts1_state])
         except KeyError:
-            print('TS1 State (unknown): ', h(_ts1_state))
+            print('TS1 State (unknown): ', ahex(_ts1_state))
         try:
             print('TS2 State:    ', REPEAT[_ts2_state])
         except KeyError:
-            print('TS2 State (unknown): ', h(_ts2_state))
+            print('TS2 State (unknown): ', ahex(_ts2_state))
         print()
             
     def call_mon_nack(self, _data):
@@ -137,7 +138,7 @@ class rcmIPSC(IPSC):
         try:
             print('NACK Cause:  ', NACK[_nack])
         except KeyError:
-            print('NACK Cause (unknown): ', h(_nack))
+            print('NACK Cause (unknown): ', ahex(_nack))
         print()
     
     def repeater_wake_up(self, _data):
