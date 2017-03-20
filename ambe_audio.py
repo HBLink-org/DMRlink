@@ -47,9 +47,9 @@ __email__       = 'n0mjs@me.com'
 
 
 try:
-    from ipsc.ipsc_message_types import *
+    from ipsc.ipsc_const import *
 except ImportError:
-    sys.exit('IPSC message types file not found or invalid')
+    sys.exit('IPSC constants file not found or invalid')
 
 try:
     from ipsc.ipsc_mask import *
