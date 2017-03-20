@@ -49,6 +49,7 @@ from twisted.internet import task
 from binascii import b2a_hex as ahex
 from time import time
 from importlib import import_module
+from cPickle import dump as pickle_dump
 
 import sys
 
@@ -72,7 +73,7 @@ TS_CLEAR_TIME = .2
 
 # Build the conference bridging structure from the bridge file.
 #
-def make_bridges(_confbridge_rules):
+def make_bridge_config(_confbridge_rules):
     try:
         bridge_file = import_module(_confbridge_rules)
         logger.info('Bridge configuration file found and imported')
@@ -97,7 +98,7 @@ def make_bridges(_confbridge_rules):
             _system['TIMEOUT']    = _system['TIMEOUT']*60
             _system['TIMER']      = time() + _system['TIMEOUT']
 
-    return bridge_file.BRIDGES
+    return {'BRIDGE_CONF': bridge_file.BRIDGE_CONF, 'BRIDGES': bridge_file.BRIDGES}
     
 
 # Import subscriber ACL
@@ -168,6 +169,14 @@ def rule_timer_loop():
                     logger.debug('Conference Bridge ACTIVE (no change): System: %s Bridge: %s, TS: %s, TGID: %s', _system['SYSTEM'], _bridge, _system['TS'], int_id(_system['TGID']))
             else:
                 logger.debug('Conference Bridge NO ACTION: System: %s, Bridge: %s, TS: %s, TGID: %s', _system['SYSTEM'], _bridge, _system['TS'], int_id(_system['TGID']))
+
+    if BRIDGE_CONF['REPORT']:
+        try:
+            with open(CONFIG['REPORTS']['REPORT_PATH']+'confbridge_stats.pickle', 'wb') as file:
+                pickle_dump(BRIDGES, file, 2)
+                file.close()
+        except IOError as detail:
+            _logger.error('I/O Error: %s', detail)
 
     
 class confbridgeIPSC(IPSC):
@@ -410,8 +419,10 @@ if __name__ == '__main__':
     if talkgroup_ids:
         logger.info('ID ALIAS MAPPER: talkgroup_ids dictionary is available')
     
-    # Build the routing rules file
-    BRIDGES = make_bridges('confbridge_rules')
+    # Build the routing rules and other configuration
+    CONFIG_DICT = make_bridge_config('confbridge_rules')
+    BRIDGE_CONF = CONFIG_DICT['BRIDGE_CONF']
+    BRIDGES = CONFIG_DICT['BRIDGES']
 
     # Build the Access Control List
     ACL = build_acl('sub_acl')

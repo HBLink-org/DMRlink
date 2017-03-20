@@ -28,6 +28,16 @@ configuration file.
 
 '''
 
+# CONFIGURATION ITEMS SPECIFICALLY FOR confbridge.py
+#
+# REPORT:
+#     True or False. True if you want to write a pickle file of the current rule file
+#     state. This is useful (and necessary) for reporting features to be active.
+#     The path follows the reporting path in the main dmrlink.cfg file.
+BRIDGE_CONF = {
+    'REPORT': True,
+    }
+
 BRIDGES = {
     'WORLDWIDE': [
             {'SYSTEM': 'MASTER-1',    'TS': 1, 'TGID': 1,    'ACTIVE': True, 'TIMEOUT': 2, 'TO_TYPE': 'ON',  'ON': [2,], 'OFF': [9,10]},
