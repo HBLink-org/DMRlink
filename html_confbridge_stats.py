@@ -21,11 +21,12 @@
 from __future__ import print_function
 from cPickle import load
 from pprint import pprint
-from time import ctime
+from time import time, strftime, localtime
 from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as h
 from dmr_utils.utils import int_id, get_alias
+from os.path import getmtime 
 
 __autdor__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2017 Cortney T. Buffington, N0MJS'
@@ -40,13 +41,13 @@ __email__       = 'n0mjs@me.com'
 #   Tell the program how often to print a report -- should match dmrlink report period
 stat_file = '../confbridge_stats.pickle'
 html_table_file = '../confbridge_stats.html'
-frequency = 30
+frequency = 10
 
 def read_dict():
     try:
         with open(stat_file, 'rb') as file:
-            NETWORK = load(file)
-        return NETWORK
+            BRIDGES = load(file)
+        return BRIDGES
     except IOError as detail:
         print('I/O Error: {}'.format(detail))
     except EOFError:
@@ -63,71 +64,82 @@ def write_file(_string):
         print('EOFError')
             
 def build_table():
-    NETWORK = read_dict()
-    if NETWORK != 'None':
-        stuff = 'Last Update: {}'.format(ctime())
-        stuff += '<style>table, td, th {border: .5px solid black; padding: 2px; border-collapse: collapse}</style>'
+    _now = time()
+    _last_update = strftime('%Y-%m-%d %H:%M:%S', localtime(getmtime(stat_file)))
+    _cnow = strftime('%Y-%m-%d %H:%M:%S', localtime(_now))
+    BRIDGES = read_dict()
+    if BRIDGES != 'None':
         
-        for ipsc in NETWORK:
-            stat = NETWORK[ipsc]['MASTER']['STATUS']
-            master = NETWORK[ipsc]['LOCAL']['MASTER_PEER']
-            
-            stuff += '<br><br><table style="width:90%">'
-            
+        stuff = 'Table Generated: {}<br>'.format(_cnow)
+        stuff += 'Last Stat Data Recieved: {}<br>'.format(_last_update)
+        
+        #style="font: 10pt arial, sans-serif;"
+        
+        for bridge in BRIDGES:
+            stuff += '<style>table, td, th {border: .5px solid black; padding: 2px; border-collapse: collapse}</style>'
+            stuff += '<table style="width:90%; font: 10pt arial, sans-serif">'    
             stuff += '<colgroup>\
-                <col style="width: 10%" />\
                 <col style="width: 20%" />\
-                <col style="width: 20%" />\
+                <col style="width: 5%"  />\
+                <col style="width: 5%"  />\
                 <col style="width: 10%" />\
-                <col style="width: 15%" />\
-                <col style="width: 15%" />\
+                <col style="width: 10%" />\
+                <col style="width: 10%" />\
+                <col style="width: 10%" />\
+                <col style="width: 10%" />\
                 <col style="width: 10%" />\
                 </colgroup>'
+            stuff += '<caption>{}</caption>'.format(bridge)
+            stuff += '<tr><th>System</th>\
+                          <th>Slot</th>\
+                          <th>TGID</th>\
+                          <th>Status</th>\
+                          <th>Timeout</th>\
+                          <th>Timeout Action</th>\
+                          <th>ON Triggers</th>\
+                          <th>OFF Triggers</th></tr>'
             
-            stuff += '<caption>{} '.format(ipsc)
-            if master:
-                stuff += '(master)'
-            else:
-                stuff += '(peer)'
-            stuff +='</caption'
             
-            stuff += '<tr><th rowspan="2">Type</th>\
-                    <th rowspan="2">Radio ID</th>\
-                    <th rowspan="2">IP Address</th>\
-                    <th rowspan="2">Connected</th>\
-                    <th colspan="3">Keep Alives</th></tr>\
-                    <tr><th>Sent</th><th>Received</th><th>Missed</th></tr>'
+            for system in BRIDGES[bridge]:
+                on = ''
+                off = ''
+                active = '<td bgcolor="#FFFF00">Unknown</td>'
+                
+                if system['TO_TYPE'] == 'ON' or system['TO_TYPE'] == 'OFF':
+                    if system['TIMER'] - _now > 0:
+                        exp_time = int(system['TIMER'] - _now)
+                    else:
+                        exp_time = 'Expired'
+                    if system['TO_TYPE'] == 'ON':
+                        to_action = 'Turn OFF'
+                    else:
+                        to_action = 'Turn ON'
+                else:
+                    exp_time = 'N/A'
+                    to_action = 'None'
+                
+                if system['ACTIVE'] == True:
+                    active = '<td bgcolor="#00FF00">Connected</td>'
+                elif system['ACTIVE'] == False:
+                    active = '<td bgcolor="#FF0000">Disconnected</td>'
                     
-            if not master:
-                stuff += '<tr><td>Master</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(\
-                        str(int_id(NETWORK[ipsc]['MASTER']['RADIO_ID'])).rjust(8,'0'),\
-                        NETWORK[ipsc]['MASTER']['IP'],\
-                        stat['CONNECTED'],\
-                        stat['KEEP_ALIVES_SENT'],\
-                        stat['KEEP_ALIVES_RECEIVED'],\
-                        stat['KEEP_ALIVES_MISSED'],)
-        
-            if master:
-                for peer in NETWORK[ipsc]['PEERS']:
-                    stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
-                    stuff += '<tr><td>Peer</td><td>{}</td><td>{}</td><td>{}</td><td>n/a</td><td>{}</td><td>n/a</td></tr>'.format(\
-                        str(int_id(peer)).rjust(8,'0'),\
-                        NETWORK[ipsc]['PEERS'][peer]['IP'],\
-                        stat['CONNECTED'],\
-                        stat['KEEP_ALIVES_RECEIVED'])
+                for trigger in system['ON']:
+                    on += str(int_id(trigger)) + ' '
                     
-            else:
-                for peer in NETWORK[ipsc]['PEERS']:
-                    stat = NETWORK[ipsc]['PEERS'][peer]['STATUS']
-                    if peer != NETWORK[ipsc]['LOCAL']['RADIO_ID']:
-                        stuff += '<tr><td>Peer</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(\
-                            str(int_id(peer)).rjust(8,'0'),\
-                            NETWORK[ipsc]['PEERS'][peer]['IP'],\
-                            stat['CONNECTED'],\
-                            stat['KEEP_ALIVES_SENT'],\
-                            stat['KEEP_ALIVES_RECEIVED'],\
-                            stat['KEEP_ALIVES_MISSED'])
-            stuff += '</table>'
+                for trigger in system['OFF']:
+                    off += str(int_id(trigger)) + ' '
+
+                stuff += '<tr> <td>{}</td> <td>{}</td> <td>{}</td> {} <td>{}</td> <td>{}</td> <td>{}</td> <td>{}</td> </tr>'.format(\
+                        system['SYSTEM'],\
+                        system['TS'],\
+                        int_id(system['TGID']),\
+                        active,\
+                        exp_time,\
+                        to_action,\
+                        on,\
+                        off)
+
+            stuff += '</table><br>'
         
         write_file(stuff)
 

@@ -21,7 +21,7 @@
 from __future__ import print_function
 from cPickle import load
 from pprint import pprint
-from time import ctime
+from time import time, strftime, localtime
 from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as h
@@ -65,14 +65,15 @@ def write_file(_string):
 def build_table():
     NETWORK = read_dict()
     if NETWORK != 'None':
-        stuff = 'Last Update: {}'.format(ctime())
+        _cnow = strftime('%Y-%m-%d %H:%M:%S', localtime(time()))
+        stuff = 'Last Update: {}'.format(_cnow)
         stuff += '<style>table, td, th {border: .5px solid black; padding: 2px; border-collapse: collapse}</style>'
         
         for ipsc in NETWORK:
             stat = NETWORK[ipsc]['MASTER']['STATUS']
             master = NETWORK[ipsc]['LOCAL']['MASTER_PEER']
             
-            stuff += '<br><br><table style="width:90%">'
+            stuff += '<table style="width:90%; font: 10pt arial, sans-serif">'
             
             stuff += '<colgroup>\
                 <col style="width: 10%" />\
@@ -89,7 +90,7 @@ def build_table():
                 stuff += '(master)'
             else:
                 stuff += '(peer)'
-            stuff +='</caption'
+            stuff +='</caption>'
             
             stuff += '<tr><th rowspan="2">Type</th>\
                     <th rowspan="2">Radio ID</th>\
@@ -127,7 +128,7 @@ def build_table():
                             stat['KEEP_ALIVES_SENT'],\
                             stat['KEEP_ALIVES_RECEIVED'],\
                             stat['KEEP_ALIVES_MISSED'])
-            stuff += '</table>'
+            stuff += '</table><br>'
         
         write_file(stuff)
 
