@@ -232,7 +232,7 @@ class confbridgeIPSC(IPSC):
                                 if ((_target['TGID'] != _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
                                     if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                                         self._logger.info('(%s) Call not bridged to TGID%s, target active or in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
-                                    continue    
+                                    continue
                                 if ((_target['TGID'] != _target_status[_target['TS']]['TX_TGID']) and ((now - _target_status[_target['TS']]['TX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
                                     if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
                                         self._logger.info('(%s) Call not bridged to TGID%s, target in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['TX_TGID']))
@@ -251,8 +251,8 @@ class confbridgeIPSC(IPSC):
                 
                                 #
                                 # BEGIN FRAME FORWARDING
-                                #     
-                                # Make a copy of the payload       
+                                #
+                                # Make a copy of the payload
                                 _tmp_data = _data
                 
                                 # Re-Write the IPSC SRC to match the target network's ID
@@ -314,7 +314,7 @@ class confbridgeIPSC(IPSC):
                 self.last_seq_id = _seq_id
                 self.call_start = time()
                 self._logger.info('(%s) GROUP VOICE START: CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group))
-        
+
         # Action happens on un-key
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
             if self.last_seq_id == _seq_id:
@@ -322,44 +322,48 @@ class confbridgeIPSC(IPSC):
                 self._logger.info('(%s) GROUP VOICE END:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s Duration: %.2fs', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration)
             else:
                 self._logger.warning('(%s) GROUP VOICE END WITHOUT MATCHING START:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group),)
-            
+
             # Iterate the rules dictionary
             for _bridge in BRIDGES:
                 for _system in BRIDGES[_bridge]:
                     if _system['SYSTEM'] == self._system:
-        
-                        # TGID matches a rule source, reset its timer
-                        if _ts == _system['TS'] and _dst_group == _system['TGID'] and ((_system['TO_TYPE'] == 'ON' and (_system['ACTIVE'] == True)) or (_system['TO_TYPE'] == 'OFF' and _system['ACTIVE'] == False)):
-                            _system['TIMER'] = now + _system['TIMEOUT']
-                            self._logger.info('(%s) Transmission match for Bridge: %s. Reset timeout to %s', self._system, _bridge, _system['TIMER'])
-        
+
                         # TGID matches an ACTIVATION trigger
                         if _dst_group in _system['ON']:
                             # Set the matching rule as ACTIVE
-                            _system['ACTIVE'] = True
-                            _system['TIMER'] = now + _system['TIMEOUT']
-                            self._logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
-                    
+                            if _system['ACTIVE'] == False:
+                                _system['ACTIVE'] = True
+                                self._logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
+                            # Reset the timer for the rule
+                            if _system['ACTIVE'] == True and _system['TO_TYPE'] == 'ON':
+                                _system['TIMER'] = now + _system['TIMEOUT']
+                                self._logger.info('(%s) Bridge: %s, timeout timer reset to: %s', self._system, _bridge, _system['TIMER'] - now)
+
                         # TGID matches an DE-ACTIVATION trigger
                         if _dst_group in _system['OFF']:
                             # Set the matching rule as ACTIVE
-                            _system['ACTIVE'] = False
-                            self._logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
-                    
-        #                    
+                            if _system['ACTIVE'] == True:
+                                _system['ACTIVE'] = False
+                                self._logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
+                            # Reset tge timer for the rule
+                            if _system['ACTIVE'] == False and _system['TO_TYPE'] == 'OFF':
+                                _system['TIMER'] = now + _system['TIMEOUT']
+                                self._logger.info('(%s) Bridge: %s, timeout timer reset to: %s', self._system, _bridge, _system['TIMER'] - now)
+
+        #
         # END IN-BAND SIGNALLING
         #
 
-    
-if __name__ == '__main__':    
+
+if __name__ == '__main__':
     import argparse
     import os
     import signal
     from dmr_utils.utils import try_download, mk_id_dict
-    
+
     import dmrlink_log
     import dmrlink_config
-    
+
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
