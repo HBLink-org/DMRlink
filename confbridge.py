@@ -96,7 +96,7 @@ def make_bridge_config(_confbridge_rules):
             for i, e in enumerate(_system['OFF']):
                 _system['OFF'][i] = hex_str_3(_system['OFF'][i])
             _system['TIMEOUT']    = _system['TIMEOUT']*60
-            _system['TIMER']      = time() + _system['TIMEOUT']
+            _system['TIMER']      = time()
 
     return {'BRIDGE_CONF': bridge_file.BRIDGE_CONF, 'BRIDGES': bridge_file.BRIDGES}
     
