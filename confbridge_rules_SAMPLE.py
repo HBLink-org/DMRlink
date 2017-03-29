@@ -3,7 +3,7 @@ THIS EXAMPLE WILL NOT WORK AS IT IS - YOU MUST SPECIFY YOUR OWN VALUES!!!
 
 This file is organized around the "Conference Bridges" that you wish to use. If you're a c-Bridge
 person, think of these as "bridge groups". You might also liken them to a "reflector". If a particular
-system is "ACTIVE" on a particular conference bridge, any traffid from that system will be sent
+system is "ACTIVE" on a particular conference bridge, any traffic from that system will be sent
 to any other system that is active on the bridge as well. This is not an "end to end" method, because
 each system must independently be activated on the bridge.
 
