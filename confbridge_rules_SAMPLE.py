@@ -9,11 +9,11 @@ each system must independently be activated on the bridge.
 
 The first level (e.g. "WORLDWIDE" or "STATEWIDE" in the examples) is the name of the conference
 bridge. This is any arbitrary ASCII text string you want to use. Under each conference bridge
-definition are the following items -- one line for each HBSystem as defined in the main DMRlink
+definition are the following items -- one line for each System as defined in the main DMRlink
 configuration file.
 
     * SYSTEM - The name of the sytem as listed in the main dmrlink configuration file (e.g.dmrlink.cfg)
-        This MUST be the exact same name as in the main config file!!!
+        This MUST be the exact same name and case as in the main config file!!!
     * TS - Timeslot used for matching traffic to this confernce bridge
     * TGID - Talkgroup ID used for matching traffic to this conference bridge
     * ON and OFF are LISTS of Talkgroup IDs used to trigger this system off and on. Even if you
@@ -23,8 +23,8 @@ configuration file.
         turn off afer the timout period and OFF means it will turn back on after the timout
         period. If you don't want to use timers, set it to anything else, but 'NONE' might be
         a good value for documentation!
-    * TIMOUT is a value in minutes for the timout timer. No, I won't make it 'seconds', so don't
-        ask. Timers are performance "expense".
+    * TIMOUT is a value in minutes for the timout timer. It MUST have a value. No,
+	I won't make it 'seconds', so don't ask. Timers are performance "expense".
 
 '''
 
