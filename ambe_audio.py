@@ -269,7 +269,7 @@ class ambeIPSC(IPSC):
         return _ambeAll.tobytes()           # Return the 49 * 3 as an array of bytes
 
     # Set up the socket and run the method to gather the AMBE.  Sending it to all peers
-    def launchUDP(self):
+    def launchUDP(self, _name):
         s = socket.socket()                 # Create a socket object
         s.bind(('', self._ambeRxPort))      # Bind to the port
 
