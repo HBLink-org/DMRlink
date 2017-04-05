@@ -277,7 +277,7 @@ class ambeIPSC(IPSC):
             s.listen(5)                     # Now wait for client connection.
             _sock, addr = s.accept()        # Establish connection with client.
             if int_id(self._tx_tg) > 0:     # Test if we are allowed to transmit
-                self.playbackFromUDP(_sock, self._system)
+                self.playbackFromUDP(_sock) # SSZ was here.
             else:
                 self.transmitDisabled(_sock, self._system)    #tg is zero, so just eat the network trafic
             _sock.close()
