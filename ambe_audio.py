@@ -286,7 +286,7 @@ class ambeIPSC(IPSC):
     def playbackFromUDP(self, _sock):
         _delay = 0.055                                      # Yes, I know it should be 0.06, but there seems to be some latency, so this is a hack
         _src_sub = hex_str_3(self._gateway_dmr_id)          # DMR ID to sign this transmission with
-        _src_peer = NETWORK[self._system]['LOCAL']['RADIO_ID']  # Use this peers ID as the source repeater
+        _src_peer = self._config['LOCAL']['RADIO_ID']       # Use this peers ID as the source repeater
 
         logger.info('Transmit from gateway to TG {}:'.format(int_id(self._tx_tg)) )
         try:
