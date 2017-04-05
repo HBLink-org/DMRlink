@@ -313,7 +313,7 @@ class ambeIPSC(IPSC):
             self._seq = randint(0,32767)                    # A transmission uses a random number to begin its sequence (16 bit)
 
             for i in range(0, 3):                           # Output the 3 HEAD frames to our peers
-                self.rewriteFrame(_tempHead[i], self._system, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
+                self.rewriteFrame(_tempHead[i], self._tx_ts, self._tx_tg, _src_sub, _src_peer)
                 #self.group_voice(self._system, _src_sub, self._tx_tg, True, '', hex_str_3(0), _tempHead[i])
                 sleep(_delay)
 
@@ -324,14 +324,14 @@ class ambeIPSC(IPSC):
                     i = (i + 1) % 6                         # Round robbin with the 6 VOICE templates
                     _frame = _tempVoice[i][:33] + _ambe + _tempVoice[i][52:]    # Insert the 3 49 bit AMBE frames
                     
-                    self.rewriteFrame(_frame, self._system, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
+                    self.rewriteFrame(_frame, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
                     #self.group_voice(self._system, _src_sub, self._tx_tg, True, '', hex_str_3(0), _frame)
 
                     sleep(_delay)                           # Since this comes from a file we have to add delay between IPSC frames
                 else:
                     _eof = True                             # There are no more AMBE frames, so terminate the loop
 
-            self.rewriteFrame(_tempTerm, self._system, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
+            self.rewriteFrame(_tempTerm, self._tx_ts, self._tx_tg, _src_sub, _src_peer)
             #self.group_voice(self._system, _src_sub, self._tx_tg, True, '', hex_str_3(0), _tempTerm)
 
         except IOError:
@@ -411,7 +411,7 @@ class ambeIPSC(IPSC):
 #            self._d.write(struct.pack("i", __iLen))
 #            self._d.write(_data)
 #        else:
-#            self.rewriteFrame(_data, self._system, 1, 9)
+#            self.rewriteFrame(_data, 1, 9)
         ###### DEBUGDEBUGDEBUG
        
         
