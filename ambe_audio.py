@@ -617,6 +617,8 @@ class ambeIPSC(IPSC):
             print('SLOT2:', h(_frame))
         print("pt={:02X} pid={} seq={:02X} src={} dst={} ct={:02X} uk={} ci={} rsq={}".format(_packettype, _peerid,_ipsc_seq, _src_sub,_dst_sub,_call_type,_call_ctrl_info,_call_info,_rtp_seq))
     
+def get_subscriber_info(_src_sub):
+    return get_info(int_id(_src_sub), subscriber_ids)
 
 if __name__ == '__main__':
     import argparse
