@@ -30,7 +30,7 @@ import sys, socket, ConfigParser, thread, traceback
 import cPickle as pickle
 
 from dmrlink import IPSC, systems
-from dmr_utils.utils import int_id, hex_str_3, hex_str_4, get_alias
+from dmr_utils.utils import int_id, hex_str_3, hex_str_4, get_alias, get_info
 
 from time import time, sleep, clock, localtime, strftime
 import csv
