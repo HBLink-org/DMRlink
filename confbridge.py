@@ -239,7 +239,7 @@ class confbridgeIPSC(IPSC):
                                     continue
                                 if (_target['TGID'] == _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < TS_CLEAR_TIME):
                                     if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                        self._logger.info('(%s) Call not bridged to TGID%s, matching call already active on target: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[rule['DST_TS']]['RX_TGID']))
+                                        self._logger.info('(%s) Call not bridged to TGID%s, matching call already active on target: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
                                     continue
                                 if (_target['TGID'] == _target_status[_target['TS']]['TX_TGID']) and (_src_sub != _target_status[_target['TS']]['TX_SRC_SUB']) and ((now - _target_status[_target['TS']]['TX_TIME']) < TS_CLEAR_TIME):
                                     if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
