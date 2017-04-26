@@ -382,15 +382,21 @@ if __name__ == '__main__':
     # CLI argument parser - handles picking up the config file from the command line, and sending a "help" message
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
+    parser.add_argument('-ll', '--log_level', action='store', dest='LOG_LEVEL', help='Override config file logging level.')
+    parser.add_argument('-lh', '--log_handle', action='store', dest='LOG_HANDLERS', help='Override config file logging handler.')
     cli_args = parser.parse_args()
 
     if not cli_args.CFG_FILE:
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
-    
+
     # Call the external routine to build the configuration dictionary
     CONFIG = dmrlink_config.build_config(cli_args.CFG_FILE)
-    
+
     # Call the external routing to start the system logger
+    if cli_args.LOG_LEVEL:
+        CONFIG['LOGGER']['LOG_LEVEL'] = cli_args.LOG_LEVEL
+    if cli_args.LOG_HANDLERS:
+        CONFIG['LOGGER']['LOG_HANDLERS'] = cli_args.LOG_HANDLERS
     logger = dmrlink_log.config_logging(CONFIG['LOGGER'])
     
     config_reports(CONFIG)
