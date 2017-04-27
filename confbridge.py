@@ -44,18 +44,20 @@
 # Use to make test strings: #print('PKT:', "\\x".join("{:02x}".format(ord(c)) for c in _data))
 
 from __future__ import print_function
+from twisted.internet.protocol import Factory, Protocol
+from twisted.protocols.basic import NetstringReceiver
 from twisted.internet import reactor
 from twisted.internet import task
 from binascii import b2a_hex as ahex
 from time import time
 from importlib import import_module
-from cPickle import dump as pickle_dump
+import cPickle as pickle
 
 import sys
 
 from dmr_utils.utils import hex_str_3, hex_str_4, int_id
 
-from dmrlink import IPSC, systems, config_reports
+from dmrlink import IPSC, systems, config_reports, hmac_new, sha1
 from ipsc.ipsc_const import BURST_DATA_TYPE
 
 
@@ -170,13 +172,15 @@ def rule_timer_loop():
             else:
                 logger.debug('Conference Bridge NO ACTION: System: %s, Bridge: %s, TS: %s, TGID: %s', _system['SYSTEM'], _bridge, _system['TS'], int_id(_system['TGID']))
 
-    if BRIDGE_CONF['REPORT']:
+    if BRIDGE_CONF['REPORT'] == 'pickle':
         try:
             with open(CONFIG['REPORTS']['REPORT_PATH']+'confbridge_stats.pickle', 'wb') as file:
                 pickle_dump(BRIDGES, file, 2)
                 file.close()
         except IOError as detail:
             _logger.error('I/O Error: %s', detail)
+    elif BRIDGE_CONF['REPORT'] == 'network':
+        report_server.send_clients('bridge updated')
 
     
 class confbridgeIPSC(IPSC):
@@ -367,6 +371,60 @@ class confbridgeIPSC(IPSC):
         #
 
 
+#
+# Socket-based reporting section
+#
+class report(NetstringReceiver):
+    def __init__(self):
+        pass
+
+    def connectionMade(self):
+        report_server.clients.append(self)
+        self.send_config()
+        self.send_bridge()
+        logger.info('(confbridge.py) TCP reporting client connected: %s', self.transport.getPeer())
+
+    def connectionLost(self, reason):
+        logger.info('(confbridge.py) TCP reporting client disconnected: %s', self.transport.getPeer())
+        report_server.clients.remove(self)
+
+    def stringReceived(self, data):
+        self.process_message(data)
+        
+    def send_config(self):
+        serialized = pickle.dumps(CONFIG['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
+        self.sendString(REP_OPC['CONFIG_SND']+serialized)
+            
+    def send_bridge(self):
+        serialized = pickle.dumps(BRIDGES, protocol=pickle.HIGHEST_PROTOCOL)
+        self.sendString(REP_OPC['BRIDGE_SND']+serialized)
+
+    def process_message(self, _message):
+        opcode = _message[:1]
+        if opcode == REP_OPC['CONFIG_REQ']:
+            print('got CONFIG_REQ opcode')
+            self.send_config()
+        elif opcode == REP_OPC['BRIDGE_REQ']:
+            print('got BRIDGE_REQ opcode')
+            self.send_bridge()
+        else:
+            print('got unknown opcode')
+        
+class reportFactory(Factory):
+    def __init__(self):
+        pass
+        
+    def buildProtocol(self, addr):
+        if (addr.host) in BRIDGE_CONF['CLIENTS']:
+            return report()
+        else:
+            return None
+            
+    def send_clients(self, _message):
+        for client in report_server.clients:
+            client.sendString(_message)
+
+
 if __name__ == '__main__':
     import argparse
     import os
@@ -448,7 +506,25 @@ if __name__ == '__main__':
 
     # Build the Access Control List
     ACL = build_acl('sub_acl')
+
+    # INITIALIZE THE NETWORK-BASED REPORTING SERVER
+    if BRIDGE_CONF['REPORT'] == 'network': 
+        logger.info('(confbridge.py) TCP reporting server starting')
+        REP_OPC = {
+            'CONFIG_REQ': '\x00',
+            'CONFIG_SND': '\x01',
+            'BRIDGE_REQ': '\x02',
+            'BRIDGE_SND': '\x03',
+            'CONFIG_UPD': '\x04',
+            'BRIDGE_UPD': '\x05',
+            'LINK_EVENT': '\x06',
+            'BRDG_EVENT': '\x07'
+            }
     
+        report_server = reportFactory()
+        report_server.clients = []
+        reactor.listenTCP(BRIDGE_CONF['REPORT_PORT'], reportFactory())
+ 
     # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
     for system in CONFIG['SYSTEMS']:
         if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
@@ -464,5 +540,5 @@ if __name__ == '__main__':
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
     rule_timer = task.LoopingCall(rule_timer_loop)
     rule_timer.start(60)
-  
+    
     reactor.run()
