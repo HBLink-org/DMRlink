@@ -33,6 +33,8 @@ import os
 import logging
 import signal
 
+import cPickle as pickle
+
 from logging.config import dictConfig
 from hmac import new as hmac_new
 from binascii import b2a_hex as ahex
@@ -41,11 +43,10 @@ from hashlib import sha1
 from socket import inet_ntoa as IPAddr
 from socket import inet_aton as IPHexStr
 from time import time
-from cPickle import dump as pickle_dump
 
-from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import reactor
-from twisted.internet import task
+from twisted.internet.protocol import DatagramProtocol, Factory, Protocol
+from twisted.protocols.basic import NetstringReceiver
+from twisted.internet import reactor, task
 
 from ipsc.ipsc_const import *
 from ipsc.ipsc_mask import *
@@ -74,7 +75,7 @@ def config_reports(_config):
             _logger.debug('Periodic Reporting Loop Started (PICKLE)')
             try:
                 with open(_config['REPORTS']['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
-                    pickle_dump(_config['SYSTEMS'], file, 2)
+                    pickle.dump(_config['SYSTEMS'], file, 2)
                     file.close()
             except IOError as detail:
                 _logger.error('I/O Error: %s', detail)
@@ -162,6 +163,10 @@ def build_peer_list(_peers):
         concatenated_peers += peer + hex_ip + hex_port + mode
     
     peer_list = hex_str_2(len(concatenated_peers)) + concatenated_peers
+    
+    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
+        report_server.send_config()
+    
     return peer_list
 
 # Gratuitous print-out of the peer list.. Pretty much debug stuff.
@@ -379,6 +384,9 @@ class IPSC(DatagramProtocol):
             if peer not in _temp_peers:
                 self.de_register_peer(peer)
                 self._logger.warning('(%s) Peer Deleted (not in new peer list): %s', self._system, int_id(peer))
+        
+        if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
+            report_server.send_config()
 
 
     #************************************************
@@ -926,7 +934,56 @@ class IPSC(DatagramProtocol):
             self.unknown_message(_packettype, _peerid, data)
             return
 
-    
+
+#
+# Socket-based reporting section
+#
+class report(NetstringReceiver):
+    def __init__(self):
+        pass
+
+    def connectionMade(self):
+        report_server.clients.append(self)
+        self.send_config()
+        logger.info('DMRlink reporting client connected: %s', self.transport.getPeer())
+
+    def connectionLost(self, reason):
+        logger.info('DMRlink reporting client disconnected: %s', self.transport.getPeer())
+        report_server.clients.remove(self)
+
+    def stringReceived(self, data):
+        self.process_message(data)
+        
+    def send_config(self):
+        serialized = pickle.dumps(CONFIG['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
+        self.sendString(REP_OPC['CONFIG_SND']+serialized)
+
+    def process_message(self, _message):
+        opcode = _message[:1]
+        if opcode == REP_OPC['CONFIG_REQ']:
+            logger.info('DMRlink reporting client sent \'CONFIG_REQ\': %s', self.transport.getPeer())
+            self.send_config()
+        else:
+            print('got unknown opcode')
+        
+class reportFactory(Factory):
+    def __init__(self):
+        pass
+        
+    def buildProtocol(self, addr):
+        if (addr.host) in CONFIG['REPORTS']['REPORT_CLIENTS']:
+            return report()
+        else:
+            return None
+            
+    def send_clients(self, _message):
+        for client in report_server.clients:
+            client.sendString(_message)
+            
+    def send_config(self):
+        serialized = pickle.dumps(CONFIG['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
+        self.send_clients(REP_OPC['CONFIG_SND']+serialized)
+
 
 #************************************************
 #      MAIN PROGRAM LOOP STARTS HERE
@@ -988,5 +1045,23 @@ if __name__ == '__main__':
         reporting_loop = config_reports(CONFIG)
         reporting = task.LoopingCall(reporting_loop, logger)
         reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
+        
+        # INITIALIZE THE NETWORK-BASED REPORTING SERVER
+        if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
+            logger.info('(confbridge.py) TCP reporting server starting')
+            REP_OPC = {
+                'CONFIG_REQ': '\x00',
+                'CONFIG_SND': '\x01',
+                'BRIDGE_REQ': '\x02',
+                'BRIDGE_SND': '\x03',
+                'CONFIG_UPD': '\x04',
+                'BRIDGE_UPD': '\x05',
+                'LINK_EVENT': '\x06',
+                'BRDG_EVENT': '\x07'
+                }
+    
+            report_server = reportFactory()
+            report_server.clients = []
+            reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], reportFactory())
   
     reactor.run()
