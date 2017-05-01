@@ -1041,18 +1041,9 @@ if __name__ == '__main__':
         reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
         
     # INITIALIZE THE NETWORK-BASED REPORTING SERVER
-    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
+    elif CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
         logger.info('(confbridge.py) TCP reporting server starting')
-        REP_OPC = {
-            'CONFIG_REQ': '\x00',
-            'CONFIG_SND': '\x01',
-            'BRIDGE_REQ': '\x02',
-            'BRIDGE_SND': '\x03',
-            'CONFIG_UPD': '\x04',
-            'BRIDGE_UPD': '\x05',
-            'LINK_EVENT': '\x06',
-            'BRDG_EVENT': '\x07'
-            }
+        from ipsc.reporting_const import REPORT_OPCODES as REP_OPC
         
         report_server = reportFactory()
         report_server.clients = []
