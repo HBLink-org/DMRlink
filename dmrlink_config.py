@@ -56,9 +56,13 @@ def build_config(_config_file):
                     'REPORT_NETWORKS': config.get(section, 'REPORT_NETWORKS'),
                     'REPORT_INTERVAL': config.getint(section, 'REPORT_INTERVAL'),
                     'REPORT_PATH': config.get(section, 'REPORT_PATH'),
+                    'REPORT_PORT': config.get(section, 'REPORT_PORT'),
+                    'REPORT_CLIENTS': config.get(section, 'REPORT_CLIENTS').split(','),
                     'PRINT_PEERS_INC_MODE': config.getboolean(section, 'PRINT_PEERS_INC_MODE'),
                     'PRINT_PEERS_INC_FLAGS': config.getboolean(section, 'PRINT_PEERS_INC_FLAGS')
                 })
+                if CONFIG['REPORTS']['REPORT_PORT']:
+                    CONFIG['REPORTS']['REPORT_PORT'] = int(CONFIG['REPORTS']['REPORT_PORT'])
 
             elif section == 'LOGGER':
                 CONFIG['LOGGER'].update({
