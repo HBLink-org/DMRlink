@@ -86,6 +86,11 @@ def config_reports(_config):
             for system in _config['SYSTEMS']:
                 print_master(_config, system)
                 print_peer_list(_config, system)
+                
+    elif _config['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
+        def reporting_loop(_logger, _server):
+            _logger.debug('Periodic Reporting Loop Started (NETWORK)')
+            _server.send_config()
 
     else:
         def reporting_loop(_logger):
@@ -163,9 +168,6 @@ def build_peer_list(_peers):
         concatenated_peers += peer + hex_ip + hex_port + mode
     
     peer_list = hex_str_2(len(concatenated_peers)) + concatenated_peers
-    
-    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-        report_server.send_config()
     
     return peer_list
 
@@ -384,9 +386,6 @@ class IPSC(DatagramProtocol):
             if peer not in _temp_peers:
                 self.de_register_peer(peer)
                 self._logger.warning('(%s) Peer Deleted (not in new peer list): %s', self._system, int_id(peer))
-        
-        if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-            report_server.send_config()
 
 
     #************************************************
@@ -944,7 +943,6 @@ class report(NetstringReceiver):
 
     def connectionMade(self):
         report_server.clients.append(self)
-        self.send_config()
         logger.info('DMRlink reporting client connected: %s', self.transport.getPeer())
 
     def connectionLost(self, reason):
@@ -953,10 +951,6 @@ class report(NetstringReceiver):
 
     def stringReceived(self, data):
         self.process_message(data)
-        
-    def send_config(self):
-        serialized = pickle.dumps(CONFIG['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
-        self.sendString(REP_OPC['CONFIG_SND']+serialized)
 
     def process_message(self, _message):
         opcode = _message[:1]
@@ -1041,27 +1035,31 @@ if __name__ == '__main__':
             reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
   
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-    if CONFIG['REPORTS']['REPORT_NETWORKS']:
+    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT' or CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
         reporting_loop = config_reports(CONFIG)
         reporting = task.LoopingCall(reporting_loop, logger)
         reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
         
-        # INITIALIZE THE NETWORK-BASED REPORTING SERVER
-        if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
-            logger.info('(confbridge.py) TCP reporting server starting')
-            REP_OPC = {
-                'CONFIG_REQ': '\x00',
-                'CONFIG_SND': '\x01',
-                'BRIDGE_REQ': '\x02',
-                'BRIDGE_SND': '\x03',
-                'CONFIG_UPD': '\x04',
-                'BRIDGE_UPD': '\x05',
-                'LINK_EVENT': '\x06',
-                'BRDG_EVENT': '\x07'
-                }
-    
-            report_server = reportFactory()
-            report_server.clients = []
-            reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], reportFactory())
+    # INITIALIZE THE NETWORK-BASED REPORTING SERVER
+    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
+        logger.info('(confbridge.py) TCP reporting server starting')
+        REP_OPC = {
+            'CONFIG_REQ': '\x00',
+            'CONFIG_SND': '\x01',
+            'BRIDGE_REQ': '\x02',
+            'BRIDGE_SND': '\x03',
+            'CONFIG_UPD': '\x04',
+            'BRIDGE_UPD': '\x05',
+            'LINK_EVENT': '\x06',
+            'BRDG_EVENT': '\x07'
+            }
+        
+        report_server = reportFactory()
+        report_server.clients = []
+        reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], reportFactory())
+        
+        reporting_loop = config_reports(CONFIG)
+        reporting = task.LoopingCall(reporting_loop, logger, report_server)
+        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
   
     reactor.run()

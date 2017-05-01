@@ -141,7 +141,39 @@ def build_acl(_sub_acl):
     
     return ACL
     
+# Timed loop used for reporting IPSC status
+#
+# REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
+def config_reports(_config):
+    if _config['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
+        def reporting_loop(_logger):  
+            _logger.debug('Periodic Reporting Loop Started (PICKLE)')
+            try:
+                with open(_config['REPORTS']['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
+                    pickle.dump(_config['SYSTEMS'], file, 2)
+                    file.close()
+            except IOError as detail:
+                _logger.error('I/O Error: %s', detail)
+     
+    elif _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
+        def reporting_loop(_logger):
+            _logger.debug('Periodic Reporting Loop Started (PRINT)')
+            for system in _config['SYSTEMS']:
+                print_master(_config, system)
+                print_peer_list(_config, system)
+                
+    elif _config['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
+        def reporting_loop(_logger, _server):
+            _logger.debug('Periodic Reporting Loop Started (NETWORK)')
+            _server.send_config()
+            _server.send_bridge()
+
+    else:
+        def reporting_loop(_logger):
+            _logger.debug('Periodic Reporting Loop Started (NULL)')
     
+    return reporting_loop
+
 # Run this every minute for rule timer updates
 def rule_timer_loop():
     logger.info('(ALL IPSC SYSTEMS) Rule timer loop started')
@@ -380,42 +412,30 @@ class report(NetstringReceiver):
 
     def connectionMade(self):
         report_server.clients.append(self)
-        self.send_config()
-        self.send_bridge()
-        logger.info('(confbridge.py) TCP reporting client connected: %s', self.transport.getPeer())
+        logger.info('DMRlink reporting client connected: %s', self.transport.getPeer())
 
     def connectionLost(self, reason):
-        logger.info('(confbridge.py) TCP reporting client disconnected: %s', self.transport.getPeer())
+        logger.info('DMRlink reporting client disconnected: %s', self.transport.getPeer())
         report_server.clients.remove(self)
 
     def stringReceived(self, data):
         self.process_message(data)
-        
-    def send_config(self):
-        serialized = pickle.dumps(CONFIG['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
-        self.sendString(REP_OPC['CONFIG_SND']+serialized)
-            
-    def send_bridge(self):
-        serialized = pickle.dumps(BRIDGES, protocol=pickle.HIGHEST_PROTOCOL)
-        self.sendString(REP_OPC['BRIDGE_SND']+serialized)
 
     def process_message(self, _message):
         opcode = _message[:1]
         if opcode == REP_OPC['CONFIG_REQ']:
-            print('got CONFIG_REQ opcode')
+            logger.info('DMRlink reporting client sent \'CONFIG_REQ\': %s', self.transport.getPeer())
             self.send_config()
-        elif opcode == REP_OPC['BRIDGE_REQ']:
-            print('got BRIDGE_REQ opcode')
-            self.send_bridge()
         else:
             print('got unknown opcode')
         
+            
 class reportFactory(Factory):
     def __init__(self):
         pass
         
     def buildProtocol(self, addr):
-        if (addr.host) in BRIDGE_CONF['CLIENTS']:
+        if (addr.host) in CONFIG['REPORTS']['REPORT_CLIENTS']:
             return report()
         else:
             return None
@@ -423,6 +443,14 @@ class reportFactory(Factory):
     def send_clients(self, _message):
         for client in report_server.clients:
             client.sendString(_message)
+            
+    def send_config(self):
+        serialized = pickle.dumps(CONFIG['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
+        self.send_clients(REP_OPC['CONFIG_SND']+serialized)
+        
+    def send_bridge(self):
+        serialized = pickle.dumps(BRIDGES, protocol=pickle.HIGHEST_PROTOCOL)
+        self.send_clients(REP_OPC['BRIDGE_SND']+serialized)
 
 
 if __name__ == '__main__':
@@ -506,9 +534,21 @@ if __name__ == '__main__':
 
     # Build the Access Control List
     ACL = build_acl('sub_acl')
-
+ 
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
+            systems[system] = confbridgeIPSC(system, CONFIG, logger)
+            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
+ 
+    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
+    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT' or CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
+        reporting_loop = config_reports(CONFIG)
+        reporting = task.LoopingCall(reporting_loop, logger)
+        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
+        
     # INITIALIZE THE NETWORK-BASED REPORTING SERVER
-    if BRIDGE_CONF['REPORT'] == 'network': 
+    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
         logger.info('(confbridge.py) TCP reporting server starting')
         REP_OPC = {
             'CONFIG_REQ': '\x00',
@@ -520,25 +560,17 @@ if __name__ == '__main__':
             'LINK_EVENT': '\x06',
             'BRDG_EVENT': '\x07'
             }
-    
+        
         report_server = reportFactory()
         report_server.clients = []
-        reactor.listenTCP(BRIDGE_CONF['REPORT_PORT'], reportFactory())
- 
-    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    for system in CONFIG['SYSTEMS']:
-        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
-            systems[system] = confbridgeIPSC(system, CONFIG, logger)
-            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
-  
-    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-    if CONFIG['REPORTS']['REPORT_NETWORKS']:
+        reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], reportFactory())
+        
         reporting_loop = config_reports(CONFIG)
-        reporting = task.LoopingCall(reporting_loop, logger)
+        reporting = task.LoopingCall(reporting_loop, logger, report_server)
         reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
         
-    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-    rule_timer = task.LoopingCall(rule_timer_loop)
-    rule_timer.start(60)
+        # INITIALIZE THE REPORTING LOOP IF CONFIGURED
+        rule_timer = task.LoopingCall(rule_timer_loop)
+        rule_timer.start(60)
     
     reactor.run()
