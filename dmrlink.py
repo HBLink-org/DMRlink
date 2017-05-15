@@ -43,13 +43,12 @@ from twisted.internet.protocol import DatagramProtocol, Factory, Protocol
 from twisted.protocols.basic import NetstringReceiver
 from twisted.internet import reactor, task
 
-# Imports from our static file directory
-from dmrlink.ipsc_const import *
-from dmrlink.ipsc_mask import *
-from dmrlink.reporting_const import *
-from dmrlink.dmrlink_config import build_config
-from dmrlink.dmrlink_log import config_logging
+# Imports files in the dmrlink subdirectory (these things shouldn't change often)
+from DMRlink.ipsc_const import *
+from DMRlink.ipsc_mask import *
+from DMRlink.reporting_const import *
 
+# Imports from DMR Utilities package
 from dmr_utils.utils import hex_str_2, hex_str_3, hex_str_4, int_id
 
 
@@ -64,18 +63,6 @@ __email__       = 'n0mjs@me.com'
 # Global variables used whether we are a module or __main__
 systems = {}
 
-
-# Shut ourselves down gracefully with the IPSC peers.
-#
-def sig_handler(_signal, _frame):
-    logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
-
-    for system in systems:
-        this_ipsc = systems[system]
-        logger.info('De-Registering from IPSC %s', system)
-        de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
-        this_ipsc.send_to_ipsc(de_reg_req_pkt)
-    reactor.stop()
 
 # Timed loop used for reporting IPSC status
 #
@@ -1008,6 +995,9 @@ if __name__ == '__main__':
     import os
     import signal
     
+    from DMRlink.dmrlink_config import build_config
+    from DMRlink.dmrlink_log import config_logging
+    
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -1025,7 +1015,6 @@ if __name__ == '__main__':
     # Call the external routine to build the configuration dictionary
     CONFIG = build_config(cli_args.CFG_FILE)
     
-    
     # Call the external routing to start the system logger
     if cli_args.LOG_LEVEL:
         CONFIG['LOGGER']['LOG_LEVEL'] = cli_args.LOG_LEVEL
@@ -1034,6 +1023,20 @@ if __name__ == '__main__':
     logger = config_logging(CONFIG['LOGGER'])
     logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
+    
+    # Set signal handers so that we can gracefully exit if need be
+    def sig_handler(_signal, _frame):
+        logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
+
+        for system in systems:
+            this_ipsc = systems[system]
+            logger.info('De-Registering from IPSC %s', system)
+            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+            this_ipsc.send_to_ipsc(de_reg_req_pkt)
+        reactor.stop()
+    
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+        signal.signal(sig, sig_handler)
     
     # INITIALIZE THE REPORTING LOOP
     config_reports(CONFIG)
@@ -1061,8 +1064,6 @@ if __name__ == '__main__':
             systems[system] = IPSC(system, CONFIG, logger, report_server)
             reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
   
-    # Set signal handers so that we can gracefully exit if need be
-    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
-        signal.signal(sig, sig_handler)
+
   
     reactor.run()

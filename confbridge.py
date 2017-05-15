@@ -58,7 +58,7 @@ import sys
 from dmr_utils.utils import hex_str_3, hex_str_4, int_id
 
 from dmrlink import IPSC, systems, config_reports, reportFactory, REPORT_OPCODES # hmac_new, sha1, report
-from ipsc.ipsc_const import BURST_DATA_TYPE
+from DMRlink.ipsc_const import BURST_DATA_TYPE
 
 
 __author__      = 'Cortney T. Buffington, N0MJS'
@@ -418,13 +418,13 @@ class confReportFactory(reportFactory):
 
 
 if __name__ == '__main__':
-    #import argparse
-    #import os
-    #import signal
-    #from dmr_utils.utils import try_download, mk_id_dict
+    import argparse
+    import os
+    import signal
+    from dmr_utils.utils import try_download, mk_id_dict
 
-    import dmrlink_log
-    import dmrlink_config
+    from DMRlink.dmrlink_config import build_config
+    from DMRlink.dmrlink_log import config_logging
 
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -440,30 +440,31 @@ if __name__ == '__main__':
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
 
     # Call the external routine to build the configuration dictionary
-    CONFIG = dmrlink_config.build_config(cli_args.CFG_FILE)
+    CONFIG = build_config(cli_args.CFG_FILE)
 
     # Call the external routing to start the system logger
     if cli_args.LOG_LEVEL:
         CONFIG['LOGGER']['LOG_LEVEL'] = cli_args.LOG_LEVEL
     if cli_args.LOG_HANDLERS:
         CONFIG['LOGGER']['LOG_HANDLERS'] = cli_args.LOG_HANDLERS
-    logger = dmrlink_log.config_logging(CONFIG['LOGGER'])
+    logger = config_logging(CONFIG['LOGGER'])
     
     config_reports(CONFIG)
 
     logger.info('DMRlink \'confbridge.py\' (c) 2016 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
+    
     # Shut ourselves down gracefully with the IPSC peers.
     def sig_handler(_signal, _frame):
         logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
-    
+
         for system in systems:
             this_ipsc = systems[system]
             logger.info('De-Registering from IPSC %s', system)
             de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
             this_ipsc.send_to_ipsc(de_reg_req_pkt)
         reactor.stop()
-
+    
     # Set signal handers so that we can gracefully exit if need be
     for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
         signal.signal(sig, sig_handler)
