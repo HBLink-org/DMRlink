@@ -26,5 +26,6 @@ REPORT_OPCODES = {
     'CONFIG_UPD': '\x04',
     'BRIDGE_UPD': '\x05',
     'LINK_EVENT': '\x06',
-    'BRDG_EVENT': '\x07'
+    'BRDG_EVENT': '\x07',
+    'RCM_SND':    '\x08'
     }

@@ -2,6 +2,7 @@
 110602,AA4CD,Carlsbad,California,United States,447.30000,3,-5.000,Master,TS1 TS2,AA4CD,,0,BrandMeister<BR/>
 110603,WB6PQM,Walnut Creek,California,United States,444.15000,1,+5.000,Peer,TS1 TS2,WB6PQM,,0,Brandmeister<BR/>
 110604,KF6GOI,THOUSAND OAKS,California,United States,445.56000,1,-5.000,Master,TS1 TS2,KF6GOI,,0,West Brandmeister<BR/>
+110605,KB6TWT,San Diego,California,United States,449.74000,1,-5.000,Peer,TS1 TS2,WD6FZA,,0,BrandMeister<BR/>
 110607,KA7QQV,alameda ,California,United States,443.50000,1,+5.000,Peer,TS1 TS2,KA7QQV,,0,brandmeister<BR/>
 110608,KE6UPI,Murrieta,California,United States,442.40000,1,+5.000,Master,TS1 TS2,KE6UPI,,0,BrandMeister<BR/>
 110609,WX6D,San Luis Obisopo,California,United States,443.43750,1,+5.000,Peer,TS1 TS2,N6IB,,0,Brandmeister<BR/>
@@ -72,7 +73,7 @@
 113629,K2HR,Carmel,New York,United States,440.61250,3,+5.000,Peer,TS1 TS2,NY4Z,,1,BronxTRBO<BR/>
 113630,NY1FD,New Rochelle,New York,United States,145.49500,1,-0.600,Peer,TS1 TS2,W2MAC,,1,Bronx TRBO<BR/>
 113631,K2HR,Yorktown,New York,United States,440.62500,7,+5.000,Peer,TS1 TS2,NY4Z,,1,Bronx TRBO<BR/>
-113632,KM4WUD,Voorheesville,New York,United States,444.00000,1,+5.000,Master,TS1 TS2,KD2KWD,,1,MotoDMR<BR/>
+113632,KM4WUD,Albany,New York,United States,444.00000,0,+5.000,Master,TS1 TS2,KD2KWD,,1,MotoDMR<BR/>
 113633,WW2FD,nassau ,New York,United States,145.41000,1,-5.000,Master,TS1 TS2,N2NSA,,0,ipsc<BR/>
 113634,N2MCI,Kingston,New York,United States,448.62500,1,-5.000,None,TS1 TS2,N2MCI,,0,BrandMeister<BR/>
 113635,KM4WUD,Athens,New York,United States,442.57500,0,+5.000,Master,TS1 TS2,KD2KWD,Time Slot: 1<br>Group Call: 1 = Worldwide (PTT)<br>Group Call: 3 = North America (PTT)<br>Group Call: 93 = BM-North America (PTT)<br>Group Call: 113 = UA English 1 (PTT)<br>Group Call: 310 = TAC-310 (PTT)<br>Group Call: 311 = TAC-311 (PTT)<br>Group Call: 312 = TAC-312 (PTT)<br>Group Call: 333 = NY-Metro TAC (PTT)<br>Group Call: 3100 = Bridge-3100 (ON)<br>Group Call: 3134 = NJ Statewide (PTT)<br>Group Call: 3136 = NY Statewide (ON)<br>Group Call: 3172 = Northeast Region (PTT)<br>Group Call: 31361 = Upstate NY (ON)<br>Group Call: 9998 = DMRX Parrot (PTT)<br><br>Time Slot: 2<br>Group Call: 9 = Local Repeater<br>Group Call: 123 = UA English 2 (PTT)<br>Group Call: 444 = NY-Metro (ON)<br>Group Call: 31342 = North Jersey  (PTT)<br>Group Call: 31360 = Tri-State (PTT)<br><br>Website: http://motodmr.net/repeaters/athens-ny/,1,MotoDMR<BR/>
@@ -98,7 +99,9 @@
 202102,SV1I,Penteli,Pennsylvania,Greece,439.32500,1,-7.600,Peer,TS1 TS2,SZ1GRC,,0,None<BR/>
 202103,SV1M,KM17VW / Athen,Attiki,Greece,439.17500,1,-7.600,Peer,TS1 TS2,SZ1GRC,,0,None<BR/>
 202104,SW1G,Mt. Kitheronas,Attiki,Greece,438.83750,1,-7.600,,,SV1EDZ,,0,BM<BR/>
+202105,SW1J,Kitheronas Mt.,,Greece,438.63750,1,-7.600,PEER,TS1 TS2,SV1EDZ,,0,BrandMeister<BR/>
 202173,SZ1SV,Athens,,Greece,438.62500,1,7.600,PEER,TS1 TS2,SV1IW,,0,BrandMeister<BR/>
+202201,SW2D,Thessaloniki,Kentriki Makedonia,Greece,439.05000,1,-7.600,,,SV2BNL,,0,BrandMeister<BR/>
 202202,SV2K,Hortiatis mt.,Dytiki Makedonia,Greece,438.83750,1,-7.600,,,SV1EDZ,,0,BM<BR/>
 202401,SV4O,Mnt. Pilio,Thessalia,Greece,438.68750,1,-7.600,,,SV4LAD,,0,BM<BR/>
 202402,SV4R,Profitis Ilias,Thessalia,Greece,438.97500,1,-7.600,PEER,TS1 TS2,SV4QXF,,0,BrandMeister<BR/>
@@ -106,6 +109,7 @@
 204101,PI1AMS,Amsterdam,,Netherlands,438.05000,1,-7.600,PEER,TS1 TS2,PA3PM,,0,BM<BR/>
 204103,PI1WFR,Obdam,Noord-Holland,Netherlands,438.01250,1,-7.600,PEER,TS1 TS2,PE1BMM,,0,BM<BR/>
 204200,PI1RTD,Rotterdam,,Netherlands,438.20000,1,-7.600,PEER,TS1 TS2,PA0HTW,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 2 = Europe<br>Time Slot #1 - Group Call 20 = DL-OE-HB9 <br>Time Slot #1 - Group Call 22 = NL Speaking<br>Time Slot #1 - Group Call 204 = PA 1<br>Time Slot #1 - Group Call 9 = Local 1<br>Time Slot #2 - Group Call 204 = PA 2<br>Time Slot #2 - Group Call 9 = Local 2<br>You Must Have [ARS] Disabled Within Your Radio<br> <br><br>Contact: Henk Post,PA0HTW Email:<br>Web:,1,DMR-MARC<BR/>
+204201,PI1DHG,Den Haag,Zuid-Holland,Netherlands,438.20000,1,-7.600,,,PA3FRH,,0,Motorola<BR/>
 204204,PI1DFT,Delft,Zuid-Holland,Netherlands,438.37500,1,-7.600,PEER,TS1 TS2,PD4TH,,0,BM<BR/>
 204220,PI1DEC,Dordrecht,Zuid-Holland,Netherlands,438.02500,1,-7.600,,,PA3L,,0,BrandMeister<BR/>
 204300,PI1UTR,Ijsselstein,Utrecht,Netherlands,438.35000,1,-7.600,PEER,TS1 TS2,PE1RJV,,0,BM<BR/>
@@ -151,10 +155,10 @@
 206100,ON0VA,Zulzeke,Oost-Vlaanderen,Belgium,438.22500,1,-7.600,Peer,TS1 TS2,ON4PN,,0,HYTERA<BR/>
 206101,ON0GRC,Gent,Oost-Vlaanderen,Belgium,439.08750,1,-7.600,Peer,TS2,ON4AKH,,0,BM<BR/>
 206102,ON0DEN,Dendermonde,Oost-Vlaanderen,Belgium,439.03750,1,-7.600,Peer,TS1 TS2,ON1DGR,,0,BM<BR/>
-206103,ON0WRA,Oudenaarde,Oost-Vlaanderen,Belgium,438.81250,1,-7.600,PEER,TS1 TS2,ON5OB,,0,BM<BR/>
 206104,ON0LED,LEDE,Oost-Vlaanderen,Belgium,438.73750,1,-7.600,Peer,TS1 TS2,ON1DGR,,0,BM<BR/>
 206105,ON0APS,Appels,Oost-Vlaanderen,Belgium,438.36250,1,-7.600,PEER,TS1 TS2,ON1DGR,,0,BM<BR/>
 206106,ON0HAM,Hamme,Oost-Vlaanderen,Belgium,438.33750,1,-7.600,Peer,TS1 TS2,ON1DGR,,0,BM<BR/>
+206107,ON0ODR,Oudenaarde,Oost-Vlaanderen,Belgium,438.81250,1,7.600,PEER,TS1 TS2,ON5OB,,0,BrandMeister<BR/>
 206200,ON0DP,Boom,Antwerp,Belgium,439.46250,1,-7.600,Master,TS1 TS2,ON7DS,,0,BM<BR/>
 206201,ON7FQ,Antwerp,Antwerp,Belgium,438.36250,1,-7.600,Peer,TS1 TS2,EA7IYR,,0,DMR-plus<BR/>
 206202,ON0KB,Bornem,Antwerp,Belgium,438.92500,1,-7.600,PEER,TS1 TS2,ON1DGR,,0,BM<BR/>
@@ -195,12 +199,10 @@
 208007,F1ZGI,Rueil Malmaison,Île-de-France,France,430.57500,1,9.400,PEER,TS1 TS2,F1TUV,,0,BM<BR/>
 208008,F1ZGO,Meudon,Île-de-France,France,430.05000,1,9.400,PEER,TS1 TS2,F1TDI,,0,DMRF<BR/>
 208010,F1ZWD,Paris,Île-de-France,France,430.15000,1,9.400,PEER,TS1 TS2,F1HBG,,0,DMR-plus<BR/>
-208016,F6CNB,Bures sur Yvette,le-de-France,France,430.40000,1,9.400,,,F6CNB,,0,None<BR/>
 208020,F1ZJU,Rebais,le-de-France,France,430.56250,1,9.400,,,F1SGO,,0,DMR-plus<BR/>
 208025,F1ZPQ,Parvis de la Defense,Île-de-France,France,430.23750,1,9.400,PEER,TS1 TS2,F1SHS,,0,Motorola<BR/>
 208050,TK1ZBG,Cervione,,Korsika,439.51250,1,-9.400,PEER,TS1 TS2,TK1LG,,0,BM<BR/>
 208051,F1SCA,Montigny le btx,Île-de-France,France,430.03750,1,9.400,PEER,TS1 TS2,F1SCA,,0,DMR-plus<BR/>
-208065,F1SHS,Paris LabTest,Île-de-France,France,430.23750,1,9.400,PEER,TS1 TS2,F1SHS,,0,DMR-plus<BR/>
 208075,F1ZTC,Paris,,France,145.77500,1,-0.600,Peer,TS1 TS2,F1HBG,,0,BM<BR/>
 208077,F1ZHK,NANGIS,le-de-France,France,145.76250,1,-0.600,PEER,TS1 TS2,F4DFJ,,0,BM<BR/>
 208078,F1ZPK,Magnanville,Île-de-France,France,430.27500,1,9.400,PEER,TS1 TS2,F1IKD,,0,DMR-France<BR/>
@@ -225,9 +227,8 @@
 208218,F1ZFG,Relais du Beaujolais,Rhône-Alpes,France,439.80000,1,-9.400,PEER,TS1 TS2,F4HIN,,0,DMR-plus<BR/>
 208220,F1ZKM,SAINT BERNARD,Rhne-Alpes,France,439.50000,1,-7.600,,,F4HIN,,0,BrandMeister<BR/>
 208226,F1ZEU,St Romain,Rhne-Alpes,France,433.10000,1,-1.600,,,F4FAA,,0,BrandMeister<BR/>
-208238,F4CZX,Saint Bernard,Rhône-Alpes,France,430.56250,1,9.400,PEER,TS1 TS2,F4CZX,,0,DMR-plus<BR/>
 208243,F1ZKR,St julien Chapteuil,Rhne-Alpes,France,430.27500,1,9.400,,,F4GVA,,0,BrandMeister<BR/>
-208248,F1ZJQ,Chartreuse,Rhne-Alpes,France,430.56250,1,9.400,,,F4CZX,,0,BM<BR/>
+208248,F1ZJQ,Chartreuse,Rhne-Alpes,France,430.56250,1,9.400,,,F4CZX,,0,DMR-plus<BR/>
 208273,F1ZIQ,MERIBEL,Rhne-Alpes,France,431.70000,1,7.600,Peer,TS1 TS2,F1SLP,,0,BrandMeister<BR/>
 208301,F1ZJD,La Tour du Crieu,Midi-Pyrnes,France,439.77500,1,-9.400,Peer,TS1 TS2,F1IZL,,0,DMR-plus<BR/>
 208302,F1ZIM,L herm,Midi-Pyrénées,France,144.98750,1,0.000,Peer,TS1 TS2,F1ZIM,,0,None<BR/>
@@ -239,14 +240,15 @@
 208402,F5ZAV,Bischoffsheim,Alsace,France,430.26250,1,9.400,PEER,TS1 TS2,F4AVI,,0,DMR-plus<BR/>
 208403,F1ZDD,Dangolsheim,Alsace,France,430.23750,1,9.400,PEER,TS1 TS2,F4AVI,,0,DMRF<BR/>
 208405,F1ZDD,Dangolsheim,Alsace,France,430.28750,1,9.400,PEER,TS1 TS2,F4AVI,,0,DMR-plus<BR/>
+208406,F1ZKT,ENTZHEIM,Alsace,France,430.28750,1,9.400,PEER,TS1 TS2,F4AVI,,0,DMR-plus<BR/>
 208454,F1ZKQ,Villers les Nancy,All Others,France,439.50000,1,-7.600,PEER,TS1 TS2,F4GEN,,0,DMR-plus<BR/>
 208500,F1ZTD,Tours,,France,430.37500,1,9.400,PEER,TS1 TS2,F1HBG,,0,BM<BR/>
 208501,F5ZJH,NANTES,Pays de la Loire,France,430.35000,1,9.400,PEER,TS1 TS2,F5BCB,,0,DMR-plus<BR/>
 208502,F1ZJZ,CHAPELLE RAINSOUIN,Pays de la Loire,France,430.26250,1,9.400,,,F4GZR,,0,BrandMeister<BR/>
 208617,F1ZIS,LA ROCHELLE,Aquitaine,France,430.40000,1,9.400,Peer,TS1 TS2,F1UGZ,,0,DMR-plus<BR/>
 208650,F5ZLD,La Rochelle,Aquitaine,France,430.40000,1,9.400,,,F6FOH,,0,DMR-plus<BR/>
-208766,F5ZJA,Pic Neulos,Languedoc-Roussillon,France,439.82500,1,-9.400,PEER,TS1 TS2,F8BSY,,0,BM<BR/>
-208799,F5ZJT,Perpignan,Languedoc-Roussillon,France,439.95000,1,-9.400,PEER,TS1 TS2,F8BSY,,0,BM<BR/>
+208766,F5ZJA,Pic Neulos,Languedoc-Roussillon,France,439.82500,1,-9.400,PEER,TS1 TS2,F8BSY,,0,DMR-plus<BR/>
+208799,F5ZJT,Perpignan,Languedoc-Roussillon,France,439.95000,1,-9.400,PEER,TS1 TS2,F8BSY,,0,DMR-plus<BR/>
 208829,F5ZJK,Relais Dstar du Bout,Brittany,France,431.75000,1,7.600,Peer,TS1 TS2,F8FKD,,0,DMR-plus<BR/>
 208835,F1ZHH,DINARD,Brittany,France,430.03750,1,9.400,Peer,TS1 TS2,F1TZO,,0,DMR-plus<BR/>
 208849,F1ZJT,Laz,Brittany,France,439.50000,1,-9.400,,,F1NNI,,0,BrandMeister<BR/>
@@ -257,15 +259,16 @@
 208904,F1ZIY,SAINTE GENEVIEVE,All Others,France,430.06250,1,9.400,PEER,TS1 TS2,F1SFY,,0,BM<BR/>
 208905,F1ZTK,LILLE,All Others,France,430.07500,1,1.600,Peer,TS1 TS2,F1FPC,,0,DMR-plus<BR/>
 208910,F1ZHY,Montmarault,All Others,France,430.40000,1,9.400,,,F4ARJ,,0,BrandMeister<BR/>
+208912,F1ZJP,CHENOVE,All Others,France,430.58750,1,9.400,PEER,TS1 TS2,F4ALM,,0,DMR-plus<BR/>
 208917,F1ZCY,Auneuil,All Others,France,430.25000,1,9.400,PEER,TS1 TS2,F1PRY,,0,DMRF<BR/>
 208918,F1ZIE,Saint-Palais,All Others,France,430.10000,1,9.400,PEER,TS1 TS2,F1ZIE,,0,DMRF<BR/>
 208919,F1ZGY,BOUCHAIN  ( 59 ),All Others,France,145.78750,1,-0.600,PEER,TS1 TS2,F1MIJ,,0,DMR-France<BR/>
 208920,F6KAT,METZ,All Others,France,438.40000,1,-7.600,,,F5GLS,,0,BrandMeister<BR/>
-208921,F1ZJP,CHENOVE,All Others,France,430.58750,1,-9.400,,,F4ALM,,0,BrandMeister<BR/>
+208921,F1ZJP,CHENOVE,All Others,France,430.58750,1,9.400,,,F4ALM,,0,DMR-plus<BR/>
 208922,F1ZHT,Mesnil sur bulles,All Others,France,430.58750,15,9.400,PEER,TS1 TS2,F4FSD,,0,BM<BR/>
 208939,F1ZJR,MOIRANS-EN-MONTAGNE,All Others,France,430.40000,1,9.400,,,F4ALM,,0,BrandMeister<BR/>
 208940,F1ZKS,MOIRANS-EN-MONTAGNE,All Others,France,145.70000,1,-0.600,,,F4ALM,,0,BrandMeister<BR/>
-208953,F1ZHJ,TOURS,All Others,France,439.90000,1,-9.400,Peer,TS1 TS2,F1GXY,,0,None<BR/>
+208953,F1ZHJ,TOURS,All Others,France,439.90000,1,-9.400,Peer,TS1 TS2,F1GXY,,0,DMR-plus<BR/>
 208954,F1ZET,Nancy (54),All Others,France,439.40000,1,-7.600,PEER,TS1 TS2,F4GEN,,0,DMR-plus<BR/>
 208955,F1ZGK,Nancy (54),All Others,France,439.50000,1,-7.600,Peer,TS1 TS2,F4GEN,,0,DMR-plus<BR/>
 208957,F1ZZF,Thionville,All Others,France,439.70000,1,0.000,Peer,TS1 TS2,F8ARO,,0,None<BR/>
@@ -463,7 +466,6 @@
 222221,IR2UGO,Gallarate,Lombardy,Italy,430.56250,1,5.000,PEER,TS1 TS2,IW2KVT,,0,BrandMeister<BR/>
 222222,IR2UBA,Pizzo Tre Termini,Lombardy,Italy,430.71250,1,5.000,PEER,TS1 TS2,IK2QCA,,0,DMR-plus<BR/>
 222230,IR2UEI,BOFFALORA S. TICINO,Lombardy,Italy,430.95000,1,0.000,PEER,TS1 TS2,IW2NBW,,0,BrandMeister<BR/>
-222260,IZ2FTR,Monte Quarone,Lombardy,Italy,145.58750,1,-0.600,PEER,TS1 TS2,IZ2FTR,,0,BM<BR/>
 222266,IR2UGU,Montagna Valtellina,Lombardy,Italy,430.20000,1,1.600,PEER,TS1 TS2,IW2FZR,,0,BrandMeister<BR/>
 222267,IK2OVD,VENEGONO SUPERIORE,Lombardy,Italy,145.77500,1,-0.600,PEER,TS1 TS2,IK2OVD,,0,DMR-plus<BR/>
 222300,IR3UN,M.te Paganella,Trentino-Alto Adige/,Italy,430.96250,1,5.000,PEER,TS1 TS2,IW3BYL,,0,BM<BR/>
@@ -486,6 +488,7 @@
 222330,IR3UIM,Monfalcone,Friuli-Venezia Giuli,Italy,430.18750,1,5.000,PEER,TS1 TS2,IV3ALL,,0,BrandMeister<BR/>
 222333,IR3UII,Comune di Tarcento,,Liguria,Italy,431.12500,1,1.600,PEER,TS1 TS2,IV3SRD,,0,BrandMeister<BR/>
 222337,IQ3VO,Verona,Veneto,Italy,430.90000,1,5.000,Peer,TS1 TS2,IZ3ATU,,0,BM<BR/>
+222340,IR3UIX,CIMA VERENA,Veneto,Italy,431.51250,1,1.600,PEER,TS1 TS2,I3WTT,,0,BrandMeister<BR/>
 222345,IR3AO,Vetta Marmolada,Veneto,Italy,430.46250,1,7.400,PEER,TS1 TS2,IZ3WWF,,0,BM<BR/>
 222374,IW3BTS,M.te Plose,Tennessee,Italy,430.91250,1,5.000,Peer,TS1 TS2,IW3BTS,,0,BM<BR/>
 222377,IR3UDX,Polsa di Brentonico,Trentino-Alto Adige,Italy,430.93750,1,5.000,Peer,TS1 TS2,IN3CBN,,0,Motorola<BR/>
@@ -501,6 +504,7 @@
 222420,IR4UCK,Nibbiano (PC),Emilia-Romagna,Italy,430.53750,1,5.000,PEER,TS1 TS2,IW4BSG,,0,BM<BR/>
 222422,IR4UA,M. stella casina RE,Emilia-Romagna,Italy,430.01250,1,1.600,PEER,TS1 TS2,IK4IDS,,0,DMR-plus<BR/>
 222444,IR4S,Monte Canate,Emilia-Romagna,Italy,430.62500,1,4.413,PEER,TS1 TS2,IW4DAT,,0,BM<BR/>
+222450,IR2UDZ,Monte Santa Franca,Emilia-Romagna,Italy,431.55000,1,1.600,PEER,TS1 TS2,IZ4AKM,,0,BrandMeister<BR/>
 222500,IR5UP,Pisa,Tuscany,Italy,430.57500,1,5.000,Master,TS1 TS2,IW5EDX,,0,BM<BR/>
 222501,IK5XMK,Sesto Fiorentino,Tuscany,Italy,0.00000,1,0.000,Peer,TS1 TS2,IK5XMK,,0,DMR-plus<BR/>
 222502,IK5BNG,Marina di Massa,Tuscany,Italy,430.57500,1,5.000,Peer,TS1 TS2,IK5BNG,,0,BM<BR/>
@@ -520,7 +524,9 @@
 222604,IR6UF,JN62RD,Abruzzo,Italy,430.17500,1,1.600,PEER,TS1 TS2,IK6JDQ,,0,Hytera<BR/>
 222605,IR6UDA,Monte Palazzolo,,Italy,430.98750,1,5.000,PEER,TS1 TS2,IZ4ISN,,0,DMR-plus<BR/>
 222606,IR6UDG,Monte Midia,Abruzzo,Italy,431.57500,1,1.600,PEER,TS1 TS2,IZ6UDS,,0,BrandMeister<BR/>
+222607,IR6UDO,Sulmona (AQ),Abruzzo,Italy,430.13750,1,1.600,PEER,TS1 TS2,IK6IHL,,0,BrandMeister<BR/>
 222608,IR6UCZ,Monte Nerone (PU),Marche,Italy,430.96250,1,5.000,PEER,TS1 TS2,IZ4ISN,,0,DMR-plus<BR/>
+222609,IR6UDC,Monte Alto,Veneto,Italy,430.22500,1,5.000,PEER,TS1 TS2,IZ6UDS,,0,BrandMeister<BR/>
 222610,IR6UDH,Mt. Majella,Abruzzo,Italy,430.03750,1,5.000,PEER,TS1 TS2,IZ6FGP,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 2 = Europe<br>Time Slot #1 - Group Call 222 = Italy 1 <br>Time Slot #1 - Group Call 9 = Local 1 <br>Time Slot #2 - Group Call 222 = Italy 2 <br>Time Slot #2 - Group Call 8 = Regional<br>Time Slot #2 - Group Call 9 = Local  2 <br>You Must Have [ARS] Disabled Within Your Radio<br>  <br>Contact: Mario Ranni, IZ6FGP<br>Email: iz6fgp@gmail.com,1,BM<BR/>
 222611,IR6UDB,Monte Pallano,Abruzzo,Italy,430.36250,1,5.000,PEER,TS1 TS2,IZ6FGP,,0,BM<BR/>
 222612,IR6UDE,Mt. la Selva,Abruzzo,Italy,430.35000,2,5.000,PEER,TS1 TS2,IZ6FGP,,0,BM<BR/>
@@ -973,6 +979,7 @@
 238467,OZ2REQ,Copenhagen TEST,Hovestaden,Denmark,434.91250,1,-2.000,,TS1 TS2,OZ1AFR,,0,MOT<BR/>
 238468,OZ21REQ,CITY,Hovedstaden,Denmark,434.78750,4,-2.000,PEER,TS1 TS2,OZ1DOX,,0,MOT<BR/>
 238477,OZ0ABB,Avedre Test,Hovedstaden,Denmark,434.78750,1,-2.000,PEER,TS1 TS2,OZ8ABB,,0,Motorola<BR/>
+238490,OZ0KEC,Gilleleje,Hovedstaden,Denmark,434.85000,14,-2.000,PEER,TS1 TS2,OZ2KEC,,0,BrandMeister<BR/>
 238499,OZ19DMR,Virum Test,Hovedstaden,Denmark,434.88750,1,-2.000,PEER,TS1 TS2,OZ8ABB,,0,Motorola<BR/>
 238500,OZ2DMR,Egebjerg Sj.,Sjaelland,Denmark,434.72500,5,-2.000,PEER,TS1 TS2,OZ5X,,0,MOT<BR/>
 238501,OZ6REC,Soeby Test,Sjaelland,Denmark,434.88750,9,-2.000,PEER,TS1 TS2,OZ1BCG,,0,DMR+<BR/>
@@ -1100,6 +1107,7 @@
 244300,OH3RNE,Tampere,,Finland,434.52500,1,-2.000,PEER,TS1 TS2,OH3KGR,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 2 = Europe<br>Time Slot #1 - Group Call 244 = Finland 1 <br>Time Slot #1 - Group Call 9 = Local 1 <br><br>Time Slot #2 - Group Call 244 = Finland 2 <br>Time Slot #2 - Group Call 9 = Local 2 <br>You Must Have [ARS] Disabled Within Your Radio.<br> <br><br>Contact: ----------, OH3KGR <br>Email: ----------,1,OHTRBO<BR/>
 244310,OH3RNE,Tesoma,,Finland,434.55000,1,-2.000,PEER,TS1 TS2,OH3KGR,,0,OHTRBO<BR/>
 244320,OH3DMRA,Lahti,,Finland,434.55000,1,-2.000,PEER,TS1 TS2,OH3LFQ,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 2 = Europe<br>Time Slot #1 - Group Call 244 = Finland 1 <br>Time Slot #1 - Group Call 9 = Local 1 <br><br>Time Slot #2 - Group Call 244 = Finland 2 <br>Time Slot #2 - Group Call 9 = Local 2 <br>You Must Have [ARS] Disabled Within Your Radio.<br> <br><br>Contact: ----------, OH3LFQ <br>Email: ----------,1,OHTRBO<BR/>
+244330,OH3RAA,Haemeenlinna,Haeme,Finland,434.58750,1,-2.000,PEER,TS1 TS2,OH7Z,,0,BrandMeister<BR/>
 244501,OH5RUD,Lappeenranta,Kymi,Finland,434.53750,1,-2.000,PEER,TS1 TS2,OH5HCJ,,0,Motorola<BR/>
 244599,OH5DMR,Lappeenranta,Kymi,Finland,434.53750,1,-2.000,PEER,TS1 TS2,OH5HCJ,,0,Motorola<BR/>
 244602,OH6RUS,Jamsa, Himos,Keski-Suomi,Finland,434.56250,1,-2.000,PEER,TS1 TS2,OH6JAT,,0,BrandMeister<BR/>
@@ -1108,12 +1116,15 @@
 244801,OH8RUA,Kempele, Finland,Oulu,Finland,434.75000,1,-2.000,PEER,TS1 TS2,OH6NVG,,0,Motorola<BR/>
 244802,OH8RMD,Radiotie, Kiiminki,Oulu,Finland,145.63750,1,-0.600,PEER,TS1 TS2,OH6NVG,,0,Motorola<BR/>
 247004,YL3RCL,Riga,,Latvia,438.67500,1,-7.600,,,YL3CL,,0,BM<BR/>
+248001,ES2DMR,Kose,,Estonia,434.58750,1,-2.000,None,TS1 TS2,ES2AST,,0,BrandMeister<BR/>
 250001,RR3DAC,Moscow,,Russia,434.72500,1,5.100,Peer,TS1 TS2,R2DFR,,0,Motorola<BR/>
 250333,RR3DAB,Moscow,,Russia,434.65000,1,5.200,Peer,TS1 TS2,R2DDM,,0,Motorola<BR/>
 250777,RR3DT,Moscow (Podolsk),,Russia,145.67500,1,-0.600,Peer,TS1 TS2,R2DDS,,0,Motorola<BR/>
 255002,UR0CUA,Chigirin city,,Ukraine,438.65000,1,7.600,,,UR3VKE,,0,None<BR/>
 255255,UT7NP,Vinnitsa,,Ukraine,145.60000,1,-0.600,Peer,TS1 TS2,UT7NP,,0,Hytera<BR/>
 255555,UR0DMM,Polonyna Rivna mount,,Ukraine,438.65000,1,-7.600,Peer,TS1 TS2,UZ5DX,,0,BM<BR/>
+255975,UR0UUF,Kyivska oblast,,Ukraine,439.27500,1,-7.600,,,UZ5DX,,0,BrandMeister<BR/>
+255976,UR0UUE,Kyiv,,Ukraine,438.77500,1,-7.600,,,UZ5DX,,0,BrandMeister<BR/>
 255977,UR0UUD,Kyiv,,Ukraine,438.80000,1,-7.600,,,UZ5DX,,0,BrandMeister<BR/>
 255978,UR0UUC,Kyiv,,Ukraine,438.72500,1,-7.600,,,UZ5DX,,0,BrandMeister<BR/>
 255979,UR0XUA,Zhytomyr,,Ukraine,439.42500,1,-7.600,,,UZ5DX,,0,BM<BR/>
@@ -1380,7 +1391,7 @@
 262480,DB0HI,Heiligenhaus,,Germany,439.41250,1,-7.600,PEER,TS1 TS2,DF2ER,,0,<BR/>
 262481,DB0HI,Heiligenhaus,,Germany,438.28750,1,-7.600,PEER,TS1 TS2,DF2ER,,0,DMR-plus<BR/>
 262482,DB0HFD,Herford,Nordrhein-Westfalen,Germany,439.01250,1,-7.600,,,DG9YIB,,0,DMR-plus<BR/>
-262483,DB0DRI,Bad Driburg,Nordrhein-Westfalen,Germany,439.91250,1,-9.400,,,DH4BS,,0,DMR-plus<BR/>
+262483,DB0DRI,Bad Driburg,Nordrhein-Westfalen,Germany,438.43750,1,-7.600,,,DH4BS,,0,DMR-plus<BR/>
 262484,DB0HX,Hoexter,Nordrhein-Westfalen,Germany,439.81250,1,-9.400,,,DH4BS,,0,DMR-plus<BR/>
 262485,DB0END,Ennepetal,NRW,Germany,439.27500,1,-7.6,Peer,MM 67.0,DG8DCH,,0,HYTERA<BR/>
 262488,DB0DY,Lengerich,Nordrhein-Westfalen,Germany,438.20000,1,-7.600,,,DH6YBB,,0,DMR-plus<BR/>
@@ -1608,10 +1619,12 @@
 270120,LX0DRB,Bourscheid,Luxemburg,Luxemburg,145.72500,1,-0.600,Peer,TS1 TS2,LX1IQ,,0,DMR-plus<BR/>
 270130,LX0DML,Blaschette,Luxemburg,Luxemburg,438.33750,1,-7.600,,,LX1IQ,,0,DMR-plus<BR/>
 272001,EI2SIRG,Waterford,,Ireland,439.77500,1,-9.000,PEER,TS1 TS2,EI8JA,,0,BrandMeister<BR/>
+272002,EI7CDD,Co. Waterford,,Ireland,439.65000,1,-9.000,,,EI8JA,,0,BrandMeister<BR/>
 274001,TF8KRZ,Keflavik,,Iceland,439.40000,1,-7.600,,,TF8KP,,0,BrandMeister<BR/>
 278001,9H1DMR,Naxxar,,Malta,430.92500,1,7.600,PEER,TS1 TS2,9H1US,,0,Motorola<BR/>
 278002,9H1DMR,Naxxar,,Malta,430.92500,1,7.600,PEER,TS1 TS2,9H1US,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 13 = WW English<br>Time Slot #1 - Group Call 2 = Europe<br>Time Slot #1 - Group Call 9 = Local 1<br><br>Time Slot #2 - Group Call 8 = Regional<br>Time Slot #2 - Group Call 9 = Local 2<br>You Must Have [ARS] Disabled Within Your Radio<br><br>Contact: Antoine Debattista<br>Email: ant9h1us@gmail.com,1,Motorola<BR/>
 278100,9H1BBS,Naxxar,,Malta,430.41250,1,9.000,PEER,TS1 TS2,9H1IA,,0,Motorola<BR/>
+280001,5B4CY,Troodos,,Cyprus,438.40000,1,-7.600,,,5B4AHZ,,0,BrandMeister<BR/>
 284000,LZ0DMR,Sofia,,Bulgaria,439.10000,1,-7.600,PEER,TS1 TS2,LZ1LZN,,0,DMR-plus<BR/>
 284001,LZ0ATV,Sofia, Bulgaria,,Bulgaria,0.00000,1,0.000,,,LZ1NSV,,0,BM<BR/>
 284002,LZ0HAM,Pk.Botev,,Bulgaria,439.50000,1,-7.600,PEER,TS1 TS2,LZ1LZN,,0,DMR-plus<BR/>
@@ -2159,6 +2172,7 @@
 311273,NQ6U,Fort Myers,Florida,United States,442.50000,9,+5.000,Peer,TS1 TS2,NQ6U,,0,DMR-MARC<BR/>
 311274,K4DJN,Cocoa,Florida,United States,444.57500,3,+5.000,Peer,TS1 TS2,AA4CD,,0,BrandMeister<BR/>
 311275,W4CLL,Lakeland,Florida,United States,442.97500,1,+5.000,Master,TS1 TS2,W4CLL,,0,FL-DMR<BR/>
+311276,NP2OL,AUBURNDALE,Florida,United States,441.60000,1,+5.000,Peer,TS1 TS2,NP2OL,,0,NJ TURBO<BR/>
 311301,KC6OVD,Atlanta,Georgia,United States,444.12500,0,+5.000,Master,TS1,KC6OVD,Time Slot #1 - Group Call 1 = DMR-MARC World Wide<br>Time Slot #1 - Group Call 3 = DMR-MARC North America<br>Time Slot #1 - Group Call 3777215 = DCI Com 1<br>Time Slot #2 - Group Call 2 = Local<br>Time Slot #2 - Group Call 3100 = The Bridge<br>Time Slot #2 - GA Statewide<br>Time Slot #2 - WA Statewide<br><br>Contact Name:  Kevin King, KC6OVD<br>Email:  KC6OVD@GMAIL.COM,1,GeorgiaDMR-<BR/>
 311302,K4USD, Portable Repeater,Georgia,United States,442.17500,1,+5.000,Peer,TS1 TS2,W2XAB,,0,K4USD<BR/>
 311303,KE4OKD,Sandy Springs,Georgia,United States,441.95000,0,+5.000,Peer,TS1 TS2,KC6OVD,Time Slot #1 - Group Call 1 = DMR-MARC World Wide<br>Time Slot #1 - Group Call 3 = DMR-MARC North America<br>Time Slot #1 - Group Call 3777215 = DCI Com 1<br>Time Slot #2 - Group Call 2 = LocalTime Slot #2 - Group Call 3100 = The Bridge<br>Time Slot #2 - GA Statewide<br>Time Slot #2 - WA Statewide<br><br>Coverage Area: <br><br>Contact Name:  Kevin King, KC6OVD<br>Email:  KC6OVD@GMAIL.COM,1,GeorgiaDMR<BR/>
@@ -2305,6 +2319,7 @@
 311765,K9QI,Crystal Lake,Illinois,United States,439.22500,6,-7.6,Peer,TS1 TS2,K9QI,,0,DMR-MARC<BR/>
 311766,WX9MCS,Rockford,Illinois,United States,443.45000,1,+5.000,Peer,TS1 TS2,N9MCS,,1,Chicagoland<BR/>
 311767,K9SA,River Grove,Illinois,United States,443.35000,1,+5.000,Peer,TS1 TS2,KB9UUU,,1,Chicago Land<BR/>
+311769,N9PBD,Shiloh,Illinois,United States,444.30000,1,+5.000,Peer,Mixed Mode,N9PBD,,0,Brandmeister<BR/>
 311800,W9AMT,Indianapolis,Indiana,United States,441.20000,1,+5.000,Peer,TS1 TS2,W9AMT,Time Slot #1 - Grp Call 1 = World Wide (PTT activated)<br>Time Slot #1 - Grp Call 13= WW English<br>Time Slot #1 - Grp Call 3 = N. America<br>Time Slot #1 - Grp Call 310 = TAC-310 (PTT Activated)<br>Time Slot #1 - Grp Call 113 = UA English 1 (User Activated)<br>Time Slot #1 - Grp Call 123 = UA English 2 (User Activated)<br>Time Slot #1 - Grp Call 9998 = Audio Parrot <br>Time Slot #1 - Grp Call 9999 = Audio Test<br>Time Slot #2 - Grp Call 2 = Local<br>Time Slot #2 - Grp Call 3118 = Indiana Statewide<br>Time Slot #2 - Grp Call 3169 = Midwest Regional<br><br>Coverage Map (http://dmr-marc.net/images/w9amt-coverage.jpg)<br><br>Contact: Tony, W9AMT<br>Email: w9amt@comcast.net,1,Hoosier DMR<BR/>
 311801,K9MMQ,Roanoke,Indiana,United States,442.92500,1,+5.000,Peer,TS1 TS2,K9MMQ,Talk Group info at: http://www.crossroadsdmr.org/?page_id=98<br> <br>Coverage Map (http://dmr-marc.net/images/wb9vle-coverage.jpg)<br><br> <br>Contact: Randy Fisher, WB9VLE<br>Email: wb9vle@msn.com<br><br>You Must Have [ARS] Disabled Within Your Radio,1,Crossroads DMR<BR/>
 311802,N9IAA,Valparaiso,Indiana,United States,441.57500,1,+5.0,Master,TS1 TS2,N9IAA,Time Slot #1 - Group Call 8 = Tri-State Regional (IL, IN, WI)<br>Time Slot #2- Group Call 1 = Worldwide All Languages (PTT Activated) <br>Time Slot #2- Group Call 3 = North America (PTT Activated)    <br>Time Slot #2 - Group Call 13 = Worldwide English (PTT Activated)<br>Time Slot #2 - Group Call 3118 = Indiana Statewide <br>Time Slot #2 - Group Call 9 = DMR+   Reflector "Talk"<br>Time Slot #2 - Group Call 4000 = DMR+   Reflector "Unlink"<br>Time Slot #2 - Group Call 5000 = DMR+   Reflector "Status"<br>Time Slot #2 - Group Call 4xxx = DMR+ Switch Reflector<br><br>... be sure to go back to TS2 TG9 after you switch the reflector.  DO not carry on QSOs on TS2 TG4xxx.<br><br>Website:  http://tristatedmr.org<br><br><br>Coverage Area (http://dmr-marc.net/images/n9iaa-coverage.jpg)<br>Contact Name: Kevin Babich, N9IAA<br>Email: kevin.babich@gmail.com,1,DMR-MARC<BR/>
@@ -2333,7 +2348,7 @@
 311825,KC9TKJ,Floyds Knobs,Indiana,United States,443.11250,1,+5.000,Master,TS1 TS2,KC9TKJ,,0,Hoosier DMR<BR/>
 311826,N9IAA,La Porte,Indiana,United States,444.67500,1,+5.000,Peer,TS1 TS2,N9IAA,Time Slot #1 - Group Call 8 = Tri-State Regional (IL, IN, WI)<br>Time Slot #2- Group Call 1 = Worldwide All Languages (PTT Activated) <br>Time Slot #2- Group Call 3 = North America (PTT Activated)    <br>Time Slot #2 - Group Call 13 = Worldwide English (PTT Activated)<br>Time Slot #2 - Group Call 3118 = Indiana Statewide <br>Time Slot #2 - Group Call 9 = DMR+   Reflector "Talk"<br>Time Slot #2 - Group Call 4000 = DMR+   Reflector "Unlink"<br>Time Slot #2 - Group Call 5000 = DMR+   Reflector "Status"<br>Time Slot #2 - Group Call 4xxx = DMR+ Switch Reflector<br><br>... be sure to go back to TS2 TG9 after you switch the reflector.  DO not carry on QSOs on TS2 TG4xxx.<br><br>Website:  http://tristatedmr.org<br><br><br>You Must Have [ARS] Disabled Within Your Radio<br><br>Coverage Area (http://dmr-marc.net/images/n9iaa-lpt-coverage.jpg)<br>Contact Name: Kevin Babich, N9IAA<br>Email: kevin.babich@gmail.com,1,DMR-MARC<BR/>
 311827,N9CZV,Montpelier,Indiana,United States,441.47500,1,+5.000,Peer,TS1 TS2,N9CZV,For Talk Groups see:<br>http://www.crossroadsdmr.org/?page_id=135<br>Coverage Map<br><br>Contact: N9CZV<br>Email: n9czv@arrl.net<br><br>You Must Have [ARS] Disabled Within Your Radio,1,Crossroads DMR<BR/>
-311828,N9DMR,Club Demo,Indiana,United States,442.11250,1,+5.000,Peer,TS1 TS2,W9AMT,,0,Hoosier DMR<BR/>
+311828,W9AMT,Greenwood,Indiana,United States,442.11250,1,+5.000,Peer,TS1 TS2,W9AMT,,0,Hoosier DMR<BR/>
 311829,K9IKQ,Terre Haute,Indiana,United States,442.08750,1,+5.000,Peer,TS1 TS2,K9IKQ,,0,Hoosier DMR<BR/>
 311830,W9CTO,Gary,Indiana,United States,442.75000,1,+5.000,Peer,TS1 TS2,W9CTO,Time Slot #1 - Grp Call 1 = World Wide (PTT activated)<br>Time Slot #1 - Grp Call 13= WW English<br>Time Slot #1 - Grp Call 3 = N. America<br>Time Slot #1 - Grp Call 310 = TAC-310 (PTT Activated)<br>Time Slot #1 - Grp Call 113 = UA English 1 (User Activated)<br>Time Slot #1 - Grp Call 123 = UA English 2 (User Activated)<br>Time Slot #1 - Grp Call 9998 = Audio Parrot<br>Time Slot #1 - Grp Call 9999 = Audio Test<br>Time Slot #2 - Grp Call 2 = Local<br>Time Slot #2 - Grp Call 3118 = Indiana Statewide<br><br>Time Slot #2  Grp Call 3126 = Michigan Statewide (PTT Activated)<br>Time Slot #2 - Grp Call 3169 = Midwest Regional<br>You Must Have [ARS] Disabled Within Your Radio<br><br><br><br>Trustee is Jim Millsap w9cto@comcast.net,1,Hoosier DMR<BR/>
 311831,N9IAA,South Bend,Indiana,United States,443.42500,1,+5.000,Peer,TS1 TS2,N9IAA,Time Slot #1- Group Call 3 = North America (PTT Activated)<br>Time Slot #1 - Group Call 13 = Worldwide English<br>Time Slot #1 - Group Call 100= Tech Talk<br>Time Slot #1- Group Call 113 = UA 113 (PTT Activated)<br>Time Slot #1- Group Call 3118 = IN Statewide<br>Time Slot #1- Group Call 3169 = Midwest Regional<br>Time Slot #1- Group Call 9999 = Audio Test (PTT Activated)<br>Time Slot #2 - Group Call 2 = Tri-State Local  <br>You Must Have [ARS] Disabled Within Your Radio<br><br>Coverage Area (http://dmr-marc.net/images/n9iaa-coverage.jpg)<br>Contact Name: Kevin Babich, N9IAA<br>Email: kevin.babich@gmail.com,1,DMR-MARC<BR/>
@@ -2685,6 +2700,7 @@
 313326,N1PCE,Whitefield,New Hampshire,United States,442.30000,1,+5.000,Master,TS1 TS2,N1PCE,,0,BrandMeister<BR/>
 313327,K1EME,Franconia,New Hampshire,United States,145.43000,1,-0.600,Peer,TS1 TS2,K1UAQ,,0,BrandMeister<BR/>
 313328,W1FVB,lancaster,New Hampshire,United States,444.40000,1,+5.000,Peer,TS1 TS2,W1FVB,,0,Brandmeister<BR/>
+313329,K1MOT,Deerfield,New Hampshire,United States,445.82500,1,-5.000,Peer,TS1 TS2,NE1B,,0,New Eng-TRBO<BR/>
 313400,K2XTS,Hoboken,New Jersey,United States,0.00000,0,0.000,Master,TS1 TS2,K2XTS,,0,DMR-MARC-K2XTS<BR/>
 313401,N2JTI,Oakland,New Jersey,United States,446.16250,1,-5.000,Peer,TS1,N2JTI,Time Slot #1 - Group Call 1 = World Wide PTT only<br>Time Slot #1 - Group Call 13 = WW English<br>Time Slot #1 - Group Call 3 = N. America<br>Time Slot #1 - Group Call 3172 = Northeast<br>Time Slot #2 - Group Call 2 = NY-NJ Metro<br><br>You Must Have [ARS] Disabled Within Your Radio<br><br>Coverage Area (http://www.dmr-marc.net/images/n2jti-coverage.jpg)<br>Contact Name: Nick, N2JTI<br>Email: nick.deroda@gmail.com,1,NJ-TRBO<BR/>
 313402,K2ACY,Atlantic City,New Jersey,United States,445.23125,1,-5.000,Peer,TS1 TS2,K2ACY,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 3 = U.S. / English Speaking Countries<br>Time Slot #2 - Group Call 2 = Local Only<br><br>You Must Have [ARS] Disabled Within Your Radio<br>Coverage Area (http://www.dmr-marc.net/images/k2acy-coverage.jpg)<br>Contact: Gary, K2ACY<br>Email: k2acy@me.com,1,K4USD NET<BR/>
@@ -2730,6 +2746,8 @@
 313505,NM5BB,Los Alamos,New Mexico,United States,442.22500,7,+5.000,Peer,TS1,NM5BB,,1,Colorado/Rocky Mountain<BR/>
 313506,WA5IHL,Albquerque,New Mexico,United States,442.25000,1,+5.000,Peer,TS1 TS2,WA5IHL,,1,AZ Trbo<BR/>
 313507,KE5FYL,Grants,New Mexico,United States,441.32500,1,+5.000,Peer,TS1 TS2,K5HLH,,0,BrandMeister<BR/>
+313508,KE5FYL,Grants,New Mexico,United States,444.65000,1,+5.000,Peer,TS1 TS2,K5HLH ,,0,Brandmeister <BR/>
+313509,AJ5Z,Albuquerque,New Mexico,United States,444.60000,1,+5.000,Peer,TS1 TS2,N5GU,,0,BrandMeister<BR/>
 313600,KC2CQR,Queens,New York,United States,449.72500,1,-5.000,Peer,TS1,W2KTU,,0,DMR-MARC-W0PM<BR/>
 313601,K2QQJ,Brooklyn,New York,United States,440.50000,1,+5.000,Peer,TS1,K2QQJ,,0,DMR-MARC-W0PM<BR/>
 313602,W2KTU,Long Island,New York,United States,,0,,Peer,None,W2KTU,,0,<BR/>
@@ -2800,6 +2818,8 @@
 313667,KA2FWN,Mohawk,New York,United States,449.42500,1,-5.000,Master,TS1 TS2,KA2FWN,,0,Brandmeister<BR/>
 313668,K1IMD,Portable,New York,United States,438.63750,1,+5.000,None,TS1 TS2,K1IMD,,0,DMR+<BR/>
 313669,NY4Z,Beacon,New York,United States,442.14375,7,+5.000,Peer,TS1 TS2,NY4Z,,0,Bronx-TRBO<BR/>
+313670,N2MCI,Kingston,New York,United States,441.56250,1,+5.000,None,TS1 TS2,N2MCI,,0,BrandMeister<BR/>
+313671,W2RGM,Dix Hills,New York,United States,448.47500,1,-05.000,Master,TS1 TS2,WB2ERS,,0,GARA<BR/>
 313700,W4ZO,Charlotte,North Carolina,United States,442.41250,1,+5.000,Peer,TS1 TS2,K4ITL,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 3 = U.S. / English Speaking Countries<br>Time Slot #2 - Group Call 2 = North Carolina/Tennessee<br><br>You Must Have [ARS] Disabled Within Your Radio<br><br>Click here to view the Repeater's Coverage Area (http://24.172.25.174:85/resources/charlotte_coverage_map.jpg)<br><br><br>Contact Name: Ralph Bartlett, W4ZO<br>Email: majicsmoke@gmail.com,1,NC-PRN-<BR/>
 313701,N4DTR,Waynesville,North Carolina,United States,444.45000,1,+5.000,Peer,TS1 TS2,N4DTR,Timeslot 1<br>Local (full time)<br>NET411 (scheduled) [future implementation planned]<br>North America (on demand)<br>TAC310 (on demand)<br>TAC311 (on demand)<br>TAC312 (on demand)<br>WW English (on demand)<br>Data (full time) [future implementation planned]<br>Echo Test (on demand)<br>Clear Timeslot 2<br><br>Timeslot 2<br>WNC (full time)<br>PRN (on demand)<br>Southeast (on demand)<br>Clear Timeslot 1<br> <br>Contact: Todd, N4DTR<br>Email: gsrn@hotmail.com<br>Website: http://www.wncdmr.net/,1,WNC-NET<BR/>
 313702,K4ITL,Raleigh,North Carolina,United States,442.51250,1,+5.000,Peer,TS1 TS2,K4ITL,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 3 = U.S. / English Speaking Countries<br>Time Slot #2 - Group Call 2 = North Carolina/Tennessee<br><br>You Must Have [ARS] Disabled Within Your Radio<br><br>Click here to view the Repeater's Coverage Area (http://24.172.25.174:85/resources/raleigh_coverage_maps.jpg),1,NC-PRN<BR/>
@@ -2926,6 +2946,7 @@
 313963,WD8LEI,Bowling Green,Ohio,United States,443.91250,5,+5.000,Peer,TS1 TS2,WD8LEI,,0,Brandmeister<BR/>
 313964,KC8BPE,Marion,Ohio,United States,442.01250,1,+5.000,Master,TS1 TS2,KC8BPE,,0,CODIG <BR/>
 313965,WB8AVD,Akron,Ohio,United States,444.51250,7,+5.000,None,TS1 TS2,WB8AVD,,0,BM<BR/>
+313966,K8JWL,Marysville,Ohio,United States,443.45000,7,+5.000,Peer,TS1 TS2,K8JWL,,0,Brandmeister<BR/>
 314000,AE5DN,Yukon,Oklahoma,United States,444.32500,1,+5.000,Peer,TS1 TS2,AE5DN,Time Slot #1 - Group Call 1 = WW All, PTT 10 min.<br>Time Slot #1 - Group Call 13= WW English, PTT 10 min.<br>Time Slot #1 - Group Call 3 = DMR-MARC North America Time Slot #1 - Group Call 310 = TAC-310, PTT 10 min. Time Slot #1 - Group Call 311 = TAC-311, PTT 10 min. Time Slot #1 - Group Call 9999 = Audio Test with VU Meter on NORCALDMR.com , PTT, 5 min. time out Time Slot #2 - Group Call 3140 = OK-KS Temporary Time Slot #2 - Group Call 3175= TX-OK Regional<br>Time Slot #2 - Group Call 2 = Local<br>Time Slot #2 - Group Call 9998 = Audio Test (Parrot)<br><br>Contact: AE5DN, Mark<br>Email: mark.matalik@gmail.com,1,OK<BR/>
 314001,W5RAB,Bartlesville,Oklahoma,United States,442.18750,1,+5.000,Peer,TS1 TS2,W5RAB,Time Slot #1 - Group Call 1 = WW All, PTT 10 min.<br>Time Slot #1 - Group Call 13= WW English, PTT 10 min.<br>Time Slot #1 - Group Call 3 = DMR-MARC North America Time Slot #1 - Group Call 310 = TAC-310, PTT 10 min. Time Slot #1 - Group Call 311 = TAC-311, PTT 10 min. Time Slot #1 - Group Call 9999 = Audio Test with VU Meter on NORCALDMR.com , PTT, 5 min. time out Time Slot #2 - Group Call 3140 = OK-KS Temporary Time Slot #2 - Group Call 3175= TX-OK Regional<br>Time Slot #2 - Group Call 2 = Local<br>Time Slot #2 - Group Call 9998 = Audio Test (Parrot)<br><br>Contact: Bob, W5RAB<br>Email: rbuford@bartnet.net,1,OK<BR/>
 314002,WA5LVT,Tulsa South,Oklahoma,United States,442.16250,2,+5.000,Peer,TS1 TS2,WD5ETD,Time Slot #1 - Group Call 1 = WW All, PTT 10 min.<br>Time Slot #1 - Group Call 13= WW English, PTT 10 min.<br>Time Slot #1 - Group Call 3 = DMR-MARC North America Time Slot #1 - Group Call 310 = TAC-310, PTT 10 min.                                        Time Slot #1 - Group Call 311 = TAC-311, PTT 10 min. Time Slot #1 - Group Call 9999 = Audio Test with VU Meter on NORCALDMR.com , PTT, 5 min. time out  Time Slot #2 - Group Call 3140 = OK-KS Temporary Time Slot #2 - Group Call 3175= TX-OK Regional<br>Time Slot #2 - Group Call 2 = Local<br>Time Slot #2 - Group Call 9998 = Audio Test (Parrot)<br>Contact: Rick, WD5ETD<br>Email: wd5etd@gmail.com,1,OK<BR/>
@@ -2964,6 +2985,8 @@
 314109,N7MAQ,Eugene,Oregon,United States,442.96250,1,+5.000,Peer,TS1 TS2,KB7APU,,1,DCI<BR/>
 314110,N7MAQ,Newberg,Oregon,United States,444.48750,1,+5.000,Peer,TS1 TS2,N7MAQ,,1,DCI<BR/>
 314111,AA7BG,Scappoose,Oregon,United States,441.86250,1,+5.000,Master,TS1 TS2,AA7BG,,0,BrandMeister<BR/>
+314112,KB7APU,HOODRIVER,Oregon,United States,442.96250,1,+5.000,Peer,TS1 TS2,KB7APU,,1,DCI<BR/>
+314113,WB7AWL,Oregon City,Oregon,United States,440.22500,1,+5.000,Peer,Mixed Mode,WB7AWL,,0,BM<BR/>
 314200,N3RPV,Allentown,Pennsylvania,United States,441.60000,0,+5.000,Master,TS1 TS2,N3RPV,Time Slot #2 - Group Call 3161 = World Wide<br>Time Slot #2 - Group Call 3163 = North America<br>Time Slot #2 - Group Call 3172 = NorthEast Regional<br>Time Slot #1- Group Call 3160 = DCI 1<br>Time Slot #1- Group Call 3142 = PA Statewide<br>Time Slot #1- Group Call 3777215 = Comm 1<br> <br>Contact Name: Chris, N3RPV<br>Email: n3rpv@n3rpv.net<br>Website: www.trbo.info/dci (http://www.trbo.info/dci),1,DCI<BR/>
 314201,K3ARL,Bellefonte,Pennsylvania,United States,147.10500,1,+0.600,Peer,TS1,K3ARL,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 3 = U.S. / English Speaking Countries<br>Time Slot #2 - Group Call 2 = Local Only<br><br>You Must Have [ARS] Disabled Within Your Radio,1,DMR-MARC<BR/>
 314202,N2DCE,Bangor,Pennsylvania,United States,445.21875,1,-5.000,Peer,TS1 TS2,N2DCE,Time Slot #1 - Group Call 1 = World Wide<br>Time Slot #1 - Group Call 13 = WW English<br>Time Slot #1 - Group Call 3 = North America<br>Time Slot #1 - Group Call 3172 = Northeast<br>Time Slot #2 - Group Call 2 = Tri-State<br><br>You Must Have [ARS] Disabled Within Your Radio<br><br>Contact Name: Rob Johnstone, N2DCE<br>Email: N2DCE@ncndata.com,1,NJ-TRBO<BR/>
@@ -3015,6 +3038,8 @@
 314249,W3HZU,YORK,Pennsylvania,United States,447.27500,1,-5.000,Peer,TS1 TS2,W3TWB,,0,K4USD<BR/>
 314250,K3SMT,SOMERSET,Pennsylvania,United States,443.25000,1,+5.000,Master,Mixed Mode,KC3XD,,0,Brandmeister<BR/>
 314251,W3DCW,Meyersdale,Pennsylvania,United States,444.37500,1,+5.000,Master,Mixed Mode,W3DCW,,0,Brandmeister<BR/>
+314252,KB3UAG,St. Thomas,Pennsylvania,United States,145.25000,1,-0.600,Peer,TS1 TS2,KA3LAO,,1,K4USD<BR/>
+314253,W2FUV,Morrisville,Pennsylvania,United States,927.65000,1,-25.000,Peer,TS1 TS2,WB0YLE,,0,Brandmeister<BR/>
 314400,KB1ISZ,Smithfield,Rhode Island,United States,446.42500,1,-5.000,Peer,TS1 TS2,KB1ISZ,,0,DMR-plus<BR/>
 314401,W1DMR,Cumberland,Rhode Island,United States,146.62500,0,-0.600,Peer,TS1 TS2,KB1ISZ,,0,BrandMeister<BR/>
 314402,KA1REO,Kingston,Rhode Island,United States,446.52500,1,-5.000,Master,TS1 TS2,KA1REO,,0,Mixed Mode<BR/>
@@ -3155,6 +3180,7 @@
 314869,AI5TX,Sweetwater,Texas,United States,443.66250,14,+5.000,Peer,TS1 TS2,AI5TX,,1,DILLO-DMR<BR/>
 314870,KF5JJK,Abilene,Texas,United States,443.96250,14,+5.000,Peer,TS1 TS2,KD5EFB,,1,DILLO-DMR<BR/>
 314871,KF5JJK,Abilene,Texas,United States,443.66250,14,+5.000,Peer,TS1 TS2,KD5EFB,,0,DILLO-DMR<BR/>
+314872,KG5EUU,Harlingen,Texas,United States,444.75000,7,+5.000,Peer,TS1 TS2,N5JLR,,0,US Brandmeister<BR/>
 314874,KB5FLX,The Woodlands,Texas,United States,442.67500,7,+5.000,Peer,TS1 TS2,N5LUY,TS 1 TG 1 W. W.<br>TS 1 TG 13 W. E.<br>TS 1 TG 3 N.A.<br>TS 1 TG 310 TAC 310<br>TS 1 TG 3100 DCI<br>TS 2 TG 3148 TEXAS<br>TS 2 TG 3175 SOUTH<br>TS 2 TG 3185 CACTUS<br>TS 2 TG 2 2 LOCAL<br>,1,Lone Star Net<BR/>
 314875,W5ICF,Houston,Texas,United States,441.87500,2,+5.000,Peer,TS1 TS2,W5ICF,,1,Lone Star Network<BR/>
 314876,WD5CFJ,Montgomery,Texas,United States,442.17500,7,+5.000,Peer,TS1 TS2,N5LUY,,0,Lone Star Network<BR/>
@@ -3312,6 +3338,7 @@
 334108,XE1VHF,Mexico City,Distrito Federal,Mexico,438.25000,1,-5.000,None,TS1 TS2,XE1NJ,,0,Brandmeister<BR/>
 334109,XE1FXT,ATOTONILCO,Jalisco,Mexico,147.21000,1,+0.600,Peer,TS1 TS2,XE1FXT,,0,BRANDMEISTER<BR/>
 334110,XE1CDX,Cuernavaca,Morelos,Mexico,433.05000,1,+5.000,Peer,TS2,N4DMH,,0,BM<BR/>
+334111,XE1GXE,PEGUEROS,Jalisco,Mexico,147.30000,1,-0.600,Peer,TS1 TS2,XE1GXE,,0,BRANDMEISTER<BR/>
 334201,XE2ITZ,Chihuahua,Chihuahua,Mexico,438.15000,1,-5.000,Peer,TS1 TS2,XE2PMP,Time Slot #1 - Group Call 1 = Worldwide Calling (PTT activation, 2min limit)<br>Time Slot #1 - Group Call 14 = Spanish Worldwide<br>Time Slot #2 - Group Call 222 = Local Chihuahua<br>Time Slot #2 - Group Call 334 Mexico<br><br>You Must Have [ARS] Disabled Within Your Radio<br><br>Contact Name: Pablo, XE2PMP<br>Email: pablomp@prodigy.net.mx,1,DMR-MARC<BR/>
 334202,XE2XX,Monterrey,Nuevo Leon,Mexico,438.20000,1,-5.000,Peer,TS1 TS2,XE2XX,,0,Brandmeister<BR/>
 334203,XE2N,Monterrey,Nuevo Leon,Mexico,438.15000,1,-5.000,Peer,TS1 TS2,XE2N,,0,BRANDMEISTER<BR/>
@@ -3323,10 +3350,13 @@
 362001,PJ2R,Willemstad,Curaco,Netherlands Antilles,146.76000,1,-0.600,Master,TS1 TS2,PJ2BR,,1,DMR-MARC<BR/>
 370100,HI8RCD,Santo Domingo,Distrito Nacional,Dominican Republic,447.00000,1,-5.000,Peer,TS1 TS2,HI8RCD,Time Slot #1 - Group Call 1 = Worldwide Calling (PTT activation, 2min limit)<br>Time Slot #1 - Group Call 13 = English Worldwide (PTT activation)<br>Time Slot #1 - Group Call 14 = Spanish Worldwide<br>Time Slot #2 - Group Call 370- Dominican Republic,1,DMR-MARC<BR/>
 370301,HI8K,Santiago,Santiago,Dominican Republic,447.67500,1,-5.000,Peer,TS1 TS2,HI8K,,0,IPSC<BR/>
+370302,HI8RCD,Alto Bandera,La Vega,Dominican Republic,447.07500,1,-5.000,Peer,TS1 TS2,HI8RCD,,1,DMR-MARC<BR/>
+370701,HI8RCD,Peña Alta,Hato Major,Dominican Republic,447.05000,3,-5.000,Peer,TS1 TS2,HI8RCD,,1,DMR-MARC<BR/>
 370801,HI8RCD,Bani,Peravia,Dominican Republic,447.02500,2,-5.000,Peer,TS1 TS2,HI8RCD,Time Slot #1 - Group Call 1 = Worldwide Calling (PTT activation, 2min limit)<br>Time Slot #1 - Group Call 13 = English Worldwide (PTT activation)<br>Time Slot #1 - Group Call 14 = Spanish Worldwide<br>Time Slot #2 - Group Call 370- Dominican Republic,1,DMR-MARC<BR/>
 370802,HI8K,Santo Domingo,Distrito Nacional,Dominican Republic,447.70000,1,-5.000,Peer,TS1 TS2,HI8K,,0,IPSC<BR/>
 370803,HI8K,Bani,Peravia,Dominican Republic,447.77500,1,-5.000,Peer,TS1 TS2,HI8K,,1,IPSC<BR/>
 370804,HI8MVF,Santo Domingo,Santo Domingo,Dominican Republic,447.80000,1,-5.000,Master,TS1 TS2,HI8MVF,,0,Brandmeister<BR/>
+370806,HI8RYC,Santo Domingo,Santo Domingo,Dominican Republic,147.30000,1,-0.600,Master,TS1 TS2,HI8RYC,,0,Brandmeister<BR/>
 425201,4X4R70,Tel Aviv,Tel Aviv,Israel,438.65000,1,-7.600,Master,Mixed Mode,4X1HF,4X4R70 438.650 -7.6 MHz, Color Code 1,1,SF-TRBO<BR/>
 425401,4XR71,ROSH HAYN,Central,Israel,438.67500,1,-7.600,Peer,Mixed Mode,4X1HF,,0,BRANDMISTER<BR/>
 425402,4Z1JD,Netanya,Central,Israel,438.80000,1,-7.600,None,TS1 TS2,4Z1JD,,0,Brandmeister<BR/>
@@ -3366,8 +3396,9 @@
 505214,VK2RAF,Warimoo,New South Wales,Australia,439.92500,1,-5.000,Peer,TS1 TS2,VK2BOS,,0,BM<BR/>
 505216,VK2JDS,Bathurst,New South Wales,Australia,449.80000,1,-7.000,Peer,Mixed Mode,VK2JDS,,0,BM<BR/>
 505217,VK2AMV,Parkes,New South Wales,Australia,439.70000,1,-5.000,Peer,None,VK2AMV,,0,Brandmeister<BR/>
+505218,VK2RCW,Orange,New South Wales,Australia,439.67500,1,-5.000,Peer,Mixed Mode,VK2AMV,,0,Brandmeister<BR/>
 505300,VK3RSU,Melbourne,Victoria,Australia,438.10000,1,-5.400,Peer,TS1 TS2,VK3XDE,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact: Paul Engler, VK3XDE<br>Email: paul.engler@motorolasolutions.com,1,VK-DMR<BR/>
-505301,VK3TE,Karingal,Victoria,Australia,438.25000,1,-5.400,Peer,TS1 TS2,VK3TE,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact: Peter Brennan VK3TE<br>Email: VK3TE@bigpond.com,1,VK-DMR<BR/>
+505301,VK3RTE,Karingal,Victoria,Australia,438.91250,1,-7.000,Peer,TS1 TS2,VK3TE,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact: Peter Brennan VK3TE<br>Email: VK3TE@bigpond.com,1,VK-DMR<BR/>
 505302,VK3RZU,Mt Buller,Victoria,Australia,439.67500,1,-5.000,Peer,TS1 TS2,VK3TE,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact: Peter Brennan VK3TE<br>Email: VK3TE@bigpond.com,1,VK-DMR<BR/>
 505303,VK3RAD,Mitcham,Victoria,Australia,438.52500,1,-5.000,Peer,TS1 TS2,VK3ZKV,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact: Peter Brennan VK3TE<br>Email: VK3TE@bigpond.com,1,VK-DMR<BR/>
 505304,VK3RMC,Narre Warren North,Victoria,Australia,439.37500,1,-5.000,Peer,TS1 TS2,VK3GL,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact: Peter Brennan VK3TE<br>Email: VK3TE@bigpond.com,1,VK-DMR<BR/>
@@ -3398,6 +3429,7 @@
 505602,VK6AG,PERTH,Western Australia,Australia,438.20000,1,-5.4,Peer,TS1 TS2,VK6AG,,1,VK-DMR<BR/>
 505603,VK6RDM,Perth,Western Australia,Australia,439.86250,1,-5.000,Peer,TS1 TS2,VK6ML,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact: Matthew Mcdonough, VK6ML<br>Email:<br><br><br>Control Centre VK-TRBO: http://www.vkdmr.net/<br><br>VK-DMR Information:  http://www.vkdmr.info/,1,VK-DMR<BR/>
 505604,VK6RPT,Perth,Western Australia,Australia,438.02500,1,-5.000,Peer,TS1 TS2,VK6ZTN,,0,VK-DMR<BR/>
+505605,VK6RLM,Perth,Western Australia,Australia,438.52500,1,-7.000,Peer,TS1 TS2,VK6ZTN,,0,VK-DMR<BR/>
 505701,VK7RCR,hobart,Tasmania,Australia,438.52500,10,-5.000,Master,Mixed Mode,VK7ZCR,,0,10.0.0.0<BR/>
 505702,VK7JD,Launceston,Tasmania,Australia,438.60000,1,-7.000,Peer,TS1 TS2,VK7JD,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact:David Jones, VK7JD<br>Email:,1,VK-DMR<BR/>
 505703,VK7RCR,Hobart,Tasmania,Australia,438.52500,1,-5.000,Master,TS1 TS2,VK7ZCR,TS 1 - TG 1 = Worldwide Calling (2 min max)<br>TS 2 - TG 5 = Nets<br>TS 1 & 2 - TG 9 = Local Repeater only<br>TS 1 - TG 13 = Worldwide English<br>TS 1 - TG 113= UA English 1<br>TS 1 - TG 123= UA English 2<br>TS 1 - TG 133 = DMR+ USA<br>TS 1 - TG 143 = DMR+ UK<br>TS 1 - TG 153 = DMR+ South Pacific<br>TS 2 - TG 505 = VK DMR Linked repeaters<br><br>You Must Have [ARS] Disabled Within Your Radio.<br>You Must Have [GPS] Disabled Within Your Radio.<br><br>Contact:Clayton Reading, VK7ZCR<br>Email:<br>,1,VK-TRBO<BR/>
@@ -3449,7 +3481,9 @@
 714102,HP2NG,Colon,Panama,Panama,433.45000,7,5.000,PEER,TS1 TS2,HP2NG,,0,DMR-plus<BR/>
 714103,HP2LCT,Panama,Colon,Panama,440.51250,7,+5.000,Peer,TS1 TS2,W2CID,,0,HP2LCT<BR/>
 714104,HP2LCT,COLON,Colon,Panama,440.51250,7,+5.000,Peer,TS1 TS2,HP2LCT,,0,BM<BR/>
-722001,LU8EUT,CABA,Buenos Aires,Argentina Republic,147.36000,1,+0.600,Master,Mixed Mode,LU8EUT,,1,lu8eut<BR/>
+722001,LU8EUT,CABA,Buenos Aires,Argentina Republic,146.78000,1,-0.600,Master,TS1 TS2,LU8EUT,,1,ARGENTINA<BR/>
+722002,LU8EUT,CABA,Buenos Aires,Argentina Republic,434.80000,1,+5.000,Master,TS1 TS2,LU8EUT,,0,ARGENTINA<BR/>
+722003,LU2EP,Escobar,Buenos Aires,Argentina Republic,146.71500,1,-0.600,Master,TS1,LU2EP,,0,Internet<BR/>
 724001,PY1CEU,Rio de Janeiro,Rio de Janeiro,Brazil,146.75000,1,-0.600,Master,TS1 TS2,PY1CEU,Time Slot #1 - Group Call 1 = World Wide English<br>Time Slot #1 - Group Call 75 = Portuguese Worldwide<br>Time Slot #2 - Group Call 724= Brazil<br><br><br>You Must Have [ARS] Disabled Within Your Radio<br><br>Contact: PY1CEU<br>Email: py1eu@globo.com,1,DMR-MARC-PY1CEU<BR/>
 724101,PY1RSV,Rio de Janeiro,Rio de Janeiro,Brazil,146.93000,2,-0.600,Master,TS1 TS2,PU1LOY,,1,DMR-BRAZIL<BR/>
 724102,PY1YRF,Rio de Janeiro,Rio de Janeiro,Brazil,438.67500,1,-5.000,Peer,TS1 TS2,PY4CEP,,1,Dmrplus<BR/>

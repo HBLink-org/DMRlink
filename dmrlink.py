@@ -50,6 +50,7 @@ from twisted.internet import reactor, task
 
 from ipsc.ipsc_const import *
 from ipsc.ipsc_mask import *
+from ipsc.reporting_const import *
 from dmrlink_config import build_config
 from dmrlink_log import config_logging
 from dmr_utils.utils import hex_str_2, hex_str_3, hex_str_4, int_id
@@ -236,7 +237,7 @@ def print_master(_config, _network):
 #************************************************
 
 class IPSC(DatagramProtocol):
-    def __init__(self, _name, _config, _logger):
+    def __init__(self, _name, _config, _logger, _report):
 
         # Housekeeping: create references to the configuration and status data for this IPSC instance.
         # Some configuration objects that are used frequently and have lengthy names are shortened
@@ -246,7 +247,9 @@ class IPSC(DatagramProtocol):
         self._system = _name
         self._CONFIG = _config
         self._logger = _logger
+        self._report = _report
         self._config = self._CONFIG['SYSTEMS'][self._system]
+        self._rcm = self._CONFIG['REPORTS']['REPORT_RCM'] and self._report
         #
         self._local = self._config['LOCAL']
         self._local_id = self._local['RADIO_ID']
@@ -391,15 +394,23 @@ class IPSC(DatagramProtocol):
     #************************************************
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
-
+    
+    # If RCM reporting and reporting is network-based in the global configuration, 
+    # send the RCM packet to the monitoring server
     def call_mon_status(self, _data):
         self._logger.debug('(%s) Repeater Call Monitor Origin Packet Received: %s', self._system, ahex(_data))
-    
+        if self._rcm:
+            self._report.send_rcm(self._system + ','+ _data)
+            
     def call_mon_rpt(self, _data):
         self._logger.debug('(%s) Repeater Call Monitor Repeating Packet Received: %s', self._system, ahex(_data))
-    
+        if self._rcm:
+            self._report.send_rcm(self._system + ',' + _data)
+            
     def call_mon_nack(self, _data):
         self._logger.debug('(%s) Repeater Call Monitor NACK Packet Received: %s', self._system, ahex(_data))
+        if self._rcm:
+            self._report.send_rcm(self._system + ',' + _data)
     
     def xcmp_xnl(self, _data):
         self._logger.debug('(%s) XCMP/XNL Packet Received: %s', self._system, ahex(_data))
@@ -938,45 +949,53 @@ class IPSC(DatagramProtocol):
 # Socket-based reporting section
 #
 class report(NetstringReceiver):
-    def __init__(self):
-        pass
+    def __init__(self, factory):
+        self._factory = factory
 
     def connectionMade(self):
-        report_server.clients.append(self)
-        logger.info('DMRlink reporting client connected: %s', self.transport.getPeer())
+        self._factory.clients.append(self)
+        self._factory._logger.info('DMRlink reporting client connected: %s', self.transport.getPeer())
 
     def connectionLost(self, reason):
-        logger.info('DMRlink reporting client disconnected: %s', self.transport.getPeer())
-        report_server.clients.remove(self)
+        self._factory._logger.info('DMRlink reporting client disconnected: %s', self.transport.getPeer())
+        self._factory.clients.remove(self)
 
     def stringReceived(self, data):
         self.process_message(data)
 
     def process_message(self, _message):
         opcode = _message[:1]
-        if opcode == REP_OPC['CONFIG_REQ']:
-            logger.info('DMRlink reporting client sent \'CONFIG_REQ\': %s', self.transport.getPeer())
+        if opcode == REPORT_OPCODES['CONFIG_REQ']:
+            self._factory._logger.info('DMRlink reporting client sent \'CONFIG_REQ\': %s', self.transport.getPeer())
             self.send_config()
         else:
             print('got unknown opcode')
         
 class reportFactory(Factory):
-    def __init__(self):
-        pass
+    def __init__(self, config, logger):
+        self._config = config
+        self._logger = logger
         
     def buildProtocol(self, addr):
-        if (addr.host) in CONFIG['REPORTS']['REPORT_CLIENTS']:
-            return report()
+        if (addr.host) in self._config['REPORTS']['REPORT_CLIENTS']:
+            return report(self)
         else:
             return None
             
     def send_clients(self, _message):
-        for client in report_server.clients:
+        for client in self.clients:
             client.sendString(_message)
             
     def send_config(self):
-        serialized = pickle.dumps(CONFIG['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
-        self.send_clients(REP_OPC['CONFIG_SND']+serialized)
+        serialized = pickle.dumps(self._config['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
+        self.send_clients(REPORT_OPCODES['CONFIG_SND']+serialized)
+        
+    def send_bridge(self, ):
+        serialized = pickle.dumps(self._config['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
+        self.send_clients(REPORT_OPCODES['CONFIG_SND']+serialized)
+        
+    def send_rcm(self, _data):
+        self.send_clients(REPORT_OPCODES['RCM_SND']+_data)
 
 
 #************************************************
@@ -1027,30 +1046,30 @@ if __name__ == '__main__':
     # Set signal handers so that we can gracefully exit if need be
     for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
         signal.signal(sig, sig_handler)
-    
-    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    for system in CONFIG['SYSTEMS']:
-        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
-            systems[system] = IPSC(system, CONFIG, logger)
-            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
   
     # INITIALIZE THE REPORTING LOOP IF CONFIGURED
     if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT' or CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
         reporting_loop = config_reports(CONFIG)
         reporting = task.LoopingCall(reporting_loop, logger)
         reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
+        report_server = False
         
     # INITIALIZE THE NETWORK-BASED REPORTING SERVER
     elif CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
         logger.info('(confbridge.py) TCP reporting server starting')
-        from ipsc.reporting_const import REPORT_OPCODES as REP_OPC
         
-        report_server = reportFactory()
+        report_server = reportFactory(CONFIG, logger)
         report_server.clients = []
-        reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], reportFactory())
+        reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], report_server)
         
         reporting_loop = config_reports(CONFIG)
         reporting = task.LoopingCall(reporting_loop, logger, report_server)
         reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
+        
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
+            systems[system] = IPSC(system, CONFIG, logger, report_server)
+            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
   
     reactor.run()

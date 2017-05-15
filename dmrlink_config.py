@@ -54,6 +54,7 @@ def build_config(_config_file):
             elif section == 'REPORTS':
                 CONFIG['REPORTS'].update({
                     'REPORT_NETWORKS': config.get(section, 'REPORT_NETWORKS'),
+                    'REPORT_RCM': config.get(section, 'REPORT_RCM'),
                     'REPORT_INTERVAL': config.getint(section, 'REPORT_INTERVAL'),
                     'REPORT_PATH': config.get(section, 'REPORT_PATH'),
                     'REPORT_PORT': config.get(section, 'REPORT_PORT'),
@@ -63,6 +64,8 @@ def build_config(_config_file):
                 })
                 if CONFIG['REPORTS']['REPORT_PORT']:
                     CONFIG['REPORTS']['REPORT_PORT'] = int(CONFIG['REPORTS']['REPORT_PORT'])
+                if CONFIG['REPORTS']['REPORT_RCM']:
+                    CONFIG['REPORTS']['REPORT_RCM'] = bool(CONFIG['REPORTS']['REPORT_RCM'])
 
             elif section == 'LOGGER':
                 CONFIG['LOGGER'].update({
