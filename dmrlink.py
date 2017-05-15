@@ -25,17 +25,11 @@
 
 from __future__ import print_function
 
-import ConfigParser
-import argparse
-import sys
-import csv
-import os
+# Full imports
 import logging
-import signal
-
 import cPickle as pickle
 
-from logging.config import dictConfig
+# Function Imports
 from hmac import new as hmac_new
 from binascii import b2a_hex as ahex
 from binascii import a2b_hex as bhex
@@ -44,15 +38,18 @@ from socket import inet_ntoa as IPAddr
 from socket import inet_aton as IPHexStr
 from time import time
 
+# Twisted Imports
 from twisted.internet.protocol import DatagramProtocol, Factory, Protocol
 from twisted.protocols.basic import NetstringReceiver
 from twisted.internet import reactor, task
 
-from ipsc.ipsc_const import *
-from ipsc.ipsc_mask import *
-from ipsc.reporting_const import *
-from dmrlink_config import build_config
-from dmrlink_log import config_logging
+# Imports from our static file directory
+from dmrlink.ipsc_const import *
+from dmrlink.ipsc_mask import *
+from dmrlink.reporting_const import *
+from dmrlink.dmrlink_config import build_config
+from dmrlink.dmrlink_log import config_logging
+
 from dmr_utils.utils import hex_str_2, hex_str_3, hex_str_4, int_id
 
 
@@ -67,21 +64,24 @@ __email__       = 'n0mjs@me.com'
 # Global variables used whether we are a module or __main__
 systems = {}
 
+
+# Shut ourselves down gracefully with the IPSC peers.
+#
+def sig_handler(_signal, _frame):
+    logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
+
+    for system in systems:
+        this_ipsc = systems[system]
+        logger.info('De-Registering from IPSC %s', system)
+        de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+        this_ipsc.send_to_ipsc(de_reg_req_pkt)
+    reactor.stop()
+
 # Timed loop used for reporting IPSC status
 #
 # REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
-def config_reports(_config):
-    if _config['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
-        def reporting_loop(_logger):  
-            _logger.debug('Periodic Reporting Loop Started (PICKLE)')
-            try:
-                with open(_config['REPORTS']['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
-                    pickle.dump(_config['SYSTEMS'], file, 2)
-                    file.close()
-            except IOError as detail:
-                _logger.error('I/O Error: %s', detail)
-     
-    elif _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
+def config_reports(_config): 
+    if _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
         def reporting_loop(_logger):
             _logger.debug('Periodic Reporting Loop Started (PRINT)')
             for system in _config['SYSTEMS']:
@@ -1003,6 +1003,10 @@ class reportFactory(Factory):
 #************************************************
 
 if __name__ == '__main__':
+    import argparse
+    import sys
+    import os
+    import signal
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -1017,8 +1021,10 @@ if __name__ == '__main__':
     if not cli_args.CFG_FILE:
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
     
+    
     # Call the external routine to build the configuration dictionary
     CONFIG = build_config(cli_args.CFG_FILE)
+    
     
     # Call the external routing to start the system logger
     if cli_args.LOG_LEVEL:
@@ -1026,35 +1032,18 @@ if __name__ == '__main__':
     if cli_args.LOG_HANDLERS:
         CONFIG['LOGGER']['LOG_HANDLERS'] = cli_args.LOG_HANDLERS
     logger = config_logging(CONFIG['LOGGER'])
-    
-    config_reports(CONFIG)
-    
-
     logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
-    # Shut ourselves down gracefully with the IPSC peers.
-    def sig_handler(_signal, _frame):
-        logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
     
-        for system in systems:
-            this_ipsc = systems[system]
-            logger.info('De-Registering from IPSC %s', system)
-            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
-            this_ipsc.send_to_ipsc(de_reg_req_pkt)
-        reactor.stop()
-
-    # Set signal handers so that we can gracefully exit if need be
-    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
-        signal.signal(sig, sig_handler)
-  
-    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT' or CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
+    # INITIALIZE THE REPORTING LOOP
+    config_reports(CONFIG)
+    
+    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
         reporting_loop = config_reports(CONFIG)
         reporting = task.LoopingCall(reporting_loop, logger)
         reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
         report_server = False
         
-    # INITIALIZE THE NETWORK-BASED REPORTING SERVER
     elif CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
         logger.info('(confbridge.py) TCP reporting server starting')
         
@@ -1071,5 +1060,9 @@ if __name__ == '__main__':
         if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
             systems[system] = IPSC(system, CONFIG, logger, report_server)
             reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
+  
+    # Set signal handers so that we can gracefully exit if need be
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
+        signal.signal(sig, sig_handler)
   
     reactor.run()

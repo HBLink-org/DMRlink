@@ -418,10 +418,10 @@ class confReportFactory(reportFactory):
 
 
 if __name__ == '__main__':
-    import argparse
-    import os
-    import signal
-    from dmr_utils.utils import try_download, mk_id_dict
+    #import argparse
+    #import os
+    #import signal
+    #from dmr_utils.utils import try_download, mk_id_dict
 
     import dmrlink_log
     import dmrlink_config
