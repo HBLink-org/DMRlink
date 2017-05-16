@@ -49,7 +49,7 @@ from DMRlink.ipsc_mask import *
 from DMRlink.reporting_const import *
 
 # Imports from DMR Utilities package
-from dmr_utils.utils import hex_str_2, hex_str_3, hex_str_4, int_id
+from dmr_utils.utils import hex_str_2, hex_str_3, hex_str_4, int_id, try_download, mk_id_dict
 
 
 __author__      = 'Cortney T. Buffington, N0MJS'
@@ -67,24 +67,79 @@ systems = {}
 # Timed loop used for reporting IPSC status
 #
 # REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
-def config_reports(_config): 
+def config_reports(_config, _logger, _factory): 
     if _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
         def reporting_loop(_logger):
             _logger.debug('Periodic Reporting Loop Started (PRINT)')
             for system in _config['SYSTEMS']:
                 print_master(_config, system)
                 print_peer_list(_config, system)
+        
+        reporting = task.LoopingCall(reporting_loop, _logger)
+        reporting.start(_config['REPORTS']['REPORT_INTERVAL'])
+        report_server = False
                 
     elif _config['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
         def reporting_loop(_logger, _server):
             _logger.debug('Periodic Reporting Loop Started (NETWORK)')
             _server.send_config()
+            
+        _logger.info('DMRlink TCP reporting server starting')
+        
+        report_server = _factory(_config, _logger)
+        report_server.clients = []
+        reactor.listenTCP(_config['REPORTS']['REPORT_PORT'], report_server)
+        
+        reporting = task.LoopingCall(reporting_loop, _logger, report_server)
+        reporting.start(_config['REPORTS']['REPORT_INTERVAL'])
 
     else:
         def reporting_loop(_logger):
             _logger.debug('Periodic Reporting Loop Started (NULL)')
+        report_server = False
     
-    return reporting_loop
+    return report_server
+
+
+# ID ALIAS CREATION
+# Download
+def build_aliases(_config, _logger):
+    if _config['ALIASES']['TRY_DOWNLOAD'] == True:
+        # Try updating peer aliases file
+        result = try_download(_config['ALIASES']['PATH'], _config['ALIASES']['PEER_FILE'], _config['ALIASES']['PEER_URL'], _config['ALIASES']['STALE_TIME'])
+        _logger.info(result)
+        # Try updating subscriber aliases file
+        result = try_download(_config['ALIASES']['PATH'], _config['ALIASES']['SUBSCRIBER_FILE'], _config['ALIASES']['SUBSCRIBER_URL'], _config['ALIASES']['STALE_TIME'])
+        _logger.info(result)
+        
+    # Make Dictionaries
+    peer_ids = mk_id_dict(_config['ALIASES']['PATH'], _config['ALIASES']['PEER_FILE'])
+    if peer_ids:
+        _logger.info('ID ALIAS MAPPER: peer_ids dictionary is available')
+        
+    subscriber_ids = mk_id_dict(_config['ALIASES']['PATH'], _config['ALIASES']['SUBSCRIBER_FILE'])
+    if subscriber_ids:
+        _logger.info('ID ALIAS MAPPER: subscriber_ids dictionary is available')
+    
+    talkgroup_ids = mk_id_dict(_config['ALIASES']['PATH'], _config['ALIASES']['TGID_FILE'])
+    if talkgroup_ids:
+        _logger.info('ID ALIAS MAPPER: talkgroup_ids dictionary is available')
+        
+    local_ids = mk_id_dict(_config['ALIASES']['PATH'], _config['ALIASES']['LOCAL_FILE'])
+    if local_ids:
+        _logger.info('ID ALIAS MAPPER: local_ids dictionary is available')
+
+    return(peer_ids, subscriber_ids, talkgroup_ids, local_ids)
+
+
+# Make the IPSC systems from the config and the class used to build them.
+#
+def mk_ipsc_systems(_config, _logger, _systems, _ipsc, _report_server):
+    for system in _config['SYSTEMS']:
+        if _config['SYSTEMS'][system]['LOCAL']['ENABLED']:
+            _systems[system] = _ipsc(system, _config, _logger, _report_server)
+            reactor.listenUDP(_config['SYSTEMS'][system]['LOCAL']['PORT'], _systems[system], interface=_config['SYSTEMS'][system]['LOCAL']['IP'])
+    return _systems
 
 # Process the MODE byte in registration/peer list packets for determining master and peer capabilities
 #
@@ -310,7 +365,13 @@ class IPSC(DatagramProtocol):
         else:
             self._logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', self._system, int_id(_peerid))
             pass
-
+            
+    # De-register ourselves from the IPSC
+    def de_register_self(self):
+        self._logger.info('(%s) De-Registering self from the IPSC system', self._system)
+        de_reg_req_pkt = self.hashed_packet(self._local['AUTH_KEY'], self.DE_REG_REQ_PKT)
+        self.send_to_ipsc(de_reg_req_pkt)
+    
     # Take a received peer list and the network it belongs to, process and populate the
     # data structure in my_ipsc_config with the results, and return a simple list of peers.
     #
@@ -977,10 +1038,6 @@ class reportFactory(Factory):
         serialized = pickle.dumps(self._config['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
         self.send_clients(REPORT_OPCODES['CONFIG_SND']+serialized)
         
-    def send_bridge(self, ):
-        serialized = pickle.dumps(self._config['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
-        self.send_clients(REPORT_OPCODES['CONFIG_SND']+serialized)
-        
     def send_rcm(self, _data):
         self.send_clients(REPORT_OPCODES['RCM_SND']+_data)
 
@@ -1011,7 +1068,6 @@ if __name__ == '__main__':
     if not cli_args.CFG_FILE:
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
     
-    
     # Call the external routine to build the configuration dictionary
     CONFIG = build_config(cli_args.CFG_FILE)
     
@@ -1023,47 +1079,26 @@ if __name__ == '__main__':
     logger = config_logging(CONFIG['LOGGER'])
     logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
-    
     # Set signal handers so that we can gracefully exit if need be
     def sig_handler(_signal, _frame):
         logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
-
         for system in systems:
-            this_ipsc = systems[system]
-            logger.info('De-Registering from IPSC %s', system)
-            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
-            this_ipsc.send_to_ipsc(de_reg_req_pkt)
+            systems[system].de_register_self()
         reactor.stop()
     
     for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
         signal.signal(sig, sig_handler)
     
     # INITIALIZE THE REPORTING LOOP
-    config_reports(CONFIG)
+    report_server = config_reports(CONFIG, logger, reportFactory)
     
-    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
-        reporting_loop = config_reports(CONFIG)
-        reporting = task.LoopingCall(reporting_loop, logger)
-        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
-        report_server = False
+    # Build ID Aliases
+    peer_ids, subscriber_ids, talkgroup_ids, local_ids = build_aliases(CONFIG, logger)
         
-    elif CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
-        logger.info('(confbridge.py) TCP reporting server starting')
-        
-        report_server = reportFactory(CONFIG, logger)
-        report_server.clients = []
-        reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], report_server)
-        
-        reporting_loop = config_reports(CONFIG)
-        reporting = task.LoopingCall(reporting_loop, logger, report_server)
-        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
-        
-    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    for system in CONFIG['SYSTEMS']:
-        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
-            systems[system] = IPSC(system, CONFIG, logger, report_server)
-            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
-  
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGRUED IPSC
+    systems = mk_ipsc_systems(CONFIG, logger, systems, IPSC, report_server)
 
-  
+
+
+    # INITIALIZATION COMPLETE -- START THE REACTOR
     reactor.run()

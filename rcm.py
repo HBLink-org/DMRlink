@@ -32,8 +32,9 @@ import datetime
 import binascii
 import dmrlink
 import sys
-from dmrlink import IPSC, systems
+from dmrlink import IPSC, mk_ipsc_systems, systems, reportFactory, build_aliases, config_reports
 from dmr_utils.utils import get_alias, int_id
+from DMRlink.ipsc_const import *
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -43,18 +44,13 @@ __maintainer__  = 'Cort Buffington, N0MJS'
 __email__       = 'n0mjs@me.com'
 
 
-try:
-    from ipsc.ipsc_const import *
-except ImportError:
-    sys.exit('IPSC message types file not found or invalid')
-
 status = True
 rpt = True
 nack = True
 
 class rcmIPSC(IPSC):
-    def __init__(self, _name, _config, _logger):
-        IPSC.__init__(self, _name, _config, _logger)
+    def __init__(self, _name, _config, _logger, _report):
+        IPSC.__init__(self, _name, _config, _logger, _report)
         
     #************************************************
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
@@ -149,13 +145,12 @@ class rcmIPSC(IPSC):
 
 if __name__ == '__main__':
     import argparse
-    import os
     import sys
+    import os
     import signal
-    from dmr_utils.utils import try_download, mk_id_dict
     
-    import dmrlink_log
-    import dmrlink_config
+    from DMRlink.dmrlink_config import build_config
+    from DMRlink.dmrlink_log import config_logging
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -169,62 +164,38 @@ if __name__ == '__main__':
 
     if not cli_args.CFG_FILE:
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
-
+    
     # Call the external routine to build the configuration dictionary
-    CONFIG = dmrlink_config.build_config(cli_args.CFG_FILE)
-
+    CONFIG = build_config(cli_args.CFG_FILE)
+    
     # Call the external routing to start the system logger
     if cli_args.LOG_LEVEL:
         CONFIG['LOGGER']['LOG_LEVEL'] = cli_args.LOG_LEVEL
     if cli_args.LOG_HANDLERS:
         CONFIG['LOGGER']['LOG_HANDLERS'] = cli_args.LOG_HANDLERS
-    logger = dmrlink_log.config_logging(CONFIG['LOGGER'])
-
-    logger.info('DMRlink \'rcm.py\' (c) 2013, 2014 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    logger = config_logging(CONFIG['LOGGER'])
+    logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
-    # ID ALIAS CREATION
-    # Download
-    if CONFIG['ALIASES']['TRY_DOWNLOAD'] == True:
-        # Try updating peer aliases file
-        result = try_download(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['PEER_FILE'], CONFIG['ALIASES']['PEER_URL'], CONFIG['ALIASES']['STALE_TIME'])
-        logger.info(result)
-        # Try updating subscriber aliases file
-        result = try_download(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['SUBSCRIBER_FILE'], CONFIG['ALIASES']['SUBSCRIBER_URL'], CONFIG['ALIASES']['STALE_TIME'])
-        logger.info(result)
-        
-    # Make Dictionaries
-    peer_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['PEER_FILE'])
-    if peer_ids:
-        logger.info('ID ALIAS MAPPER: peer_ids dictionary is available')
-        
-    subscriber_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['SUBSCRIBER_FILE'])
-    if subscriber_ids:
-        logger.info('ID ALIAS MAPPER: subscriber_ids dictionary is available')
-    
-    talkgroup_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['TGID_FILE'])
-    if talkgroup_ids:
-        logger.info('ID ALIAS MAPPER: talkgroup_ids dictionary is available')
-    
-    # Shut ourselves down gracefully with the IPSC peers.
+    # Set signal handers so that we can gracefully exit if need be
     def sig_handler(_signal, _frame):
         logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
-    
         for system in systems:
-            this_ipsc = systems[system]
-            logger.info('De-Registering from IPSC %s', system)
-            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
-            this_ipsc.send_to_ipsc(de_reg_req_pkt)
+            systems[system].de_register_self()
         reactor.stop()
-
-    # Set signal handers so that we can gracefully exit if need be
+    
     for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
         signal.signal(sig, sig_handler)
     
+    # INITIALIZE THE REPORTING LOOP
+    report_server = config_reports(CONFIG, logger, reportFactory)
     
-    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    for system in CONFIG['SYSTEMS']:
-        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
-            systems[system] = rcmIPSC(system, CONFIG, logger)
-            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
-    
+    # Build ID Aliases
+    peer_ids, subscriber_ids, talkgroup_ids, local_ids = build_aliases(CONFIG, logger)
+        
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGRUED IPSC
+    systems = mk_ipsc_systems(CONFIG, logger, systems, rcmIPSC, report_server)
+
+
+
+    # INITIALIZATION COMPLETE -- START THE REACTOR
     reactor.run()

@@ -44,20 +44,21 @@
 # Use to make test strings: #print('PKT:', "\\x".join("{:02x}".format(ord(c)) for c in _data))
 
 from __future__ import print_function
+
 from twisted.internet.protocol import Factory, Protocol
 from twisted.protocols.basic import NetstringReceiver
 from twisted.internet import reactor
 from twisted.internet import task
+
 from binascii import b2a_hex as ahex
 from time import time
 from importlib import import_module
-import cPickle as pickle
 
-import sys
+import cPickle as pickle
 
 from dmr_utils.utils import hex_str_3, hex_str_4, int_id
 
-from dmrlink import IPSC, systems, config_reports, reportFactory, REPORT_OPCODES # hmac_new, sha1, report
+from dmrlink import IPSC, mk_ipsc_systems, systems, reportFactory, REPORT_OPCODES, build_aliases
 from DMRlink.ipsc_const import BURST_DATA_TYPE
 
 
@@ -72,6 +73,47 @@ __email__       = 'n0mjs@me.com'
 # Minimum time between different subscribers transmitting on the same TGID
 #
 TS_CLEAR_TIME = .2
+
+# Declare this here so that we can define functions around it
+#
+BRIDGES = {}
+
+# Timed loop used for reporting IPSC status
+#
+# REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
+def config_reports(_config, _logger, _factory):
+    if _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
+        def reporting_loop(_logger):
+            _logger.debug('Periodic Reporting Loop Started (PRINT)')
+            for system in _config['SYSTEMS']:
+                print_master(_config, system)
+                print_peer_list(_config, system)
+        
+        reporting = task.LoopingCall(reporting_loop, _logger)
+        reporting.start(_config['REPORTS']['REPORT_INTERVAL'])
+        report_server = False
+                
+    elif _config['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
+        def reporting_loop(_logger, _server):
+            _logger.debug('Periodic Reporting Loop Started (NETWORK)')
+            _server.send_config()
+            _server.send_bridge()
+            
+        _logger.info('DMRlink TCP reporting server starting')
+        
+        report_server = _factory(_config, _logger)
+        report_server.clients = []
+        reactor.listenTCP(_config['REPORTS']['REPORT_PORT'], report_server)
+        
+        reporting = task.LoopingCall(reporting_loop, _logger, report_server)
+        reporting.start(_config['REPORTS']['REPORT_INTERVAL'])
+
+    else:
+        def reporting_loop(_logger):
+            _logger.debug('Periodic Reporting Loop Started (NULL)')
+        report_server = False
+    
+    return report_server
 
 # Build the conference bridging structure from the bridge file.
 #
@@ -138,39 +180,7 @@ def build_acl(_sub_acl):
             return True
     
     return ACL
-    
-# Timed loop used for reporting IPSC status
-#
-# REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
-def config_reports(_config):
-    if _config['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
-        def reporting_loop(_logger):  
-            _logger.debug('Periodic Reporting Loop Started (PICKLE)')
-            try:
-                with open(_config['REPORTS']['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
-                    pickle.dump(_config['SYSTEMS'], file, 2)
-                    file.close()
-            except IOError as detail:
-                _logger.error('I/O Error: %s', detail)
-     
-    elif _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
-        def reporting_loop(_logger):
-            _logger.debug('Periodic Reporting Loop Started (PRINT)')
-            for system in _config['SYSTEMS']:
-                print_master(_config, system)
-                print_peer_list(_config, system)
-                
-    elif _config['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-        def reporting_loop(_logger, _server):
-            _logger.debug('Periodic Reporting Loop Started (NETWORK)')
-            _server.send_config()
-            _server.send_bridge(BRIDGES)
 
-    else:
-        def reporting_loop(_logger):
-            _logger.debug('Periodic Reporting Loop Started (NULL)')
-    
-    return reporting_loop
 
 # Run this every minute for rule timer updates
 def rule_timer_loop():
@@ -407,25 +417,25 @@ class confbridgeIPSC(IPSC):
         # END IN-BAND SIGNALLING
         #
 
-class confReportFactory(reportFactory):
+class confbridgeReportFactory(reportFactory):
         
-    def send_bridge(self, _bridges):
-        serialized = pickle.dumps(_bridges, protocol=pickle.HIGHEST_PROTOCOL)
+    def send_bridge(self):
+        serialized = pickle.dumps(BRIDGES, protocol=pickle.HIGHEST_PROTOCOL)
         self.send_clients(REPORT_OPCODES['BRIDGE_SND']+serialized)
         
     def send_bridgeEvent(self, _data):
         self.send_clients(REPORT_OPCODES['BRDG_EVENT']+_data)
-
-
+        
+    
 if __name__ == '__main__':
     import argparse
+    import sys
     import os
     import signal
-    from dmr_utils.utils import try_download, mk_id_dict
-
+    
     from DMRlink.dmrlink_config import build_config
     from DMRlink.dmrlink_log import config_logging
-
+    
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -438,59 +448,40 @@ if __name__ == '__main__':
 
     if not cli_args.CFG_FILE:
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
-
+    
     # Call the external routine to build the configuration dictionary
     CONFIG = build_config(cli_args.CFG_FILE)
-
+    
     # Call the external routing to start the system logger
     if cli_args.LOG_LEVEL:
         CONFIG['LOGGER']['LOG_LEVEL'] = cli_args.LOG_LEVEL
     if cli_args.LOG_HANDLERS:
         CONFIG['LOGGER']['LOG_HANDLERS'] = cli_args.LOG_HANDLERS
     logger = config_logging(CONFIG['LOGGER'])
-    
-    config_reports(CONFIG)
-
-    logger.info('DMRlink \'confbridge.py\' (c) 2016 N0MJS & the K0USY Group - SYSTEM STARTING...')
-    
-    
-    # Shut ourselves down gracefully with the IPSC peers.
-    def sig_handler(_signal, _frame):
-        logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
-
-        for system in systems:
-            this_ipsc = systems[system]
-            logger.info('De-Registering from IPSC %s', system)
-            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
-            this_ipsc.send_to_ipsc(de_reg_req_pkt)
-        reactor.stop()
+    logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
     # Set signal handers so that we can gracefully exit if need be
+    def sig_handler(_signal, _frame):
+        logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
+        for system in systems:
+            systems[system].de_register_self()
+        reactor.stop()
+    
     for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
         signal.signal(sig, sig_handler)
     
-    # ID ALIAS CREATION
-    # Download
-    if CONFIG['ALIASES']['TRY_DOWNLOAD'] == True:
-        # Try updating peer aliases file
-        result = try_download(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['PEER_FILE'], CONFIG['ALIASES']['PEER_URL'], CONFIG['ALIASES']['STALE_TIME'])
-        logger.info(result)
-        # Try updating subscriber aliases file
-        result = try_download(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['SUBSCRIBER_FILE'], CONFIG['ALIASES']['SUBSCRIBER_URL'], CONFIG['ALIASES']['STALE_TIME'])
-        logger.info(result)
-        
-    # Make Dictionaries
-    peer_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['PEER_FILE'])
-    if peer_ids:
-        logger.info('ID ALIAS MAPPER: peer_ids dictionary is available')
-        
-    subscriber_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['SUBSCRIBER_FILE'])
-    if subscriber_ids:
-        logger.info('ID ALIAS MAPPER: subscriber_ids dictionary is available')
+    # INITIALIZE THE REPORTING LOOP
+    report_server = config_reports(CONFIG, logger, confbridgeReportFactory)
     
-    talkgroup_ids = mk_id_dict(CONFIG['ALIASES']['PATH'], CONFIG['ALIASES']['TGID_FILE'])
-    if talkgroup_ids:
-        logger.info('ID ALIAS MAPPER: talkgroup_ids dictionary is available')
+    # Build ID Aliases
+    peer_ids, subscriber_ids, talkgroup_ids, local_ids = build_aliases(CONFIG, logger)
+        
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGURED IPSC
+    systems = mk_ipsc_systems(CONFIG, logger, systems, confbridgeIPSC, report_server)
+
+
+
+    # CONFBRIDGE.PY SPECIFIC ITEMS GO HERE:
     
     # Build the routing rules and other configuration
     CONFIG_DICT = make_bridge_config('confbridge_rules')
@@ -499,33 +490,10 @@ if __name__ == '__main__':
 
     # Build the Access Control List
     ACL = build_acl('sub_acl')
- 
-    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT' or CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
-        reporting_loop = config_reports(CONFIG)
-        reporting = task.LoopingCall(reporting_loop, logger)
-        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
-        
-    # INITIALIZE THE NETWORK-BASED REPORTING SERVER
-    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
-        logger.info('(confbridge.py) TCP reporting server starting')
-        
-        report_server = confReportFactory(CONFIG, logger)
-        report_server.clients = []
-        reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], report_server)
-        
-        reporting_loop = config_reports(CONFIG)
-        reporting = task.LoopingCall(reporting_loop, logger, report_server)
-        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
-        
-        # INITIALIZE THE REPORTING LOOP IF CONFIGURED
-        rule_timer = task.LoopingCall(rule_timer_loop)
-        rule_timer.start(60)
-        
-    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
-    for system in CONFIG['SYSTEMS']:
-        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
-            systems[system] = confbridgeIPSC(system, CONFIG, logger, report_server)
-            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
     
+    # Initialize the rule timer loop
+    rule_timer = task.LoopingCall(rule_timer_loop)
+    rule_timer.start(60)
+    
+    # INITIALIZATION COMPLETE -- START THE REACTOR
     reactor.run()
