@@ -55,7 +55,7 @@ import sys
 from dmr_utils.utils import hex_str_3, hex_str_4, int_id
 
 from dmrlink import IPSC, mk_ipsc_systems, systems, reportFactory, REPORT_OPCODES, build_aliases, config_reports
-from DMRlink.ipsc_const import BURST_DATA_TYPE
+from ipsc.ipsc_const import BURST_DATA_TYPE
 
 
 __author__      = 'Cortney T. Buffington, N0MJS'
@@ -445,8 +445,8 @@ if __name__ == '__main__':
     import os
     import signal
     
-    from DMRlink.dmrlink_config import build_config
-    from DMRlink.dmrlink_log import config_logging
+    from ipsc.dmrlink_config import build_config
+    from ipsc.dmrlink_log import config_logging
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))

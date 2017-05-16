@@ -34,7 +34,7 @@ import dmrlink
 import sys
 from dmrlink import IPSC, mk_ipsc_systems, systems, reportFactory, build_aliases, config_reports
 from dmr_utils.utils import get_alias, int_id
-from DMRlink.ipsc_const import *
+from ipsc.ipsc_const import *
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2013, 2014 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -149,8 +149,8 @@ if __name__ == '__main__':
     import os
     import signal
     
-    from DMRlink.dmrlink_config import build_config
-    from DMRlink.dmrlink_log import config_logging
+    from ipsc.dmrlink_config import build_config
+    from ipsc.dmrlink_log import config_logging
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))

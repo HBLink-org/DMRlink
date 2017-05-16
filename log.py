@@ -95,8 +95,8 @@ if __name__ == '__main__':
     import os
     import signal
     
-    from DMRlink.dmrlink_config import build_config
-    from DMRlink.dmrlink_log import config_logging
+    from ipsc.dmrlink_config import build_config
+    from ipsc.dmrlink_log import config_logging
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))

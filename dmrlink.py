@@ -44,9 +44,9 @@ from twisted.protocols.basic import NetstringReceiver
 from twisted.internet import reactor, task
 
 # Imports files in the dmrlink subdirectory (these things shouldn't change often)
-from DMRlink.ipsc_const import *
-from DMRlink.ipsc_mask import *
-from DMRlink.reporting_const import *
+from ipsc.ipsc_const import *
+from ipsc.ipsc_mask import *
+from ipsc.reporting_const import *
 
 # Imports from DMR Utilities package
 from dmr_utils.utils import hex_str_2, hex_str_3, hex_str_4, int_id, try_download, mk_id_dict
@@ -1052,8 +1052,8 @@ if __name__ == '__main__':
     import os
     import signal
     
-    from DMRlink.dmrlink_config import build_config
-    from DMRlink.dmrlink_log import config_logging
+    from ipsc.dmrlink_config import build_config
+    from ipsc.dmrlink_log import config_logging
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))

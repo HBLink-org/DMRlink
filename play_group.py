@@ -39,7 +39,7 @@ import cPickle as pickle
 from dmrlink import IPSC, mk_ipsc_systems, systems, reportFactory, build_aliases, config_reports
 
 from dmr_utils.utils import int_id, hex_str_3
-from DMRlink.ipsc_const import BURST_DATA_TYPE
+from ipsc.ipsc_const import BURST_DATA_TYPE
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2014 - 2015 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -138,8 +138,8 @@ if __name__ == '__main__':
     import os
     import signal
     
-    from DMRlink.dmrlink_config import build_config
-    from DMRlink.dmrlink_log import config_logging
+    from ipsc.dmrlink_config import build_config
+    from ipsc.dmrlink_log import config_logging
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
