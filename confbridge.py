@@ -355,9 +355,9 @@ class confbridgeIPSC(IPSC):
         # Action happens on key up
         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
             self._logger.info('(%s) GROUP VOICE START - DEBUGGING MESSAGE', self._system,)
-            if self.last_seq_id != _seq_id:
+            if self.last_seq_id != _seq_id or (self.call_start + TS_CLEAR_TIME) < now:
                 self.last_seq_id = _seq_id
-                self.call_start = time()
+                self.call_start = now
                 self._logger.info('(%s) GROUP VOICE START: CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group))
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
                     self._report.send_bridgeEvent('DEBUGGING - this should be immediately followed by a GROUP VOICE START message')
@@ -366,7 +366,7 @@ class confbridgeIPSC(IPSC):
         # Action happens on un-key
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
             if self.last_seq_id == _seq_id:
-                self.call_duration = time() - self.call_start
+                self.call_duration = now - self.call_start
                 self._logger.info('(%s) GROUP VOICE END:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s Duration: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration)
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
                     self._report.send_bridgeEvent('({}) GROUP VOICE END:   CallID: {} PEER: {}, SUB: {}, TS: {}, TGID: {} Duration: {}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration))
