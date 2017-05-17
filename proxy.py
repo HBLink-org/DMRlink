@@ -164,6 +164,11 @@ class proxyIPSC(IPSC):
                 self._logger.warning('(%s) GROUP VOICE END WITHOUT MATCHING START:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group),)
 
 
+class proxyReportFactory(reportFactory):        
+    def send_proxyEvent(self, _data):
+        self.send_clients(REPORT_OPCODES['BRDG_EVENT']+_data)
+        
+
 if __name__ == '__main__':   
     import argparse
     import sys
@@ -218,7 +223,7 @@ if __name__ == '__main__':
     # MAIN INITIALIZATION ITEMS HERE
     
     # INITIALIZE THE REPORTING LOOP
-    report_server = config_reports(CONFIG, logger, reportFactory)
+    report_server = config_reports(CONFIG, logger, proxyReportFactory)
     
     # Build ID Aliases
     peer_ids, subscriber_ids, talkgroup_ids, local_ids = build_aliases(CONFIG, logger)
