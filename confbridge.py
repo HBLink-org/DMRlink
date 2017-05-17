@@ -354,12 +354,13 @@ class confbridgeIPSC(IPSC):
         
         # Action happens on key up
         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+            self._logger.info('(%s) GROUP VOICE START - DEBUGGING MESSAGE', self._system,)
             if self.last_seq_id != _seq_id:
                 self.last_seq_id = _seq_id
                 self.call_start = time()
                 self._logger.info('(%s) GROUP VOICE START: CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group))
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-                    self._report.send_bridgeEvent('debugging - this should be immediately followed by a GROUP VOICE START message')
+                    self._report.send_bridgeEvent('DEBUGGING - this should be immediately followed by a GROUP VOICE START message')
                     self._report.send_bridgeEvent('({}) GROUP VOICE START: CallID: {} PEER: {}, SUB: {}, TS: {}, TGID: {}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group)))
                 
         # Action happens on un-key
