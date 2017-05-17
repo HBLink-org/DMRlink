@@ -161,7 +161,7 @@ class proxyIPSC(IPSC):
             if self.last_seq_id == _seq_id:
                 self.call_duration = time() - self.call_start
                 self._logger.info('(%s) GROUP VOICE END:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s Duration: %.2fs', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration)
-                self._report.send_proxyEvent('({}) GROUP VOICE END:   CallID: {} PEER: {}, SUB: {}, TS: {}, TGID: {} Duration: {:.2f}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration))
+                self._report.send_proxyEvent('({}) GROUP VOICE END:   CallID: {} PEER: {}, SUB: {}, TS: {}, TGID: {} Duration: {:.2f}s'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration))
             else:
                 self._logger.warning('(%s) GROUP VOICE END WITHOUT MATCHING START:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group),)
                 self._report.send_proxyEvent('(%s) GROUP VOICE END WITHOUT MATCHING START:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group)))
