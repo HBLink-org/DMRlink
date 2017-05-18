@@ -212,14 +212,7 @@ def rule_timer_loop():
             else:
                 logger.debug('Conference Bridge NO ACTION: System: %s, Bridge: %s, TS: %s, TGID: %s', _system['SYSTEM'], _bridge, _system['TS'], int_id(_system['TGID']))
 
-    if BRIDGE_CONF['REPORT'] == 'pickle':
-        try:
-            with open(CONFIG['REPORTS']['REPORT_PATH']+'confbridge_stats.pickle', 'wb') as file:
-                pickle_dump(BRIDGES, file, 2)
-                file.close()
-        except IOError as detail:
-            _logger.error('I/O Error: %s', detail)
-    elif BRIDGE_CONF['REPORT'] == 'network':
+    if BRIDGE_CONF['REPORT'] == 'network':
         report_server.send_clients('bridge updated')
 
     
@@ -354,13 +347,11 @@ class confbridgeIPSC(IPSC):
         
         # Action happens on key up
         if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-            self._logger.info('(%s) GROUP VOICE START - DEBUGGING MESSAGE', self._system,)
             if self.last_seq_id != _seq_id or (self.call_start + TS_CLEAR_TIME) < now:
                 self.last_seq_id = _seq_id
                 self.call_start = now
                 self._logger.info('(%s) GROUP VOICE START: CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group))
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-                    self._report.send_bridgeEvent('DEBUGGING - this should be immediately followed by a GROUP VOICE START message')
                     self._report.send_bridgeEvent('({}) GROUP VOICE START: CallID: {} PEER: {}, SUB: {}, TS: {}, TGID: {}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group)))
                 
         # Action happens on un-key
