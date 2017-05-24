@@ -1,3 +1,9 @@
+**FOR SUPPORT, DISCUSSION, GETTING INVOLVED**
+
+Please join the DVSwitch group at groups.io for online forum support, discussion, and to become part of the development team.
+
+  DVSwitch@groups.io 
+
 **FOR THE IMPATENT PLEASE AT LEAST READ THIS**
 
 There are two ways to "install" DMRlink:
