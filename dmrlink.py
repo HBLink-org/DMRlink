@@ -1025,10 +1025,11 @@ class reportFactory(Factory):
         self._logger = logger
         
     def buildProtocol(self, addr):
-        print(self._config['REPORTS']['REPORT_CLIENTS'])
         if (addr.host) in self._config['REPORTS']['REPORT_CLIENTS'] or '*' in self._config['REPORTS']['REPORT_CLIENTS']:
+            self._logger.debug('Permitting report server connection attempt from: %s:%s', addr.host, addr.port)
             return report(self)
         else:
+            self._logger.error('Invalid report server connection attempt from: %s:%s', addr.host, addr.port)
             return None
             
     def send_clients(self, _message):
