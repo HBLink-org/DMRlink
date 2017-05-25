@@ -1025,7 +1025,8 @@ class reportFactory(Factory):
         self._logger = logger
         
     def buildProtocol(self, addr):
-        if (addr.host) in self._config['REPORTS']['REPORT_CLIENTS']:
+        print(self._config['REPORTS']['REPORT_CLIENTS'])
+        if (addr.host) in self._config['REPORTS']['REPORT_CLIENTS'] or '*' in self._config['REPORTS']['REPORT_CLIENTS']:
             return report(self)
         else:
             return None
