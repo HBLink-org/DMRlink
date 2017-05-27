@@ -1079,7 +1079,7 @@ if __name__ == '__main__':
     if cli_args.LOG_HANDLERS:
         CONFIG['LOGGER']['LOG_HANDLERS'] = cli_args.LOG_HANDLERS
     logger = config_logging(CONFIG['LOGGER'])
-    logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2017 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
     # Set signal handers so that we can gracefully exit if need be
     def sig_handler(_signal, _frame):
