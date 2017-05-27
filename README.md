@@ -1,7 +1,11 @@
-**UPDATES:**
-~~Discussion Group at: https://groups.yahoo.com/neo/groups/k0usylink/info~~
-I'm taking a vacation from development of DMRlink. Too many complaints, demands, and assertions about how "simple" it would be to add XXXX feature. If it's so simple, do it yourself, here's the base code to start from. 
+---
+### FOR SUPPORT, DISCUSSION, GETTING INVOLVED ###
 
+Please join the DVSwitch group at groups.io for online forum support, discussion, and to become part of the development team.
+
+DVSwitch@groups.io 
+
+---
 **FOR THE IMPATENT PLEASE AT LEAST READ THIS**
 
 There are two ways to "install" DMRlink:
