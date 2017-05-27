@@ -18,3 +18,4 @@ sub_acl.py
 *.config
 *.json
 *.pickle
+*.csv
