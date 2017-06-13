@@ -125,7 +125,7 @@ cp $currentdir/play_group.py /opt/dmrlink/play_group/
 
 # proxy app
 cp $currentdir/dmrlink.py /opt/dmrlink/proxy/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/rcm/
+cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/proxy/
 #
 cp $currentdir/proxy.py /opt/dmrlink/proxy/
 cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/proxy/
