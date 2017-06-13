@@ -132,7 +132,7 @@ def build_acl(_sub_acl):
             acl_file.ACL[i] = hex_str_3(acl_file.ACL[i])
         logger.info('ACL file found and ACL entries imported')
         ACL_ACTION = acl_file.ACL_ACTION
-        ACL = acl_file.ACL_ACTION
+        ACL = acl_file.ACL
     except ImportError:
         logger.info('ACL file not found or invalid - all subscriber IDs are valid')
         ACL_ACTION = 'NONE'
