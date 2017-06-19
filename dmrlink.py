@@ -25,11 +25,17 @@
 
 from __future__ import print_function
 
-# Full imports
+import ConfigParser
+import argparse
+import sys
+import csv
+import os
 import logging
+import signal
+
 import cPickle as pickle
 
-# Function Imports
+from logging.config import dictConfig
 from hmac import new as hmac_new
 from binascii import b2a_hex as ahex
 from binascii import a2b_hex as bhex
@@ -38,18 +44,15 @@ from socket import inet_ntoa as IPAddr
 from socket import inet_aton as IPHexStr
 from time import time
 
-# Twisted Imports
 from twisted.internet.protocol import DatagramProtocol, Factory, Protocol
 from twisted.protocols.basic import NetstringReceiver
 from twisted.internet import reactor, task
 
-# Imports files in the dmrlink subdirectory (these things shouldn't change often)
 from ipsc.ipsc_const import *
 from ipsc.ipsc_mask import *
-from ipsc.reporting_const import *
-
-# Imports from DMR Utilities package
-from dmr_utils.utils import hex_str_2, hex_str_3, hex_str_4, int_id, try_download, mk_id_dict
+from dmrlink_config import build_config
+from dmrlink_log import config_logging
+from dmr_utils.utils import hex_str_2, hex_str_3, hex_str_4, int_id
 
 
 __author__      = 'Cortney T. Buffington, N0MJS'
@@ -63,83 +66,37 @@ __email__       = 'n0mjs@me.com'
 # Global variables used whether we are a module or __main__
 systems = {}
 
-
 # Timed loop used for reporting IPSC status
 #
 # REPORT BASED ON THE TYPE SELECTED IN THE MAIN CONFIG FILE
-def config_reports(_config, _logger, _factory): 
-    if _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
+def config_reports(_config):
+    if _config['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
+        def reporting_loop(_logger):  
+            _logger.debug('Periodic Reporting Loop Started (PICKLE)')
+            try:
+                with open(_config['REPORTS']['REPORT_PATH']+'dmrlink_stats.pickle', 'wb') as file:
+                    pickle.dump(_config['SYSTEMS'], file, 2)
+                    file.close()
+            except IOError as detail:
+                _logger.error('I/O Error: %s', detail)
+     
+    elif _config['REPORTS']['REPORT_NETWORKS'] == 'PRINT':
         def reporting_loop(_logger):
             _logger.debug('Periodic Reporting Loop Started (PRINT)')
             for system in _config['SYSTEMS']:
                 print_master(_config, system)
                 print_peer_list(_config, system)
-        
-        reporting = task.LoopingCall(reporting_loop, _logger)
-        reporting.start(_config['REPORTS']['REPORT_INTERVAL'])
-        report_server = False
                 
     elif _config['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
         def reporting_loop(_logger, _server):
             _logger.debug('Periodic Reporting Loop Started (NETWORK)')
             _server.send_config()
-            
-        _logger.info('DMRlink TCP reporting server starting')
-        
-        report_server = _factory(_config, _logger)
-        report_server.clients = []
-        reactor.listenTCP(_config['REPORTS']['REPORT_PORT'], report_server)
-        
-        reporting = task.LoopingCall(reporting_loop, _logger, report_server)
-        reporting.start(_config['REPORTS']['REPORT_INTERVAL'])
 
     else:
         def reporting_loop(_logger):
             _logger.debug('Periodic Reporting Loop Started (NULL)')
-        report_server = False
     
-    return report_server
-
-
-# ID ALIAS CREATION
-# Download
-def build_aliases(_config, _logger):
-    if _config['ALIASES']['TRY_DOWNLOAD'] == True:
-        # Try updating peer aliases file
-        result = try_download(_config['ALIASES']['PATH'], _config['ALIASES']['PEER_FILE'], _config['ALIASES']['PEER_URL'], _config['ALIASES']['STALE_TIME'])
-        _logger.info(result)
-        # Try updating subscriber aliases file
-        result = try_download(_config['ALIASES']['PATH'], _config['ALIASES']['SUBSCRIBER_FILE'], _config['ALIASES']['SUBSCRIBER_URL'], _config['ALIASES']['STALE_TIME'])
-        _logger.info(result)
-        
-    # Make Dictionaries
-    peer_ids = mk_id_dict(_config['ALIASES']['PATH'], _config['ALIASES']['PEER_FILE'])
-    if peer_ids:
-        _logger.info('ID ALIAS MAPPER: peer_ids dictionary is available')
-        
-    subscriber_ids = mk_id_dict(_config['ALIASES']['PATH'], _config['ALIASES']['SUBSCRIBER_FILE'])
-    if subscriber_ids:
-        _logger.info('ID ALIAS MAPPER: subscriber_ids dictionary is available')
-    
-    talkgroup_ids = mk_id_dict(_config['ALIASES']['PATH'], _config['ALIASES']['TGID_FILE'])
-    if talkgroup_ids:
-        _logger.info('ID ALIAS MAPPER: talkgroup_ids dictionary is available')
-        
-    local_ids = mk_id_dict(_config['ALIASES']['PATH'], _config['ALIASES']['LOCAL_FILE'])
-    if local_ids:
-        _logger.info('ID ALIAS MAPPER: local_ids dictionary is available')
-
-    return(peer_ids, subscriber_ids, talkgroup_ids, local_ids)
-
-
-# Make the IPSC systems from the config and the class used to build them.
-#
-def mk_ipsc_systems(_config, _logger, _systems, _ipsc, _report_server):
-    for system in _config['SYSTEMS']:
-        if _config['SYSTEMS'][system]['LOCAL']['ENABLED']:
-            _systems[system] = _ipsc(system, _config, _logger, _report_server)
-            reactor.listenUDP(_config['SYSTEMS'][system]['LOCAL']['PORT'], _systems[system], interface=_config['SYSTEMS'][system]['LOCAL']['IP'])
-    return _systems
+    return reporting_loop
 
 # Process the MODE byte in registration/peer list packets for determining master and peer capabilities
 #
@@ -279,7 +236,7 @@ def print_master(_config, _network):
 #************************************************
 
 class IPSC(DatagramProtocol):
-    def __init__(self, _name, _config, _logger, _report):
+    def __init__(self, _name, _config, _logger):
 
         # Housekeeping: create references to the configuration and status data for this IPSC instance.
         # Some configuration objects that are used frequently and have lengthy names are shortened
@@ -289,9 +246,7 @@ class IPSC(DatagramProtocol):
         self._system = _name
         self._CONFIG = _config
         self._logger = _logger
-        self._report = _report
         self._config = self._CONFIG['SYSTEMS'][self._system]
-        self._rcm = self._CONFIG['REPORTS']['REPORT_RCM'] and self._report
         #
         self._local = self._config['LOCAL']
         self._local_id = self._local['RADIO_ID']
@@ -365,13 +320,7 @@ class IPSC(DatagramProtocol):
         else:
             self._logger.warning('(%s) Peer De-Registration Requested for: %s, but we don\'t have a listing for this peer', self._system, int_id(_peerid))
             pass
-            
-    # De-register ourselves from the IPSC
-    def de_register_self(self):
-        self._logger.info('(%s) De-Registering self from the IPSC system', self._system)
-        de_reg_req_pkt = self.hashed_packet(self._local['AUTH_KEY'], self.DE_REG_REQ_PKT)
-        self.send_to_ipsc(de_reg_req_pkt)
-    
+
     # Take a received peer list and the network it belongs to, process and populate the
     # data structure in my_ipsc_config with the results, and return a simple list of peers.
     #
@@ -442,23 +391,15 @@ class IPSC(DatagramProtocol):
     #************************************************
     #     CALLBACK FUNCTIONS FOR USER PACKET TYPES
     #************************************************
-    
-    # If RCM reporting and reporting is network-based in the global configuration, 
-    # send the RCM packet to the monitoring server
+
     def call_mon_status(self, _data):
         self._logger.debug('(%s) Repeater Call Monitor Origin Packet Received: %s', self._system, ahex(_data))
-        if self._rcm:
-            self._report.send_rcm(self._system + ','+ _data)
-            
+    
     def call_mon_rpt(self, _data):
         self._logger.debug('(%s) Repeater Call Monitor Repeating Packet Received: %s', self._system, ahex(_data))
-        if self._rcm:
-            self._report.send_rcm(self._system + ',' + _data)
-            
+    
     def call_mon_nack(self, _data):
         self._logger.debug('(%s) Repeater Call Monitor NACK Packet Received: %s', self._system, ahex(_data))
-        if self._rcm:
-            self._report.send_rcm(self._system + ',' + _data)
     
     def xcmp_xnl(self, _data):
         self._logger.debug('(%s) XCMP/XNL Packet Received: %s', self._system, ahex(_data))
@@ -997,51 +938,45 @@ class IPSC(DatagramProtocol):
 # Socket-based reporting section
 #
 class report(NetstringReceiver):
-    def __init__(self, factory):
-        self._factory = factory
+    def __init__(self):
+        pass
 
     def connectionMade(self):
-        self._factory.clients.append(self)
-        self._factory._logger.info('DMRlink reporting client connected: %s', self.transport.getPeer())
+        report_server.clients.append(self)
+        logger.info('DMRlink reporting client connected: %s', self.transport.getPeer())
 
     def connectionLost(self, reason):
-        self._factory._logger.info('DMRlink reporting client disconnected: %s', self.transport.getPeer())
-        self._factory.clients.remove(self)
+        logger.info('DMRlink reporting client disconnected: %s', self.transport.getPeer())
+        report_server.clients.remove(self)
 
     def stringReceived(self, data):
         self.process_message(data)
 
     def process_message(self, _message):
         opcode = _message[:1]
-        if opcode == REPORT_OPCODES['CONFIG_REQ']:
-            self._factory._logger.info('DMRlink reporting client sent \'CONFIG_REQ\': %s', self.transport.getPeer())
+        if opcode == REP_OPC['CONFIG_REQ']:
+            logger.info('DMRlink reporting client sent \'CONFIG_REQ\': %s', self.transport.getPeer())
             self.send_config()
         else:
             print('got unknown opcode')
         
 class reportFactory(Factory):
-    def __init__(self, config, logger):
-        self._config = config
-        self._logger = logger
+    def __init__(self):
+        pass
         
     def buildProtocol(self, addr):
-        if (addr.host) in self._config['REPORTS']['REPORT_CLIENTS'] or '*' in self._config['REPORTS']['REPORT_CLIENTS']:
-            self._logger.debug('Permitting report server connection attempt from: %s:%s', addr.host, addr.port)
-            return report(self)
+        if (addr.host) in CONFIG['REPORTS']['REPORT_CLIENTS']:
+            return report()
         else:
-            self._logger.error('Invalid report server connection attempt from: %s:%s', addr.host, addr.port)
             return None
             
     def send_clients(self, _message):
-        for client in self.clients:
+        for client in report_server.clients:
             client.sendString(_message)
             
     def send_config(self):
-        serialized = pickle.dumps(self._config['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
-        self.send_clients(REPORT_OPCODES['CONFIG_SND']+serialized)
-        
-    def send_rcm(self, _data):
-        self.send_clients(REPORT_OPCODES['RCM_SND']+_data)
+        serialized = pickle.dumps(CONFIG['SYSTEMS'], protocol=pickle.HIGHEST_PROTOCOL)
+        self.send_clients(REP_OPC['CONFIG_SND']+serialized)
 
 
 #************************************************
@@ -1049,13 +984,6 @@ class reportFactory(Factory):
 #************************************************
 
 if __name__ == '__main__':
-    import argparse
-    import sys
-    import os
-    import signal
-    
-    from ipsc.dmrlink_config import build_config
-    from ipsc.dmrlink_log import config_logging
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -1079,28 +1007,50 @@ if __name__ == '__main__':
     if cli_args.LOG_HANDLERS:
         CONFIG['LOGGER']['LOG_HANDLERS'] = cli_args.LOG_HANDLERS
     logger = config_logging(CONFIG['LOGGER'])
-    logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2017 N0MJS & the K0USY Group - SYSTEM STARTING...')
     
-    # Set signal handers so that we can gracefully exit if need be
+    config_reports(CONFIG)
+    
+
+    logger.info('DMRlink \'dmrlink.py\' (c) 2013 - 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
+    
+    # Shut ourselves down gracefully with the IPSC peers.
     def sig_handler(_signal, _frame):
         logger.info('*** DMRLINK IS TERMINATING WITH SIGNAL %s ***', str(_signal))
-        for system in systems:
-            systems[system].de_register_self()
-        reactor.stop()
     
+        for system in systems:
+            this_ipsc = systems[system]
+            logger.info('De-Registering from IPSC %s', system)
+            de_reg_req_pkt = this_ipsc.hashed_packet(this_ipsc._local['AUTH_KEY'], this_ipsc.DE_REG_REQ_PKT)
+            this_ipsc.send_to_ipsc(de_reg_req_pkt)
+        reactor.stop()
+
+    # Set signal handers so that we can gracefully exit if need be
     for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
         signal.signal(sig, sig_handler)
     
-    # INITIALIZE THE REPORTING LOOP
-    report_server = config_reports(CONFIG, logger, reportFactory)
-    
-    # Build ID Aliases
-    peer_ids, subscriber_ids, talkgroup_ids, local_ids = build_aliases(CONFIG, logger)
+    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
+            systems[system] = IPSC(system, CONFIG, logger)
+            reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
+  
+    # INITIALIZE THE REPORTING LOOP IF CONFIGURED
+    if CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PRINT' or CONFIG['REPORTS']['REPORT_NETWORKS'] == 'PICKLE':
+        reporting_loop = config_reports(CONFIG)
+        reporting = task.LoopingCall(reporting_loop, logger)
+        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
         
-    # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGRUED IPSC
-    systems = mk_ipsc_systems(CONFIG, logger, systems, IPSC, report_server)
-
-
-
-    # INITIALIZATION COMPLETE -- START THE REACTOR
+    # INITIALIZE THE NETWORK-BASED REPORTING SERVER
+    elif CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK': 
+        logger.info('(confbridge.py) TCP reporting server starting')
+        from ipsc.reporting_const import REPORT_OPCODES as REP_OPC
+        
+        report_server = reportFactory()
+        report_server.clients = []
+        reactor.listenTCP(CONFIG['REPORTS']['REPORT_PORT'], reportFactory())
+        
+        reporting_loop = config_reports(CONFIG)
+        reporting = task.LoopingCall(reporting_loop, logger, report_server)
+        reporting.start(CONFIG['REPORTS']['REPORT_INTERVAL'])
+  
     reactor.run()
