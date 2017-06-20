@@ -50,7 +50,7 @@ __credits__     = 'Adam Fast, KC0YLK; Dave Kierzkowski, KD8EYF; Robert Garcia, N
 __license__     = 'GNU GPLv3'
 __maintainer__  = 'Cort Buffington, N0MJS'
 __email__       = 'n0mjs@me.com'
-__version__    = '20170609'
+__version__    = '20170620'
 
 
 try:
