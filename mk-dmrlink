@@ -12,6 +12,19 @@ echo ""
 # Application                                   #
 #################################################
 
+# Install the required support programs
+        apt-get install unzip -y
+        apt-get install python-dev -y
+        apt-get install python-pip -y
+        apt-get install python-twisted -y
+        pip install bitstring
+        pip install bitarray
+
+        cd /opt
+        git clone https://github.com/n0mjs710/dmr_utils.git
+        cd dmr_utils/
+        pip install .
+
 echo "Required programs installed, continuing"
 
 # To allow multiple instances of DMRlink to run
