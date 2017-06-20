@@ -84,7 +84,7 @@ cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/IPSC_Bridge/
 cp $currentdir/IPSC_Bridge.cfg /opt/dmrlink/IPSC_Bridge/
 cp $currentdir/IPSC_Bridge.py /opt/dmrlink/IPSC_Bridge/
 # cp $currentdir/IPSC_Bridge_commands.txt /opt/dmrlink/IPSC_Bridge/
-# cp $currentdir/template.bin /opt/dmrlink/IPSC_Bridge/
+cp $currentdir/template.bin /opt/dmrlink/IPSC_Bridge/
 
 # Bridge app
 cp $currentdir/dmrlink.py /opt/dmrlink/bridge/
