@@ -24,6 +24,8 @@
 # frames and metadata to an external program/network.  It also knows how to import
 # AMBE and metadata from an external network and send the DMR frames to IPSC networks.
 
+#####################################################################################################
+
 from __future__ import print_function
 from twisted.internet import reactor
 from binascii import b2a_hex as h
@@ -32,15 +34,15 @@ from bitstring import BitArray
 import sys, socket, ConfigParser, thread, traceback
 import cPickle as pickle
 
-from dmrlink import IPSC, systems
+from dmrlink import IPSC, systems, config_reports, reportFactory 
 from dmr_utils.utils import int_id, hex_str_3, hex_str_4, get_alias, get_info
 
 from time import time, sleep, clock, localtime, strftime
 import csv
 import struct
 from random import randint
-import ambe_utils
-from ambe_bridge import AMBE_IPSC
+from dmr_utils import ambe_utils
+from dmr_utils.ambe_bridge import AMBE_IPSC
 
 __author__      = 'Cortney T. Buffington, N0MJS'
 __copyright__   = 'Copyright (c) 2013 - 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
@@ -71,7 +73,6 @@ class ambeIPSC(IPSC):
     _debug = False                                      # Debug output for each VOICE frame
     _outToFile = False                                  # Write each AMBE frame to a file called ambe.bin
     _outToUDP = True                                    # Send each AMBE frame to the _sock object (turn on/off Analog_Bridge operation)
-    #_gateway = "192.168.1.184"
     _gateway = "127.0.0.1"                              # IP address of  app
     _gateway_port = 31000                               # Port Analog_Bridge is listening on for AMBE frames to decode
     _remote_control_port = 31002                        # Port that ambe_audio is listening on for remote control commands
@@ -95,13 +96,13 @@ class ambeIPSC(IPSC):
     _dmrgui = ''
     cc = 1
     ipsc_seq = 0
-    
+
     ###### DEBUGDEBUGDEBUG
     #_d = None
     ###### DEBUGDEBUGDEBUG
     
-    def __init__(self, _name, _config, _logger):
-        IPSC.__init__(self, _name, _config, _logger)
+    def __init__(self, _name, _config, _logger, _report):
+        IPSC.__init__(self, _name, _config, _logger, _report)
         self.CALL_DATA = []
         
         #
@@ -115,6 +116,7 @@ class ambeIPSC(IPSC):
         logger.info('DMRLink IPSC Bridge')
         if self._gateway_dmr_id == 0:
             sys.exit( "Error: gatewayDmrId must be set (greater than zero)" )
+
         #
         # Open output sincs
         #
@@ -159,7 +161,7 @@ class ambeIPSC(IPSC):
             if sec == None:
                 sec = self.defaultOption(config, 'DEFAULTS', 'section', networkName)
             if config.has_section(sec) == False:
-                logger.error('Section ' + sec + ' was not found, using DEFAULTS')
+                logger.info('Section ' + sec + ' was not found, using DEFAULTS')
                 sec = 'DEFAULTS'
             self._debug = bool(self.defaultOption(config, sec,'debug', self._debug) == 'True')
             self._outToFile = bool(self.defaultOption(config, sec,'outToFile', self._outToFile) == 'True')
@@ -272,9 +274,9 @@ if __name__ == '__main__':
     import sys
     import signal
     from dmr_utils.utils import try_download, mk_id_dict
-    
-    import dmrlink_log
-    import dmrlink_config
+
+    from ipsc.dmrlink_log import config_logging    
+    from ipsc.dmrlink_config import build_config
     
     # Change the current directory to the location of the application
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -290,14 +292,14 @@ if __name__ == '__main__':
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
     
     # Call the external routine to build the configuration dictionary
-    CONFIG = dmrlink_config.build_config(cli_args.CFG_FILE)
+    CONFIG = build_config(cli_args.CFG_FILE)
     
     # Call the external routing to start the system logger
     if cli_args.LOG_LEVEL:
         CONFIG['LOGGER']['LOG_LEVEL'] = cli_args.LOG_LEVEL
     if cli_args.LOG_HANDLERS:
         CONFIG['LOGGER']['LOG_HANDLERS'] = cli_args.LOG_HANDLERS
-    logger = dmrlink_log.config_logging(CONFIG['LOGGER'])
+    logger = config_logging(CONFIG['LOGGER'])  
 
     logger.info('DMRlink \'IPSC_Bridge.py\' (c) 2015 N0MJS & the K0USY Group - SYSTEM STARTING...')
     logger.info('Version %s', __version__)
@@ -339,12 +341,16 @@ if __name__ == '__main__':
     # Set signal handers so that we can gracefully exit if need be
     for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT]:
         signal.signal(sig, sig_handler)
-    
-    
+
+    # INITIALIZE THE REPORTING LOOP
+    report_server = config_reports(CONFIG, logger, reportFactory)
+
     # INITIALIZE AN IPSC OBJECT (SELF SUSTAINING) FOR EACH CONFIGUED IPSC
     for system in CONFIG['SYSTEMS']:
         if CONFIG['SYSTEMS'][system]['LOCAL']['ENABLED']:
-            systems[system] = ambeIPSC(system, CONFIG, logger)
+            systems[system] = ambeIPSC(system, CONFIG, logger, report_server)
             reactor.listenUDP(CONFIG['SYSTEMS'][system]['LOCAL']['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['LOCAL']['IP'])
     
     reactor.run()
+
+

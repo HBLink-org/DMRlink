@@ -12,19 +12,6 @@ echo ""
 # Application                                   #
 #################################################
 
-# Install the required support programs
-	apt-get install unzip -y
-        apt-get install python-dev -y
-	apt-get install python-pip -y
-        apt-get install python-twisted -y
-	pip install bitstring
-	pip install bitarray
-
-        cd /opt
-        git clone https://github.com/n0mjs710/dmr_utils.git
-        cd dmr_utils/
-	pip install .
-
 echo "Required programs installed, continuing"
 
 # To allow multiple instances of DMRlink to run
@@ -32,7 +19,7 @@ echo "Required programs installed, continuing"
 # The needed files are copied to /opt/dmrlink
 
 # Make needed directories
- mkdir -p /opt/dmrlink/ambe_audio/
+ mkdir -p /opt/dmrlink/IPSC_Bridge/
  mkdir -p /opt/dmrlink/bridge/
  mkdir -p /opt/dmrlink/confbridge/
  mkdir -p /opt/dmrlink/log/
@@ -52,7 +39,7 @@ cd /opt/dmrlink
 # cp $currentdir/talkgroup_ids.csv /opt/dmrlink
 
 # Copy ipsc directory into each app directory
-cp -rf $currentdir/ipsc/ /opt/dmrlink/ambe_audio/
+cp -rf $currentdir/ipsc/ /opt/dmrlink/IPSC_Bridge/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/bridge/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/confbridge/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/log/
@@ -68,23 +55,23 @@ cp $currentdir/confbridge_rules_SAMPLE.py /opt/dmrlink/samples
 cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/samples
 cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/samples
 cp $currentdir/playback_config_SAMPLE.py /opt/dmrlink/samples
-cp $currentdir/ambe_audio.cfg /opt/dmrlink/samples
+cp $currentdir/IPSC_Bridge.cfg /opt/dmrlink/samples
 cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/samples
 
 # Put the doc together for easy reference
 cp -rf $currentdir/documents /opt/dmrlink
 cp $currentdir/LICENSE.txt /opt/dmrlink/documents
 cp $currentdir/requirements.txt /opt/dmrlink/documents
-cp $currentdir/ambe_audio_commands.txt /opt/dmrlink/documents
+# cp $currentdir/IPSC_Bridge_commands.txt /opt/dmrlink/documents
 
-# ambe_audio
-cp $currentdir/dmrlink.py /opt/dmrlink/ambe_audio/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/ambe_audio/
+# IPSC_Bridge
+cp $currentdir/dmrlink.py /opt/dmrlink/IPSC_Bridge/
+cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/IPSC_Bridge/
 #
-cp $currentdir/ambe_audio.cfg /opt/dmrlink/ambe_audio/
-cp $currentdir/ambe_audio.py /opt/dmrlink/ambe_audio/
-cp $currentdir/ambe_audio_commands.txt /opt/dmrlink/ambe_audio/
-cp $currentdir/template.bin /opt/dmrlink/ambe_audio/
+cp $currentdir/IPSC_Bridge.cfg /opt/dmrlink/IPSC_Bridge/
+cp $currentdir/IPSC_Bridge.py /opt/dmrlink/IPSC_Bridge/
+# cp $currentdir/IPSC_Bridge_commands.txt /opt/dmrlink/IPSC_Bridge/
+# cp $currentdir/template.bin /opt/dmrlink/IPSC_Bridge/
 
 # Bridge app
 cp $currentdir/dmrlink.py /opt/dmrlink/bridge/
