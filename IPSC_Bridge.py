@@ -19,12 +19,10 @@
 #   along with this program; if not, write to the Free Software Foundation,
 #   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 ###############################################################################
-
 # This is a bridge application for IPSC networks.  It knows how to export AMBE
 # frames and metadata to an external program/network.  It also knows how to import
 # AMBE and metadata from an external network and send the DMR frames to IPSC networks.
-
-#####################################################################################################
+###############################################################################
 
 from __future__ import print_function
 from twisted.internet import reactor
@@ -69,33 +67,15 @@ except ImportError:
 #
 class ambeIPSC(IPSC):
 
-    _configFile='IPSC_Bridge.cfg'                        # Name of the config file to over-ride these default values
-    _debug = False                                      # Debug output for each VOICE frame
-    _outToFile = False                                  # Write each AMBE frame to a file called ambe.bin
-    _outToUDP = True                                    # Send each AMBE frame to the _sock object (turn on/off Analog_Bridge operation)
+    _configFile='IPSC_Bridge.cfg'                       # Name of the config file to over-ride these default values
     _gateway = "127.0.0.1"                              # IP address of  app
     _gateway_port = 31000                               # Port Analog_Bridge is listening on for AMBE frames to decode
-    _remote_control_port = 31002                        # Port that ambe_audio is listening on for remote control commands
     _ambeRxPort = 31003                                 # Port to listen on for AMBE frames to transmit to all peers
-    _gateway_dmr_id = 0                                 # id to use when transmitting from the gateway
-    _tg_filter = [2,3,13,3174,3777215,3100,9,9998,3112]  #set this to the tg to monitor
     
-    _no_tg = -99                                        # Flag (const) that defines a value for "no tg is currently active"
     _busy_slots = [0,0,0]                               # Keep track of activity on each slot.  Make sure app is polite
-    _sock = -1;                                         # Socket object to send AMBE to Analog_Bridge
-    lastPacketTimeout = 0                               # Time of last packet. Used to trigger an artifical TERM if one was not seen
-    _transmitStartTime = 0                              # Used for info on transmission duration
-    _start_seq = 0                                      # Used to maintain error statistics for a transmission
-    _packet_count = 0                                   # Used to maintain error statistics for a transmission
-    _seq = 0                                            # Transmit frame sequence number (auto-increments for each frame)
-    _f = None                                           # File handle for debug AMBE binary output
 
-    _tx_tg = hex_str_3(9998)                            # Hard code the destination TG.  This ensures traffic will not show up on DMR-MARC
-    _tx_ts = 2                                          # Time Slot 2
     _currentNetwork = ""
-    _dmrgui = ''
     cc = 1
-    ipsc_seq = 0
 
     ###### DEBUGDEBUGDEBUG
     #_d = None
@@ -103,30 +83,16 @@ class ambeIPSC(IPSC):
     
     def __init__(self, _name, _config, _logger, _report):
         IPSC.__init__(self, _name, _config, _logger, _report)
-        self.CALL_DATA = []
         
         #
         # Define default values for operation.  These will be overridden by the .cfg file if found
         #
         
-        self._currentTG = self._no_tg
         self._currentNetwork = str(_name)
         self.readConfigFile(self._configFile, None, self._currentNetwork)
     
         logger.info('DMRLink IPSC Bridge')
-        if self._gateway_dmr_id == 0:
-            sys.exit( "Error: gatewayDmrId must be set (greater than zero)" )
 
-        #
-        # Open output sincs
-        #
-        if self._outToFile == True:
-            self._f = open('ambe.bin', 'wb')
-            logger.info('Opening output file: ambe.bin')
-        if self._outToUDP == True:
-            self._sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-            logger.info('Send UDP frames to Partner Bridge {}:{}'.format(self._gateway, self._gateway_port))
-        
         self.ipsc_ambe = AMBE_IPSC(self, _name, _config, _logger, self._ambeRxPort)
 
     def get_globals(self):
@@ -134,10 +100,6 @@ class ambeIPSC(IPSC):
 
     def get_repeater_id(self, import_id):
         return self._config['LOCAL']['RADIO_ID']
-
-    # Utility function to convert bytes to string of hex values (for debug)
-    def ByteToHex( self, byteStr ):
-        return ''.join( [ "%02X " % ord(x) for x in byteStr ] ).strip()
 
     #
     # Now read the configuration file and parse out the values we need
@@ -163,22 +125,11 @@ class ambeIPSC(IPSC):
             if config.has_section(sec) == False:
                 logger.info('Section ' + sec + ' was not found, using DEFAULTS')
                 sec = 'DEFAULTS'
-            self._debug = bool(self.defaultOption(config, sec,'debug', self._debug) == 'True')
-            self._outToFile = bool(self.defaultOption(config, sec,'outToFile', self._outToFile) == 'True')
-            self._outToUDP = bool(self.defaultOption(config, sec,'outToUDP', self._outToUDP) == 'True')
 
             self._gateway = self.defaultOption(config, sec,'gateway', self._gateway)
             self._gateway_port = int(self.defaultOption(config, sec,'toGatewayPort', self._gateway_port))
 
-            self._remote_control_port = int(self.defaultOption(config, sec,'remoteControlPort', self._remote_control_port))
             self._ambeRxPort = int(self.defaultOption(config, sec,'fromGatewayPort', self._ambeRxPort))
-            self._gateway_dmr_id = int(self.defaultOption(config, sec, 'gatewayDmrId', self._gateway_dmr_id))
-
-            _tgs = self.defaultOption(config, sec,'tgFilter', str(self._tg_filter).strip('[]'))
-            self._tg_filter = map(int, _tgs.split(','))
-
-            self._tx_tg = hex_str_3(int(self.defaultOption(config, sec, 'txTg', int_id(self._tx_tg))))
-            self._tx_ts = int(self.defaultOption(config, sec, 'txTs', self._tx_ts))
 
         except ConfigParser.NoOptionError as e:
             print('Using a default value:', e)
