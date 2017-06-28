@@ -373,7 +373,7 @@ class confbridgeIPSC(IPSC):
                     if _system['SYSTEM'] == self._system:
 
                         # TGID matches an ACTIVATION trigger
-                        if _dst_group in _system['ON']:
+                        if _dst_group in _system['ON'] and _ts == _system['TS']:
                             # Set the matching rule as ACTIVE
                             if _system['ACTIVE'] == False:
                                 _system['ACTIVE'] = True
@@ -388,7 +388,7 @@ class confbridgeIPSC(IPSC):
                                 self._logger.info('(%s) Bridge: %s, timeout timer reset to: %s', self._system, _bridge, _system['TIMER'] - now)
 
                         # TGID matches an DE-ACTIVATION trigger
-                        if _dst_group in _system['OFF']:
+                        if _dst_group in _system['OFF'] and _ts == _system['TS']:
                             # Set the matching rule as ACTIVE
                             if _system['ACTIVE'] == True:
                                 _system['ACTIVE'] = False
