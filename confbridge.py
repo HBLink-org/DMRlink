@@ -360,7 +360,7 @@ class confbridgeIPSC(IPSC):
                 self.call_duration = now - self.call_start
                 self._logger.info('(%s) GROUP VOICE END:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s Duration: %.2fs', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration)
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-                    self._report.send_bridgeEvent('GROUP VOICE END,{},{},{},{},{},{},{:.2f}s'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration))
+                    self._report.send_bridgeEvent('GROUP VOICE END,{},{},{},{},{},{},{:.2f}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration))
             else:
                 self._logger.warning('(%s) GROUP VOICE END WITHOUT MATCHING START:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group))
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
