@@ -1,6 +1,6 @@
-ACL_ACTION = "DENY"  # May be PERMIT|DENY
-ACL = [
-    1234001,
-    1234002,
-    1234003
-    ]
+# The 'action' May be PERMIT|DENY
+# Each entry may be a single radio id, or a hypenated range (e.g. 1-2999)
+# Format:
+# ACL = 'action:id|start-end|,id|start-end,....'
+
+ACL = 'DENY:1-2999,16777215'

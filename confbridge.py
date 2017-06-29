@@ -149,16 +149,28 @@ def make_bridge_config(_confbridge_rules):
 # are not yet implemented.
 def build_acl(_sub_acl):
     try:
+        logger.info('ACL file found, importing entries. This will take about 1.5 seconds per 1 million IDs')
         acl_file = import_module(_sub_acl)
-        for i, e in enumerate(acl_file.ACL):
-            acl_file.ACL[i] = hex_str_3(acl_file.ACL[i])
-        logger.info('ACL file found and ACL entries imported')
-        ACL_ACTION = acl_file.ACL_ACTION
-        ACL = acl_file.ACL_ACTION
+        sections = acl_file.ACL.split(':')
+        ACL_ACTION = sections[0]
+        entries_str = sections[1]
+        ACL = set()
+        
+        for entry in entries_str.split(','):
+            if '-' in entry:
+                start,end = entry.split('-')
+                start,end = int(start), int(end)
+                for id in range(start, end+1):
+                    ACL.add(hex_str_3(id))
+            else:
+                id = int(entry)
+                ACL.add(hex_str_3(id))
+        
+        logger.info('ACL loaded: action "{}" for {:,} radio IDs'.format(ACL_ACTION, len(ACL)))
+    
     except ImportError:
         logger.info('ACL file not found or invalid - all subscriber IDs are valid')
         ACL_ACTION = 'NONE'
-        ACL = []
 
     # Depending on which type of ACL is used (PERMIT, DENY... or there isn't one)
     # define a differnet function to be used to check the ACL
@@ -352,7 +364,7 @@ class confbridgeIPSC(IPSC):
                 self.call_start = now
                 self._logger.info('(%s) GROUP VOICE START: CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group))
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-                    self._report.send_bridgeEvent('({}) GROUP VOICE START: CallID: {} PEER: {}, SUB: {}, TS: {}, TGID: {}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group)))
+                    self._report.send_bridgeEvent('GROUP VOICE,START,{},{},{},{},{},{}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group)))
                 
         # Action happens on un-key
         if _burst_data_type == BURST_DATA_TYPE['VOICE_TERM']:
@@ -360,11 +372,11 @@ class confbridgeIPSC(IPSC):
                 self.call_duration = now - self.call_start
                 self._logger.info('(%s) GROUP VOICE END:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s Duration: %.2fs', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration)
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-                    self._report.send_bridgeEvent('({}) GROUP VOICE END:   CallID: {} PEER: {}, SUB: {}, TS: {}, TGID: {} Duration: {:.2f}s'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration))
+                    self._report.send_bridgeEvent('GROUP VOICE,END,{},{},{},{},{},{},{:.2f}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group), self.call_duration))
             else:
                 self._logger.warning('(%s) GROUP VOICE END WITHOUT MATCHING START:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s', self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group))
                 if self._CONFIG['REPORTS']['REPORT_NETWORKS'] == 'NETWORK':
-                    self._report.send_bridgeEvent('(%s) GROUP VOICE END WITHOUT MATCHING START:   CallID: %s PEER: %s, SUB: %s, TS: %s, TGID: %s'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group)))
+                    self._report.send_bridgeEvent('GROUP VOICE,UNMATCHED END,{},{},{},{},{},{}'.format(self._system, int_id(_seq_id), int_id(_peerid), int_id(_src_sub), _ts, int_id(_dst_group)))
                 
 
             # Iterate the rules dictionary
