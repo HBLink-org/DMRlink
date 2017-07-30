@@ -137,6 +137,8 @@ def make_bridge_config(_confbridge_rules):
                 _system['ON'][i]  = hex_str_3(_system['ON'][i])
             for i, e in enumerate(_system['OFF']):
                 _system['OFF'][i] = hex_str_3(_system['OFF'][i])
+            for i, e in enumerate(_system['RESET']):
+                _system['RESET'][i] = hex_str_3(_system['RESET'][i])
             _system['TIMEOUT']    = _system['TIMEOUT']*60
             _system['TIMER']      = time()
 
