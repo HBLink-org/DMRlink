@@ -418,7 +418,7 @@ class confbridgeIPSC(IPSC):
                                 _system['TIMER'] = now + _system['TIMEOUT']
                                 self._logger.info('(%s) Bridge: %s, timeout timer reset to: %s', self._system, _bridge, _system['TIMER'] - now)
                             # Cancel the timer if we've enabled an "ON" type timeout
-                            if _system['ACTIVE'] == True and _system['TO_TYPE'] == 'ON':
+                            if _system['ACTIVE'] == True and _system['TO_TYPE'] == 'ON' and _dst_group in _system['OFF']:
                                 _system['TIMER'] = now
                                 self._logger.info('(%s) Bridge: %s set to ON with and "OFF" timer rule: timeout timer cancelled', self._system, _bridge)
 
