@@ -385,31 +385,33 @@ class confbridgeIPSC(IPSC):
                     if _system['SYSTEM'] == self._system:
 
                         # TGID matches an ACTIVATION trigger
-                        if _dst_group in _system['ON'] and _ts == _system['TS']:
+                        if (_dst_group in _system['ON']  or _dst_group in _system['RESET']) and _ts == _system['TS']:
                             # Set the matching rule as ACTIVE
-                            if _system['ACTIVE'] == False:
-                                _system['ACTIVE'] = True
-                                self._logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
-                                # Cancel the timer if we've enabled an "OFF" type timeout
-                                if _system['TO_TYPE'] == 'OFF':
-                                    _system['TIMER'] = now
-                                    self._logger.info('(%s) Bridge: %s set to "OFF" with an on timer rule: timeout timer cancelled', self._system, _bridge)
+                            if _dst_group in _system['ON']:
+                                if _system['ACTIVE'] == False:
+                                    _system['ACTIVE'] = True
+                                    self._logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
+                                    # Cancel the timer if we've enabled an "OFF" type timeout
+                                    if _system['TO_TYPE'] == 'OFF':
+                                        _system['TIMER'] = now
+                                        self._logger.info('(%s) Bridge: %s set to "OFF" with an on timer rule: timeout timer cancelled', self._system, _bridge)
                             # Reset the timer for the rule
                             if _system['ACTIVE'] == True and _system['TO_TYPE'] == 'ON':
                                 _system['TIMER'] = now + _system['TIMEOUT']
                                 self._logger.info('(%s) Bridge: %s, timeout timer reset to: %s', self._system, _bridge, _system['TIMER'] - now)
 
                         # TGID matches an DE-ACTIVATION trigger
-                        if _dst_group in _system['OFF'] and _ts == _system['TS']:
+                        if (_dst_group in _system['OFF']  or _dst_group in _system['RESET']) and _ts == _system['TS']:
                             # Set the matching rule as ACTIVE
-                            if _system['ACTIVE'] == True:
-                                _system['ACTIVE'] = False
-                                self._logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
-                                # Cancel the timer if we've enabled an "ON" type timeout
-                                if _system['TO_TYPE'] == 'ON':
-                                    _system['TIMER'] = now
-                                    self._logger.info('(%s) Bridge: %s set to ON with and "OFF" timer rule: timeout timer cancelled', self._system, _bridge)
-                            # Reset tge timer for the rule
+                            if _dst_group in _system['OFF']:
+                                if _system['ACTIVE'] == True:
+                                    _system['ACTIVE'] = False
+                                    self._logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
+                                    # Cancel the timer if we've enabled an "ON" type timeout
+                                    if _system['TO_TYPE'] == 'ON':
+                                        _system['TIMER'] = now
+                                        self._logger.info('(%s) Bridge: %s set to ON with and "OFF" timer rule: timeout timer cancelled', self._system, _bridge)
+                            # Reset the timer for the rule
                             if _system['ACTIVE'] == False and _system['TO_TYPE'] == 'OFF':
                                 _system['TIMER'] = now + _system['TIMEOUT']
                                 self._logger.info('(%s) Bridge: %s, timeout timer reset to: %s', self._system, _bridge, _system['TIMER'] - now)
