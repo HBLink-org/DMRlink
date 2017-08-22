@@ -17,8 +17,8 @@ echo ""
         apt-get install python-dev -y
 	apt-get install python-pip -y
         apt-get install python-twisted -y
-	pip install bitstring
-	pip install bitarray
+	# pip install bitstring
+	# pip install bitarray
 
         cd /opt
         git clone https://github.com/n0mjs710/dmr_utils.git
