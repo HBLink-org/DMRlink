@@ -17,8 +17,8 @@ echo ""
         apt-get install python-dev -y
 	apt-get install python-pip -y
         apt-get install python-twisted -y
-	# pip install bitstring
-	# pip install bitarray
+#	pip install bitstring
+#	pip install bitarray
 
         cd /opt
         git clone https://github.com/n0mjs710/dmr_utils.git
@@ -32,15 +32,15 @@ echo "Required programs installed, continuing"
 # The needed files are copied to /opt/dmrlink
 
 # Make needed directories
- mkdir -p /opt/dmrlink/ambe_audio/
- mkdir -p /opt/dmrlink/bridge/
+# mkdir -p /opt/dmrlink/ambe_audio/
+# mkdir -p /opt/dmrlink/bridge/
  mkdir -p /opt/dmrlink/confbridge/
- mkdir -p /opt/dmrlink/log/
+# mkdir -p /opt/dmrlink/log/
  mkdir -p /opt/dmrlink/playback/
- mkdir -p /opt/dmrlink/play_group/
+# mkdir -p /opt/dmrlink/play_group/
  mkdir -p /opt/dmrlink/proxy/
- mkdir -p /opt/dmrlink/rcm/
- mkdir -p /opt/dmrlink/record/
+# mkdir -p /opt/dmrlink/rcm/
+# mkdir -p /opt/dmrlink/record/
  mkdir -p /opt/dmrlink/samples
  mkdir -p /var/log/dmrlink
 
@@ -52,48 +52,48 @@ cd /opt/dmrlink
 # cp $currentdir/talkgroup_ids.csv /opt/dmrlink
 
 # Copy ipsc directory into each app directory
-cp -rf $currentdir/ipsc/ /opt/dmrlink/ambe_audio/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/bridge/
+#cp -rf $currentdir/ipsc/ /opt/dmrlink/ambe_audio/
+#cp -rf $currentdir/ipsc/ /opt/dmrlink/bridge/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/confbridge/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/log/
+#cp -rf $currentdir/ipsc/ /opt/dmrlink/log/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/playback/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/play_group/
+#cp -rf $currentdir/ipsc/ /opt/dmrlink/play_group/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/proxy/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/rcm/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/record/
+#cp -rf $currentdir/ipsc/ /opt/dmrlink/rcm/
+#cp -rf $currentdir/ipsc/ /opt/dmrlink/record/
 
 # Put a copy of the samples together for easy reference
-cp $currentdir/bridge_rules_SAMPLE.py /opt/dmrlink/samples
+#cp $currentdir/bridge_rules_SAMPLE.py /opt/dmrlink/samples
 cp $currentdir/confbridge_rules_SAMPLE.py /opt/dmrlink/samples
 cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/samples
 cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/samples
 cp $currentdir/playback_config_SAMPLE.py /opt/dmrlink/samples
-cp $currentdir/ambe_audio.cfg /opt/dmrlink/samples
+#cp $currentdir/ambe_audio.cfg /opt/dmrlink/samples
 cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/samples
 
 # Put the doc together for easy reference
 cp -rf $currentdir/documents /opt/dmrlink
 cp $currentdir/LICENSE.txt /opt/dmrlink/documents
 cp $currentdir/requirements.txt /opt/dmrlink/documents
-cp $currentdir/ambe_audio_commands.txt /opt/dmrlink/documents
+#cp $currentdir/ambe_audio_commands.txt /opt/dmrlink/documents
 
 # ambe_audio
-cp $currentdir/dmrlink.py /opt/dmrlink/ambe_audio/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/ambe_audio/
+#cp $currentdir/dmrlink.py /opt/dmrlink/ambe_audio/
+#cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/ambe_audio/
 #
-cp $currentdir/ambe_audio.cfg /opt/dmrlink/ambe_audio/
-cp $currentdir/ambe_audio.py /opt/dmrlink/ambe_audio/
-cp $currentdir/ambe_audio_commands.txt /opt/dmrlink/ambe_audio/
-cp $currentdir/template.bin /opt/dmrlink/ambe_audio/
+#cp $currentdir/ambe_audio.cfg /opt/dmrlink/ambe_audio/
+#cp $currentdir/ambe_audio.py /opt/dmrlink/ambe_audio/
+#cp $currentdir/ambe_audio_commands.txt /opt/dmrlink/ambe_audio/
+#cp $currentdir/template.bin /opt/dmrlink/ambe_audio/
 
 # Bridge app
-cp $currentdir/dmrlink.py /opt/dmrlink/bridge/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/bridge/
+#cp $currentdir/dmrlink.py /opt/dmrlink/bridge/
+#cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/bridge/
 #
-cp $currentdir/bridge.py /opt/dmrlink/bridge/
-cp $currentdir/bridge_rules_SAMPLE.py /opt/dmrlink/bridge/
-cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/bridge/
-cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/bridge/
+#cp $currentdir/bridge.py /opt/dmrlink/bridge/
+#cp $currentdir/bridge_rules_SAMPLE.py /opt/dmrlink/bridge/
+#cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/bridge/
+#cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/bridge/
 
 # ConfBridge app
 cp $currentdir/dmrlink.py /opt/dmrlink/confbridge/
@@ -105,10 +105,10 @@ cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/confbridge/
 cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/confbridge/
 
 # Log app
-cp $currentdir/dmrlink.py /opt/dmrlink/log/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/log/
+#cp $currentdir/dmrlink.py /opt/dmrlink/log/
+#cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/log/
 #
-cp $currentdir/log.py /opt/dmrlink/log/
+#cp $currentdir/log.py /opt/dmrlink/log/
 
 # Playback (Parrot)
 cp $currentdir/dmrlink.py /opt/dmrlink/playback/
@@ -118,10 +118,10 @@ cp $currentdir/playback.py /opt/dmrlink/playback/
 cp $currentdir/playback_config_SAMPLE.py /opt/dmrlink/playback/
 
 # Play Group app
-cp $currentdir/dmrlink.py /opt/dmrlink/play_group/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/play_group/
+#cp $currentdir/dmrlink.py /opt/dmrlink/play_group/
+#cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/play_group/
 #
-cp $currentdir/play_group.py /opt/dmrlink/play_group/
+#cp $currentdir/play_group.py /opt/dmrlink/play_group/
 
 # proxy app
 cp $currentdir/dmrlink.py /opt/dmrlink/proxy/
@@ -132,15 +132,15 @@ cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/proxy/
 cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/proxy/
 
 # rcm app
-cp $currentdir/dmrlink.py /opt/dmrlink/rcm/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/rcm/
+#cp $currentdir/dmrlink.py /opt/dmrlink/rcm/
+#cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/rcm/
 #
-cp $currentdir/rcm_db_log.py /opt/dmrlink/rcm/
-cp $currentdir/rcm.py /opt/dmrlink/rcm/
+#cp $currentdir/rcm_db_log.py /opt/dmrlink/rcm/
+#cp $currentdir/rcm.py /opt/dmrlink/rcm/
 
 # record app
-cp $currentdir/dmrlink.py /opt/dmrlink/record/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/record/
+#cp $currentdir/dmrlink.py /opt/dmrlink/record/
+#cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/record/
 #
-cp $currentdir/record.py /opt/dmrlink/record/
+#cp $currentdir/record.py /opt/dmrlink/record/
 
