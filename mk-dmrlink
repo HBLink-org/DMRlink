@@ -55,7 +55,7 @@ cd /opt/dmrlink
 cp -rf $currentdir/ipsc/ /opt/dmrlink/IPSC_Bridge/
 #cp -rf $currentdir/ipsc/ /opt/dmrlink/bridge/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/confbridge/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/log/
+#cp -rf $currentdir/ipsc/ /opt/dmrlink/log/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/playback/
 #cp -rf $currentdir/ipsc/ /opt/dmrlink/play_group/
 cp -rf $currentdir/ipsc/ /opt/dmrlink/proxy/
@@ -118,10 +118,10 @@ cp $currentdir/playback.py /opt/dmrlink/playback/
 cp $currentdir/playback_config_SAMPLE.py /opt/dmrlink/playback/
 
 # Play Group app
-cp $currentdir/dmrlink.py /opt/dmrlink/play_group/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/play_group/
+#cp $currentdir/dmrlink.py /opt/dmrlink/play_group/
+#cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/play_group/
 #
-cp $currentdir/play_group.py /opt/dmrlink/play_group/
+#cp $currentdir/play_group.py /opt/dmrlink/play_group/
 
 # proxy app
 cp $currentdir/dmrlink.py /opt/dmrlink/proxy/
