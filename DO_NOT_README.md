@@ -97,7 +97,7 @@ Once we have registered with the master, it will send a peer list update to any 
 				 |Send Peer Registration|                            +-----------+
 	    +------------------->|       Request        |<-----------+               |Remove Peer|
 	    |                    +----------+-----------+            |               | From List |
-            |                               |                        |               +-----------+
+        |                               |                        |               +-----------+
             |                               v                        |
             |                     +---------------------+     +------+------+
             |     +---------+     |Registration Response| NO  |Wait Firewall|
@@ -106,7 +106,7 @@ Once we have registered with the master, it will send a peer list update to any 
             |     +-------+-+                   |
             |         ^   |                     v YES
             |         |   |                +----------+
-            |         |   +--------------->|Send Peer |
+        |         |   +--------------->|Send Peer |
 	    |         |          +-------->|Keep Alive|
 	    |         |          |         +----+-----+
 	    |YES      |NO        |              |
