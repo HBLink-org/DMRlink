@@ -15,7 +15,7 @@ Each peer will send keep-alives to each other peer in the IPSC network at an int
 The following sections of this document will include various packet types. This is a list of currently known types and their meanings. Note: The names are arbitrarily chosen with the intention of being descriptive, and each is defined by what they've been "observed" to do in the wild.  
 
 	CALL_CONFIRMATION         = 0x05        Confirmation FROM the recipient of a confirmed call.
-    CALL_MON_ORIGIN           	  = 0x61        Sent to Repeater Call Monitor Peers from repeater originating a call
+        CALL_MON_ORIGIN           = 0x61        Sent to Repeater Call Monitor Peers from repeater originating a call
 	CALL_MON_RPT              = 0x62        Sent to Repeater Call Monitor Peers from all repeaters repeating a call
 	CALL_MON_NACK             = 0x63        Sent to Repeater Call Monitor Peers from repeaters that cannot transmit a call (ie. ID in progress)
 	XCMP_XNL         	  = 0x70		Control protocol messages
@@ -87,39 +87,39 @@ The following illustrates the communication that a peer (us, for example) has wi
 *COMMUNICATION WITH PEERS:*
 Once we have registered with the master, it will send a peer list update to any existing peers. Those peers will **immediately** respond by sending peer registrations to us, and then keep alives once we answer. We should send responses to any such requests as long as we have the peer in our own peer list -- which means we may miss one while waiting for receipt of our own peer list from the master. Even though we receive registration requests and keep-alives from the peers, we should send the same to them, even though this is redundant, it is how we ensure that firewall UDP sessions remain open. A bit wonky, but elegant. For example, a peer may not have a firewall, so it only sends keep-alives every 30 seconds, but we may need to every 5; which we achieve by sending our own keep-alives based on our own timer. The diagram only shows the action for the *initial* peer list reply from the master. Unsolicited peer lists from the master should update the list, and take appropriate action: De-register peers not in the new list, or begin registration for new peers.
 
-								  +-----------------+                              +-------------+
-								  |Recieve Peer List|                              |Received Peer|
-								  |   From Master   |                              |Leave Notice?|
-								  +------+----------+                              +------+------+
-										 |                                                |
-										 v FOR EACH PEER                                  |
-							 +----------------------+                                     v
-							 |Send Peer Registration|                                +-----------+
-	    +------------------->|       Request        |<-----------+                   |Remove Peer|
-	    |                    +----------+-----------+            |                   | From List |
-        |                               |                        |                   +-----------+
-        |                               v                        |
-        |                     +---------------------+     +------+------+
-        |     +---------+     |Registration Response| NO  |Wait Firewall|
-        |     |+1 Missed|     |     Received ?      +---->|  Open Timer |
-        |     | Counter |     +---------+-----------+     +-------------+
-        |     +-------+-+                   |
-        |         ^   |                     v YES
-        |         |   |                +----------+
-        |         |   +--------------->|Send Peer |
+				    +-----------------+                              +-------------+
+			            |Recieve Peer List|                              |Received Peer|
+				    |   From Master   |                              |Leave Notice?|
+				    +------+----------+                              +------+------+
+					   |                                                |
+					   v FOR EACH PEER                                  |
+				 +----------------------+                                   v
+				 |Send Peer Registration|                            +-----------+
+	    +------------------->|       Request        |<-----------+               |Remove Peer|
+	    |                    +----------+-----------+            |               | From List |
+            |                               |                        |               +-----------+
+            |                               v                        |
+            |                     +---------------------+     +------+------+
+            |     +---------+     |Registration Response| NO  |Wait Firewall|
+            |     |+1 Missed|     |     Received ?      +---->|  Open Timer |
+            |     | Counter |     +---------+-----------+     +-------------+
+            |     +-------+-+                   |
+            |         ^   |                     v YES
+            |         |   |                +----------+
+            |         |   +--------------->|Send Peer |
 	    |         |          +-------->|Keep Alive|
-		|         |          |         +----+-----+
-		|YES      |NO        |              |
+	    |         |          |         +----+-----+
+	    |YES      |NO        |              |
 	+---+---------+--+ +-----+------+       |
 	|   Keep Alive   | | Set Missed |       |
 	| Count Exceeded?| |Counter to 0|       |
 	+----------------+ +------------+       |
-               NO ^      ^ YES              |
-                  |      |                  v
-              +---+------+----+       +-------------+
-              |   Peer Keep   |       |Wait Firewall|
-              |Alive Received?|<------+  Open Timer |
-              +---------------+       +-------------+
+                   NO ^      ^ YES              |
+                      |      |                  v
+                  +---+------+----+       +-------------+
+                  |   Peer Keep   |       |Wait Firewall|
+                  |Alive Received?|<------+  Open Timer |
+                  +---------------+       +-------------+
 
 
 **PACKET FORMATS:**  
