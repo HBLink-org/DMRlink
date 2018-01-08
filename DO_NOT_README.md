@@ -15,19 +15,19 @@ Each peer will send keep-alives to each other peer in the IPSC network at an int
 The following sections of this document will include various packet types. This is a list of currently known types and their meanings. Note: The names are arbitrarily chosen with the intention of being descriptive, and each is defined by what they've been "observed" to do in the wild.  
 
 	CALL_CONFIRMATION         = 0x05        Confirmation FROM the recipient of a confirmed call.
-    CALL_MON_ORIGIN           = 0x61        Sent to Repeater Call Monitor Peers from repeater originating a call
+    CALL_MON_ORIGIN           	  = 0x61        Sent to Repeater Call Monitor Peers from repeater originating a call
 	CALL_MON_RPT              = 0x62        Sent to Repeater Call Monitor Peers from all repeaters repeating a call
 	CALL_MON_NACK             = 0x63        Sent to Repeater Call Monitor Peers from repeaters that cannot transmit a call (ie. ID in progress)
-	XCMP_XNL         		  = 0x70		Control protocol messages
-	GROUP_VOICE      		  = 0x80		This is a group voice call
+	XCMP_XNL         	  = 0x70		Control protocol messages
+	GROUP_VOICE      	  = 0x80		This is a group voice call
 	PVT_VOICE                 = 0x81        This is a private voice call
-	GROUP_DATA       		  = 0x83		This is a group data call
-	PVT_DATA         		  = 0x84		This is a private data call
+	GROUP_DATA       	  = 0x83		This is a group data call
+	PVT_DATA         	  = 0x84		This is a private data call
 	RPT_WAKE_UP               = 0x85        Wakes up all repeaters on the IPSC
-	MASTER_REG_REQ     		  = 0x90		Request registration with master (from peer, to master)
+	MASTER_REG_REQ     	  = 0x90		Request registration with master (from peer, to master)
 	MASTER_REG_REPLY          = 0x91		Master registration request reply (from master, to peer)
-	PEER_LIST_REQ    		  = 0x92		Request peer list from master
-	PEER_LIST_REPLY 	 	  = 0x93		Master peer list reply
+	PEER_LIST_REQ    	  = 0x92		Request peer list from master
+	PEER_LIST_REPLY 	  = 0x93		Master peer list reply
 	PEER_REG_REQ              = 0x94		Peer registration request
 	PEER_REG_REPLY            = 0x95		Peer registration response
 	MASTER_ALIVE_REQ          = 0x96		Master keep alive request (to master)
@@ -54,8 +54,8 @@ There are various states, timers and counters associated with each. When peers o
 *COMMUNICATION WITH MASTER:*
 The following illustrates the communication that a peer (us, for example) has with the master. The peer must register, then send keep-alives at an arbitrary interval (usually 5 - 30 seconds). If more than some arbitrary number of keep-alives are missed, we should return to the beginning and attempt to register again -- but do NOT elimiate the peers list, as peers may still be active. The only additional communcation with the master is if the master sends an unsolicited peer list. In this case, we should update our peer list as appropriate and continue.
 
-									  +-----------------+
-									  |Send Registration|
+					      +-----------------+
+					      |Send Registration|
 		+---------------------------->|Request To Master|<-------------+
 		|                             +--------+--------+              |
 		|                                      |                       |
@@ -72,17 +72,17 @@ The following illustrates the communication that a peer (us, for example) has wi
 		|   |   Counter   +---->|  Alive Request | +------------>|     > 1 ?   |
 		|   +-------------+     +-------+--------+               +------+------+
 		|         ^                   |         ^                       | YES
-	 YES|         | NO                v         |                       v
-	+---+---------+--+      +------------+      |               +-----------------+
-	| Is The Missed  |      |Wait FW Open|      |               |Request Peer List|
-	|   Keep-Alive   |      |   Timer    |      |               |   From Master   |<-----+
-	|Count Exceeded ?|      +-----+------+      |               +-------+---------+      |
-	+----------------+                |         |                       |                |
-			^                         v         |                       v                |
-			|             +--------------+     ++-------------+     +---------+          |
-			|        NO   |Did The Master| YES |Set Keep Alive|     |Peer List| NO       |
-			+-------------+  Respond ?   +---->| Counter To 0 |     |Received?+----------+
-						  +--------------+     +--------------+     +---------+
+	     YES|         | NO                v         |                       v
+  	    +---+---------+--+      +------------+      |               +-----------------+
+	    | Is The Missed  |      |Wait FW Open|      |               |Request Peer List|
+	    |   Keep-Alive   |      |   Timer    |      |               |   From Master   |<-----+
+	    |Count Exceeded ?|      +-----+------+      |               +-------+---------+      |
+	    +----------------+                |         |                       |                |
+			^                     v         |                       v                |
+			|         +--------------+     ++-------------+     +---------+          |
+			|    NO   |Did The Master| YES |Set Keep Alive|     |Peer List| NO       |
+			+---------+  Respond ?   +---->| Counter To 0 |     |Received?+----------+
+				  +--------------+     +--------------+     +---------+
 
 *COMMUNICATION WITH PEERS:*
 Once we have registered with the master, it will send a peer list update to any existing peers. Those peers will **immediately** respond by sending peer registrations to us, and then keep alives once we answer. We should send responses to any such requests as long as we have the peer in our own peer list -- which means we may miss one while waiting for receipt of our own peer list from the master. Even though we receive registration requests and keep-alives from the peers, we should send the same to them, even though this is redundant, it is how we ensure that firewall UDP sessions remain open. A bit wonky, but elegant. For example, a peer may not have a firewall, so it only sends keep-alives every 30 seconds, but we may need to every 5; which we achieve by sending our own keep-alives based on our own timer. The diagram only shows the action for the *initial* peer list reply from the master. Unsolicited peer lists from the master should update the list, and take appropriate action: De-register peers not in the new list, or begin registration for new peers.
