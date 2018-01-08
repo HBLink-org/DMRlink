@@ -98,14 +98,14 @@ Once we have registered with the master, it will send a peer list update to any 
 	    +------------------->|       Request        |<-----------+               |Remove Peer|
 	    |                    +----------+-----------+            |               | From List |
         |                               |                        |               +-----------+
-            |                               v                        |
-            |                     +---------------------+     +------+------+
-            |     +---------+     |Registration Response| NO  |Wait Firewall|
-            |     |+1 Missed|     |     Received ?      +---->|  Open Timer |
-            |     | Counter |     +---------+-----------+     +-------------+
-            |     +-------+-+                   |
-            |         ^   |                     v YES
-            |         |   |                +----------+
+        |                               v                        |
+        |                     +---------------------+     +------+------+
+        |     +---------+     |Registration Response| NO  |Wait Firewall|
+        |     |+1 Missed|     |     Received ?      +---->|  Open Timer |
+        |     | Counter |     +---------+-----------+     +-------------+
+        |     +-------+-+                   |
+        |         ^   |                     v YES
+        |         |   |                +----------+
         |         |   +--------------->|Send Peer |
 	    |         |          +-------->|Keep Alive|
 	    |         |          |         +----+-----+
