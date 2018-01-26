@@ -11,8 +11,8 @@ TGID = 12345
 # TIMESLOT TO LISTEN FOR GROUP VOICE AND REPEAT
 #    This is a tuple of timeslots to listen to. Note, if there's only
 #    one, you still have to use the parenthesis and comma. Just
-#    deal with it, or make it better. TS1 = 0, TS2 = 1.
-GROUP_TS = (1,)
+#    deal with it, or make it better. TS1 = 1, TS2 = 2.
+GROUP_TS = (2,)
 # ALTERNATE SOURCE SUBSCRIBER ID FOR REPEATED TRANSMISSION
 #   Some folks have radios that don't respond to their own subscriber
 #   IDs. Some just don't want to have the playback come from the same
@@ -31,5 +31,5 @@ SUB = 12345
 # TIMESLOT TO LISTEN FOR PRIVATE VOICE AND REPEAT
 #    This is a tuple of timeslots to listen to. Note, if there's only
 #    one, you still have to use the parenthesis and comma. Just
-#    deal with it, or make it better. TS1 = 0, TS2 = 1.
-PRIVATE_TS = (0,1)
+#    deal with it, or make it better. TS1 = 1, TS2 = 2.
+PRIVATE_TS = (1,2)
