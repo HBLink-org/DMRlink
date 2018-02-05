@@ -142,7 +142,7 @@ def make_bridge_config(_confbridge_rules):
             _system['TIMEOUT']    = _system['TIMEOUT']*60
             _system['TIMER']      = time()
 
-    return {'BRIDGE_CONF': bridge_file.BRIDGE_CONF, 'BRIDGES': bridge_file.BRIDGES}
+    return {'BRIDGE_CONF': bridge_file.BRIDGE_CONF, 'BRIDGES': bridge_file.BRIDGES, 'TRUNKS': bridge_file.TRUNKS}
     
 
 # Import subscriber ACL
@@ -271,6 +271,8 @@ class confbridgeIPSC(IPSC):
                                 _target_system = self._CONFIG['SYSTEMS'][_target['SYSTEM']]
                 
                                 # BEGIN CONTENTION HANDLING
+                                #
+                                # If the system is listed as a "TRUNK", there will be no contention handling. All traffic is forwarded to it
                                 # 
                                 # The rules for each of the 4 "ifs" below are listed here for readability. The Frame To Send is:
                                 #   From a different group than last RX from this IPSC, but it has been less than Group Hangtime
@@ -278,23 +280,24 @@ class confbridgeIPSC(IPSC):
                                 #   From the same group as the last RX from this IPSC, but from a different subscriber, and it has been less than TS Clear Time
                                 #   From the same group as the last TX to this IPSC, but from a different subscriber, and it has been less than TS Clear Time
                                 # The "continue" at the end of each means the next iteration of the for loop that tests for matching rules
-                                #                            
-                                if ((_target['TGID'] != _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
-                                    if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                        self._logger.info('(%s) Call not bridged to TGID%s, target active or in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
-                                    continue
-                                if ((_target['TGID'] != _target_status[_target['TS']]['TX_TGID']) and ((now - _target_status[_target['TS']]['TX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
-                                    if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                        self._logger.info('(%s) Call not bridged to TGID%s, target in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['TX_TGID']))
-                                    continue
-                                if (_target['TGID'] == _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < TS_CLEAR_TIME):
-                                    if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                        self._logger.info('(%s) Call not bridged to TGID%s, matching call already active on target: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
-                                    continue
-                                if (_target['TGID'] == _target_status[_target['TS']]['TX_TGID']) and (_src_sub != _target_status[_target['TS']]['TX_SRC_SUB']) and ((now - _target_status[_target['TS']]['TX_TIME']) < TS_CLEAR_TIME):
-                                    if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
-                                        self._logger.info('(%s) Call not bridged for subscriber %s, call bridge in progress on target: IPSC: %s, TS: %s, TGID: %s SUB: %s', self._system, int_id(_src_sub), _target['SYSTEM'], _target['TGID'], int_id(_target_status[_target['TS']]['TX_TGID']), int_id(_target_status[_target['TS']]['TX_SRC_SUB']))
-                                    continue
+                                #
+                                if _target not in TRUNKS:                           
+                                    if ((_target['TGID'] != _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
+                                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                            self._logger.info('(%s) Call not bridged to TGID%s, target active or in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
+                                        continue
+                                    if ((_target['TGID'] != _target_status[_target['TS']]['TX_TGID']) and ((now - _target_status[_target['TS']]['TX_TIME']) < _target_system['LOCAL']['GROUP_HANGTIME'])):
+                                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                            self._logger.info('(%s) Call not bridged to TGID%s, target in group hangtime: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['TX_TGID']))
+                                        continue
+                                    if (_target['TGID'] == _target_status[_target['TS']]['RX_TGID']) and ((now - _target_status[_target['TS']]['RX_TIME']) < TS_CLEAR_TIME):
+                                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                            self._logger.info('(%s) Call not bridged to TGID%s, matching call already active on target: IPSC: %s, TS: %s, TGID: %s', self._system, int_id(_target['TGID']), _target['SYSTEM'], _target['TS'], int_id(_target_status[_target['TS']]['RX_TGID']))
+                                        continue
+                                    if (_target['TGID'] == _target_status[_target['TS']]['TX_TGID']) and (_src_sub != _target_status[_target['TS']]['TX_SRC_SUB']) and ((now - _target_status[_target['TS']]['TX_TIME']) < TS_CLEAR_TIME):
+                                        if _burst_data_type == BURST_DATA_TYPE['VOICE_HEAD']:
+                                            self._logger.info('(%s) Call not bridged for subscriber %s, call bridge in progress on target: IPSC: %s, TS: %s, TGID: %s SUB: %s', self._system, int_id(_src_sub), _target['SYSTEM'], _target['TGID'], int_id(_target_status[_target['TS']]['TX_TGID']), int_id(_target_status[_target['TS']]['TX_SRC_SUB']))
+                                        continue
                                 #
                                 # END CONTENTION HANDLING
                                 #
@@ -494,7 +497,8 @@ if __name__ == '__main__':
     # Build the routing rules and other configuration
     CONFIG_DICT = make_bridge_config('confbridge_rules')
     BRIDGE_CONF = CONFIG_DICT['BRIDGE_CONF']
-    BRIDGES = CONFIG_DICT['BRIDGES']
+    TRUNKS      = CONFIG_DICT['TRUNKS']
+    BRIDGES     = CONFIG_DICT['BRIDGES']
 
     # Build the Access Control List
     ACL = build_acl('sub_acl')

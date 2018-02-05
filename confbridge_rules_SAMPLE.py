@@ -41,6 +41,13 @@ BRIDGE_CONF = {
     'REPORT': True,
     }
 
+# TRUNK IPSC Systems -- trunk bypasses the contention handler and always transmits traffic
+#
+# This is a python LIST data type. It needs to be here, but just leave it empty if not used.
+# The contents are a quoted, comma separated list of IPSC systems that are traffic trunks.
+# Example: TRUNKS = ['MASTER-1', 'CLIENT-2']
+TRUNKS = []
+
 BRIDGES = {
     'WORLDWIDE': [
             {'SYSTEM': 'MASTER-1',    'TS': 1, 'TGID': 1,    'ACTIVE': True, 'TIMEOUT': 2, 'TO_TYPE': 'ON',   'ON': [2,], 'OFF': [9,10], 'RESET': []},
