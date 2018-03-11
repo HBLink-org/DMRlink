@@ -308,11 +308,11 @@ class confbridgeIPSC(IPSC):
                                 # Make a copy of the payload
                                 _tmp_data = _data
                 
-                                # Re-Write the IPSC SRC to match the target network's ID
-                                _tmp_data = _tmp_data.replace(_peerid, _target_system['LOCAL']['RADIO_ID'])
+                                # Re-Write the IPSC SRC + DST GROUP in IPSC Headers:
+                                _tmp_data = _tmp_data.replace((_peerid + _dst_group), (_target_system['LOCAL']['RADIO_ID'] + _target['TGID']), 1)
                 
-                                # Re-Write the destination Group ID
-                                _tmp_data = _tmp_data.replace(_dst_group, _target['TGID'])
+                                # Re-Write the DST GROUP + IPSC SRC in DMR LC (Header, Terminator and Voice Burst E):
+                                _tmp_data = _tmp_data.replace((_dst_group + _peerid), (_target['TGID'] + _target_system['LOCAL']['RADIO_ID']), 1)
             
                                 # Re-Write IPSC timeslot value
                                 _call_info = int_id(_data[17:18])
