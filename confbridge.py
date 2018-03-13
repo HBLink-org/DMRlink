@@ -253,7 +253,7 @@ class confbridgeIPSC(IPSC):
             return
         
         # Process the packet
-        self._logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', self._system, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
+        #self._logger.debug('(%s) Group Voice Packet Received From: %s, IPSC Peer %s, Destination %s', self._system, int_id(_src_sub), int_id(_peerid), int_id(_dst_group))
         _burst_data_type = _data[30] # Determine the type of voice packet this is (see top of file for possible types)
         _seq_id = _data[5]
         
@@ -308,12 +308,15 @@ class confbridgeIPSC(IPSC):
                                 # Make a copy of the payload
                                 _tmp_data = _data
                 
+                                # Re-Write the PEER ID in the IPSC Header:
+                                _tmp_data = _tmp_data.replace(_peerid,  _target_system['LOCAL']['RADIO_ID'], 1)
+
                                 # Re-Write the IPSC SRC + DST GROUP in IPSC Headers:
-                                _tmp_data = _tmp_data.replace((_peerid + _dst_group), (_target_system['LOCAL']['RADIO_ID'] + _target['TGID']), 1)
-                
+                                _tmp_data = _tmp_data.replace(_src_sub + _dst_group, _src_sub + _target['TGID'], 1)
+
                                 # Re-Write the DST GROUP + IPSC SRC in DMR LC (Header, Terminator and Voice Burst E):
-                                _tmp_data = _tmp_data.replace((_dst_group + _peerid), (_target['TGID'] + _target_system['LOCAL']['RADIO_ID']), 1)
-            
+                                _tmp_data = _tmp_data.replace(_dst_group + _src_sub, _target['TGID'] + _src_sub, 1)
+
                                 # Re-Write IPSC timeslot value
                                 _call_info = int_id(_data[17:18])
                                 if _target['TS'] == 1:
