@@ -266,7 +266,7 @@ class confbridgeIPSC(IPSC):
                     
                     for _target in BRIDGES[_bridge]:
                         if _target['SYSTEM'] != self._system:
-                            if _target['ACTIVE']:                          
+                            if _target['ACTIVE']:
                                 _target_status = systems[_target['SYSTEM']].STATUS
                                 _target_system = self._CONFIG['SYSTEMS'][_target['SYSTEM']]
                 
@@ -301,13 +301,12 @@ class confbridgeIPSC(IPSC):
                                 #
                                 # END CONTENTION HANDLING
                                 #
-                
+
                                 #
                                 # BEGIN FRAME FORWARDING
                                 #
                                 # Make a copy of the payload
                                 _tmp_data = _data
-                
                                 # Re-Write the PEER ID in the IPSC Header:
                                 _tmp_data = _tmp_data.replace(_peerid,  _target_system['LOCAL']['RADIO_ID'], 1)
 
@@ -325,7 +324,7 @@ class confbridgeIPSC(IPSC):
                                     _call_info |= 1 << 5
                                 _call_info = chr(_call_info)
                                 _tmp_data = _tmp_data[:17] + _call_info + _tmp_data[18:] 
-                
+
                                 # Re-Write DMR timeslot value
                                 # Determine if the slot is present, so we can translate if need be
                                 if _burst_data_type == BURST_DATA_TYPE['SLOT1_VOICE'] or _burst_data_type == BURST_DATA_TYPE['SLOT2_VOICE']:
@@ -341,12 +340,11 @@ class confbridgeIPSC(IPSC):
                                     _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
 
                                 # Send the packet to all peers in the target IPSC
-                                systems[_target['SYSTEM']].send_to_ipsc(_tmp_data)
+				systems[_target['SYSTEM']].send_to_ipsc(_tmp_data)
                                 #
                                 # END FRAME FORWARDING
                                 #
-                
-                
+
                                 # Set values for the contention handler to test next time there is a frame to forward
                                 _target_status[_target['TS']]['TX_TGID'] = _target['TGID']
                                 _target_status[_target['TS']]['TX_TIME'] = now
