@@ -340,7 +340,7 @@ class confbridgeIPSC(IPSC):
                                     _tmp_data = _tmp_data[:30] + _burst_data_type + _tmp_data[31:]
 
                                 # Send the packet to all peers in the target IPSC
-				systems[_target['SYSTEM']].send_to_ipsc(_tmp_data)
+                                systems[_target['SYSTEM']].send_to_ipsc(_tmp_data)
                                 #
                                 # END FRAME FORWARDING
                                 #
