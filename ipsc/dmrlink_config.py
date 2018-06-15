@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 ###############################################################################
-#   Copyright (C) 2016  Cortney T. Buffington, N0MJS <n0mjs@me.com>
+#   Copyright (C) 2016-2018  Cortney T. Buffington, N0MJS <n0mjs@me.com>
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -21,15 +21,31 @@
 import ConfigParser
 import sys
 
-from socket import gethostbyname 
+from socket import getaddrinfo, IPPROTO_UDP
 
 # Does anybody read this stuff? There's a PEP somewhere that says I should do this.
 __author__     = 'Cortney T. Buffington, N0MJS'
-__copyright__  = 'Copyright (c) 2016 Cortney T. Buffington, N0MJS and the K0USY Group'
+__copyright__  = 'Copyright (c) 2016-2018 Cortney T. Buffington, N0MJS and the K0USY Group'
 __license__    = 'GNU GPLv3'
 __maintainer__ = 'Cort Buffington, N0MJS'
 __email__      = 'n0mjs@me.com'
 
+
+def get_address(_config):
+    ipv4 = ''
+    ipv6 = ''
+    socket_info = getaddrinfo(_config, None, 0, 0, IPPROTO_UDP)
+    for item in socket_info:
+        if item[0] == 2:
+            ipv4 = item[4][0]
+        elif item[0] == 30:
+            ipv6 = item[4][0]
+        
+    if ipv4:
+        return ipv4
+    if ipv6:
+        return ipv6 
+    return 'invalid address'
 
 def build_config(_config_file):
     config = ConfigParser.ConfigParser()
@@ -115,7 +131,7 @@ def build_config(_config_file):
                 
                     # Things we need to know to connect and be a peer in this IPSC
                     'RADIO_ID':     hex(int(config.get(section, 'RADIO_ID')))[2:].rjust(8,'0').decode('hex'),
-                    'IP':           gethostbyname(config.get(section, 'IP')),
+                    'IP':           config.get(section, 'IP'),
                     'PORT':         config.getint(section, 'PORT'),
                     'ALIVE_TIMER':  config.getint(section, 'ALIVE_TIMER'),
                     'MAX_MISSED':   config.getint(section, 'MAX_MISSED'),
@@ -144,7 +160,7 @@ def build_config(_config_file):
                     })
                 if not CONFIG['SYSTEMS'][section]['LOCAL']['MASTER_PEER']:
                     CONFIG['SYSTEMS'][section]['MASTER'].update({
-                        'IP': gethostbyname(config.get(section, 'MASTER_IP')),
+                        'IP': get_address(config.get(section, 'MASTER_IP')),
                         'PORT': config.getint(section, 'MASTER_PORT')
                     })
             
