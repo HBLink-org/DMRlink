@@ -67,7 +67,6 @@ except ImportError:
 #
 class ambeIPSC(IPSC):
 
-    _configFile='IPSC_Bridge.cfg'                       # Name of the config file to over-ride these default values
     _gateway = "127.0.0.1"                              # IP address of  app
     _gateway_port = 31000                               # Port Analog_Bridge is listening on for AMBE frames to decode
     _ambeRxPort = 31003                                 # Port to listen on for AMBE frames to transmit to all peers
@@ -88,6 +87,7 @@ class ambeIPSC(IPSC):
         # Define default values for operation.  These will be overridden by the .cfg file if found
         #
         
+        self._configFile=cli_args.BRIDGE_CONFIG_FILE
         self._currentNetwork = str(_name)
         self.readConfigFile(self._configFile, None, self._currentNetwork)
     
@@ -237,10 +237,16 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config', action='store', dest='CFG_FILE', help='/full/path/to/config.file (usually dmrlink.cfg)')
     parser.add_argument('-ll', '--log_level', action='store', dest='LOG_LEVEL', help='Override config file logging level.')
     parser.add_argument('-lh', '--log_handle', action='store', dest='LOG_HANDLERS', help='Override config file logging handler.')
+    parser.add_argument('-b','--bridge_config', action='store', dest='BRIDGE_CONFIG_FILE', help='/full/path/to/bridgeconfig.cfg (default HB_Bridge.cfg)')
     cli_args = parser.parse_args()
 
+    # Ensure we have a path for the config file, if one wasn't specified, then use the default (top of file)
     if not cli_args.CFG_FILE:
         cli_args.CFG_FILE = os.path.dirname(os.path.abspath(__file__))+'/dmrlink.cfg'
+        
+    # Ensure we have a path for the bridge config file, if one wasn't specified, then use the default (top of file)
+    if not cli_args.BRIDGE_CONFIG_FILE:
+        cli_args.BRIDGE_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__))+'/IPSC_Bridge.cfg'
     
     # Call the external routine to build the configuration dictionary
     CONFIG = build_config(cli_args.CFG_FILE)
