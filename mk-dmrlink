@@ -1,8 +1,10 @@
 #! /bin/bash
 
-currentdir=`pwd`
+PREFIX=/opt/dmrlink
+echo "DMRlink will be installed in:  $PREFIX"
 
-echo "Current working directory is" $currentdir
+currentdir=`pwd`
+echo "Current working directory is:  $currentdir"
 
 echo ""
 
@@ -13,20 +15,44 @@ echo ""
 #################################################
 
 # Install the required support programs
-	apt-get install unzip -y
-        apt-get install python-dev -y
-	apt-get install python-pip -y
-        apt-get install python-twisted -y
-#	pip install bitstring
-#	pip install bitarray
 
-        cd /opt
-	if [ ! -d /opt/dmr_utils ]; then
-            git clone https://github.com/n0mjs710/dmr_utils.git
-	fi
-        cd dmr_utils/
-	git pull
-	pip install .
+distro=$(lsb_release -i | awk -F":" '{ gsub(/^[ \t]+/, "", $2); print $2 }')
+release=$(lsb_release -r | awk -F":" '{ gsub(/^[ \t]+/, "", $2); print $2 }')
+echo "Current Linux distribution is: $distro $release"
+
+if [[ "$distro" =~ ^(CentOS|Fedora|openSUSE|)$ ]]; then
+    echo "$distro uses yum"
+    yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(echo $release | awk -F"." '{print $1}').noarch.rpm
+    yum install -y gcc gcc-c++ glibc-devel make
+    yum install -y unzip
+    yum install -y python-devel
+    yum install -y python-pip
+    yum install -y python-twisted
+#    pip install bitstring
+#    pip install bitarray
+else
+    echo "$distro uses apt"
+    apt-get install -y build-essential
+    apt-get install -y unzip
+    apt-get install -y python-dev
+    apt-get install -y python-pip
+    apt-get install -y python-twisted
+#    pip install bitstring
+#    pip install bitarray
+fi
+
+# Install dmr_utils with pip install
+pip install dmr_utils
+###############################################################################
+# Following lines should be removed due to the pip install method for dmr_utils
+#cd /opt
+#if [ ! -d /opt/dmr_utils ]; then
+#    git clone https://github.com/n0mjs710/dmr_utils.git
+#fi
+#cd dmr_utils/
+#git pull
+#pip install .
+###############################################################################
 
 echo "Required programs installed, continuing"
 
@@ -35,19 +61,13 @@ echo "Required programs installed, continuing"
 # The needed files are copied to /opt/dmrlink
 
 # Make needed directories
-# mkdir -p /opt/dmrlink/ambe_audio/
-# mkdir -p /opt/dmrlink/bridge/
- mkdir -p /opt/dmrlink/confbridge/
-# mkdir -p /opt/dmrlink/log/
- mkdir -p /opt/dmrlink/playback/
-# mkdir -p /opt/dmrlink/play_group/
- mkdir -p /opt/dmrlink/proxy/
-# mkdir -p /opt/dmrlink/rcm/
-# mkdir -p /opt/dmrlink/record/
- mkdir -p /opt/dmrlink/samples
- mkdir -p /var/log/dmrlink
+mkdir -p $PREFIX/confbridge/
+mkdir -p $PREFIX/playback/
+mkdir -p $PREFIX/proxy/
+mkdir -p $PREFIX/samples
+mkdir -p /var/log/dmrlink
 
-cd /opt/dmrlink
+cd $PREFIX
 
 # Put common files in /opt/dmrlink
 # cp $currentdir/peer_ids.csv /opt/dmrlink
@@ -55,29 +75,23 @@ cd /opt/dmrlink
 # cp $currentdir/talkgroup_ids.csv /opt/dmrlink
 
 # Copy ipsc directory into each app directory
-#cp -rf $currentdir/ipsc/ /opt/dmrlink/ambe_audio/
-#cp -rf $currentdir/ipsc/ /opt/dmrlink/bridge/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/confbridge/
-#cp -rf $currentdir/ipsc/ /opt/dmrlink/log/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/playback/
-#cp -rf $currentdir/ipsc/ /opt/dmrlink/play_group/
-cp -rf $currentdir/ipsc/ /opt/dmrlink/proxy/
-#cp -rf $currentdir/ipsc/ /opt/dmrlink/rcm/
-#cp -rf $currentdir/ipsc/ /opt/dmrlink/record/
+cp -rf $currentdir/ipsc/ $PREFIX/confbridge/
+cp -rf $currentdir/ipsc/ $PREFIX/playback/
+cp -rf $currentdir/ipsc/ $PREFIX/proxy/
 
 # Put a copy of the samples together for easy reference
 #cp $currentdir/bridge_rules_SAMPLE.py /opt/dmrlink/samples
-cp $currentdir/confbridge_rules_SAMPLE.py /opt/dmrlink/samples
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/samples
+cp $currentdir/confbridge_rules_SAMPLE.py $PREFIX/samples
+cp $currentdir/dmrlink_SAMPLE.cfg $PREFIX/samples
 #cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/samples
-cp $currentdir/playback_config_SAMPLE.py /opt/dmrlink/samples
+cp $currentdir/playback_config_SAMPLE.py $PREFIX/samples
 #cp $currentdir/ambe_audio.cfg /opt/dmrlink/samples
 cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/samples
 
 # Put the doc together for easy reference
-cp -rf $currentdir/documents /opt/dmrlink
-cp $currentdir/LICENSE.txt /opt/dmrlink/documents
-cp $currentdir/requirements.txt /opt/dmrlink/documents
+cp -rf $currentdir/documents $PREFIX
+cp $currentdir/LICENSE.txt $PREFIX/documents
+cp $currentdir/requirements.txt $PREFIX/documents
 #cp $currentdir/ambe_audio_commands.txt /opt/dmrlink/documents
 
 # ambe_audio
@@ -99,13 +113,13 @@ cp $currentdir/requirements.txt /opt/dmrlink/documents
 #cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/bridge/
 
 # ConfBridge app
-cp $currentdir/dmrlink.py /opt/dmrlink/confbridge/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/confbridge/
+cp $currentdir/dmrlink.py $PREFIX/confbridge/
+cp $currentdir/dmrlink_SAMPLE.cfg $PREFIX/confbridge/
 #
-cp $currentdir/confbridge.py /opt/dmrlink/confbridge/
-cp $currentdir/confbridge_rules_SAMPLE.py /opt/dmrlink/confbridge/
+cp $currentdir/confbridge.py $PREFIX/confbridge/
+cp $currentdir/confbridge_rules_SAMPLE.py $PREFIX/confbridge/
 #cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/confbridge/
-cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/confbridge/
+cp $currentdir/sub_acl_SAMPLE.py $PREFIX/confbridge/
 
 # Log app
 #cp $currentdir/dmrlink.py /opt/dmrlink/log/
@@ -114,11 +128,11 @@ cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/confbridge/
 #cp $currentdir/log.py /opt/dmrlink/log/
 
 # Playback (Parrot)
-cp $currentdir/dmrlink.py /opt/dmrlink/playback/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/playback/
+cp $currentdir/dmrlink.py $PREFIX/playback/
+cp $currentdir/dmrlink_SAMPLE.cfg $PREFIX/playback/
 #
-cp $currentdir/playback.py /opt/dmrlink/playback/
-cp $currentdir/playback_config_SAMPLE.py /opt/dmrlink/playback/
+cp $currentdir/playback.py $PREFIX/playback/
+cp $currentdir/playback_config_SAMPLE.py $PREFIX/playback/
 
 # Play Group app
 #cp $currentdir/dmrlink.py /opt/dmrlink/play_group/
@@ -127,12 +141,12 @@ cp $currentdir/playback_config_SAMPLE.py /opt/dmrlink/playback/
 #cp $currentdir/play_group.py /opt/dmrlink/play_group/
 
 # proxy app
-cp $currentdir/dmrlink.py /opt/dmrlink/proxy/
-cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/proxy/
+cp $currentdir/dmrlink.py $PREFIX/proxy/
+cp $currentdir/dmrlink_SAMPLE.cfg $PREFIX/proxy/
 #
-cp $currentdir/proxy.py /opt/dmrlink/proxy/
-#cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/proxy/
-cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/proxy/
+cp $currentdir/proxy.py $PREFIX/proxy/
+#cp $currentdir/known_bridges_SAMPLE.py $PREFIX/proxy/
+cp $currentdir/sub_acl_SAMPLE.py $PREFIX/proxy/
 
 # rcm app
 #cp $currentdir/dmrlink.py /opt/dmrlink/rcm/
