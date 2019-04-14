@@ -21,8 +21,11 @@ echo ""
 #	pip install bitarray
 
         cd /opt
-        git clone https://github.com/n0mjs710/dmr_utils.git
+	if [ ! -d /opt/dmr_utils ]; then
+            git clone https://github.com/n0mjs710/dmr_utils.git
+	fi
         cd dmr_utils/
+	git pull
 	pip install .
 
 echo "Required programs installed, continuing"
@@ -66,7 +69,7 @@ cp -rf $currentdir/ipsc/ /opt/dmrlink/proxy/
 #cp $currentdir/bridge_rules_SAMPLE.py /opt/dmrlink/samples
 cp $currentdir/confbridge_rules_SAMPLE.py /opt/dmrlink/samples
 cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/samples
-cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/samples
+#cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/samples
 cp $currentdir/playback_config_SAMPLE.py /opt/dmrlink/samples
 #cp $currentdir/ambe_audio.cfg /opt/dmrlink/samples
 cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/samples
@@ -101,7 +104,7 @@ cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/confbridge/
 #
 cp $currentdir/confbridge.py /opt/dmrlink/confbridge/
 cp $currentdir/confbridge_rules_SAMPLE.py /opt/dmrlink/confbridge/
-cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/confbridge/
+#cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/confbridge/
 cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/confbridge/
 
 # Log app
@@ -128,7 +131,7 @@ cp $currentdir/dmrlink.py /opt/dmrlink/proxy/
 cp $currentdir/dmrlink_SAMPLE.cfg /opt/dmrlink/proxy/
 #
 cp $currentdir/proxy.py /opt/dmrlink/proxy/
-cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/proxy/
+#cp $currentdir/known_bridges_SAMPLE.py /opt/dmrlink/proxy/
 cp $currentdir/sub_acl_SAMPLE.py /opt/dmrlink/proxy/
 
 # rcm app
